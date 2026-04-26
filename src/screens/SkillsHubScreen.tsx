@@ -24,6 +24,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSkills } from '../context/SkillsContext';
+import { useActivities } from '../context/ActivitiesContext';
 import { Skill } from '../types';
 import { calculateLevel, calculateProgress, formatXP } from '../utils/xpCalculations';
 import { ProgressBar } from '../components/ProgressBar';
@@ -39,10 +40,8 @@ import { colors } from '../constants/colors';
  */
 export function SkillsHubScreen() {
   const { skills, loading, error } = useSkills();
+  const { userActivities } = useActivities();
 
-  /**
-   * Calculate total level (sum of all skill levels)
-   */
   const totalLevel = useMemo(() => {
     return skills.reduce((sum, skill) => {
       const level = calculateLevel(skill.totalXP);
@@ -50,12 +49,14 @@ export function SkillsHubScreen() {
     }, 0);
   }, [skills]);
 
-  /**
-   * Sort skills by name for consistent grid order
-   */
-  const sortedSkills = useMemo(() => {
-    return [...skills].sort((a, b) => a.skillName.localeCompare(b.skillName));
-  }, [skills]);
+  // Only show skills the user has engaged with — either XP earned or an active habit attached.
+  // This keeps the grid clean and motivating rather than showing 22 greyed-out level-1 skills.
+  const visibleSkills = useMemo(() => {
+    const activeSkillIds = new Set(userActivities.map(a => a.skillId));
+    return [...skills]
+      .filter(skill => skill.totalXP > 0 || activeSkillIds.has(skill.skillName))
+      .sort((a, b) => a.skillName.localeCompare(b.skillName));
+  }, [skills, userActivities]);
 
   /**
    * Render a single skill cell in the grid
@@ -129,16 +130,23 @@ export function SkillsHubScreen() {
         <Text style={styles.headerTitle}>Skills</Text>
       </View>
 
-      {/* Skills Grid */}
-      <FlatList
-        data={sortedSkills}
-        renderItem={renderSkillCell}
-        keyExtractor={item => item.id}
-        numColumns={3}
-        scrollEnabled={true}
-        contentContainerStyle={styles.gridContent}
-        columnWrapperStyle={styles.gridRow}
-      />
+      {/* Skills Grid or empty state */}
+      {visibleSkills.length === 0 ? (
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyText}>No skills trained yet</Text>
+          <Text style={styles.emptySubtext}>Add habits in Settings to start earning XP</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={visibleSkills}
+          renderItem={renderSkillCell}
+          keyExtractor={item => item.id}
+          numColumns={3}
+          scrollEnabled={true}
+          contentContainerStyle={styles.gridContent}
+          columnWrapperStyle={styles.gridRow}
+        />
+      )}
 
       {/* Footer with Total Level */}
       <View style={styles.footer}>
@@ -245,6 +253,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginTop: 8,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
   errorText: {
     fontSize: 16,
