@@ -10,12 +10,13 @@
  * - Loading state
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   TextInput,
   StyleSheet,
   Text,
+  Animated,
   TouchableOpacity,
   ScrollView,
   Alert,
@@ -23,6 +24,15 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
+
+const TAGLINES = [
+  'Level up your real life.',
+  'Train hard. Level up. Repeat.',
+  'Your grind starts here.',
+  'Build legendary habits.',
+  'One XP at a time.',
+  "The greatest journey begins with 1 XP.",
+];
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
 import {
@@ -42,6 +52,20 @@ interface AuthScreenProps {
 export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   // Auth state
   const { logIn, signUp, loading, error: contextError } = useAuth();
+
+  // Cycling tagline
+  const [taglineIndex, setTaglineIndex] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const cycle = setInterval(() => {
+      Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }).start(() => {
+        setTaglineIndex(prev => (prev + 1) % TAGLINES.length);
+        Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+      });
+    }, 3500);
+    return () => clearInterval(cycle);
+  }, []);
 
   // UI state
   const [isSignUp, setIsSignUp] = useState(false);
@@ -146,7 +170,9 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>HabitScape</Text>
-          <Text style={styles.subtitle}>Level up your real life.</Text>
+          <Animated.Text style={[styles.subtitle, { opacity: fadeAnim }]}>
+            {TAGLINES[taglineIndex]}
+          </Animated.Text>
         </View>
 
         {/* Form Container */}

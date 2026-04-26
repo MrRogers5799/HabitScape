@@ -485,12 +485,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.gold,
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: colors.textSecondary,
   },
   progressIndicator: {
     backgroundColor: colors.background,
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
   },
   skillName: {
     fontSize: 12,
-    color: colors.gold,
+    color: colors.textSecondary,
   },
   completedBadge: {
     backgroundColor: colors.success,

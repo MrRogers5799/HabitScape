@@ -1,18 +1,18 @@
 export const colors = {
-  // Backgrounds — warm dark brown, like the OSRS game client
-  background:     '#1a1208',
-  surface:        '#2d2214',
-  surfaceRaised:  '#3e3020',
+  // Backgrounds — warm dark brown, lifted slightly for mobile readability
+  background:     '#241c0c',
+  surface:        '#332918',
+  surfaceRaised:  '#443826',
 
-  // Borders — warm brown instead of cold grey
+  // Borders
   border:         '#5c4a28',
-  borderSubtle:   '#2d2214',
+  borderSubtle:   '#332918',
 
-  // Gold — the classic OSRS accent
+  // Gold — the classic OSRS accent, used sparingly
   gold:           '#D4AF37',
   goldDark:       '#b8960f',
 
-  // Text — warm cream/parchment instead of cold white
+  // Text — warm cream/parchment
   textPrimary:    '#ffe8b0',
   textSecondary:  '#a89060',
   textMuted:      '#7a6540',
