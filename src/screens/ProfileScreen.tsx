@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { colors } from '../constants/colors';
 
 /**
  * Profile Screen Component
@@ -102,19 +103,19 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface,
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#444',
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#D4AF37',
+    color: colors.gold,
   },
   section: {
     marginTop: 16,
@@ -123,25 +124,29 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#D4AF37',
+    color: colors.gold,
     marginBottom: 12,
   },
   userInfoCard: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 4,
     paddingHorizontal: 16,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   userIcon: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: colors.border,
   },
   userIconText: {
     fontSize: 28,
@@ -152,25 +157,27 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   userStatus: {
     fontSize: 11,
-    color: '#999',
+    color: colors.textSecondary,
     marginBottom: 2,
   },
   userDate: {
     fontSize: 12,
-    color: '#D4AF37',
+    color: colors.gold,
     fontWeight: '500',
   },
   comingSoonCard: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 4,
     padding: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#D4AF37',
+    borderLeftColor: colors.gold,
+    borderWidth: 1,
+    borderColor: colors.border,
     marginBottom: 12,
   },
   comingSoonIcon: {
@@ -180,12 +187,12 @@ const styles = StyleSheet.create({
   comingSoonTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#D4AF37',
+    color: colors.gold,
     marginBottom: 8,
   },
   comingSoonText: {
     fontSize: 13,
-    color: '#999',
+    color: colors.textSecondary,
     marginBottom: 12,
     lineHeight: 18,
   },
@@ -194,18 +201,18 @@ const styles = StyleSheet.create({
   },
   featureItem: {
     fontSize: 12,
-    color: '#bbb',
+    color: colors.textPrimary,
     marginBottom: 6,
   },
   disabledButton: {
-    backgroundColor: '#444',
-    borderRadius: 6,
+    backgroundColor: colors.surfaceRaised,
+    borderRadius: 4,
     paddingVertical: 10,
     alignItems: 'center',
     opacity: 0.6,
   },
   disabledButtonText: {
-    color: '#999',
+    color: colors.textSecondary,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -217,7 +224,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textDisabled,
     marginBottom: 4,
   },
 });

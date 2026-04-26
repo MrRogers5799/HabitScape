@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   activityItemCompleted: {
-    backgroundColor: '#1f2a1f',
+    backgroundColor: '#1a2810',
     opacity: 0.7,
   },
   checkbox: {

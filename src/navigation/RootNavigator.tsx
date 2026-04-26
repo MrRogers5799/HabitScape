@@ -10,6 +10,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { colors } from '../constants/colors';
 
 const TAB_ICONS = {
   activities: require('../../assets/icons/tabs/activities.png'),
@@ -41,12 +42,12 @@ function TabNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#2a2a2a',
-          borderTopColor: '#444',
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
         },
-        tabBarActiveTintColor: '#D4AF37',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: colors.gold,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',

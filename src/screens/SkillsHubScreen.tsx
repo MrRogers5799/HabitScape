@@ -28,6 +28,7 @@ import { Skill } from '../types';
 import { calculateLevel, calculateProgress, formatXP } from '../utils/xpCalculations';
 import { ProgressBar } from '../components/ProgressBar';
 import { SKILL_ICONS } from '../constants/osrsSkills';
+import { colors } from '../constants/colors';
 
 /**
  * Skills Hub Screen Component
@@ -92,8 +93,8 @@ export function SkillsHubScreen() {
           <ProgressBar
             progress={progress}
             height={4}
-            barColor="#D4AF37"
-            backgroundColor="#1a1a1a"
+            barColor={colors.gold}
+            backgroundColor={colors.background}
           />
         </View>
       </View>
@@ -151,25 +152,25 @@ export function SkillsHubScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface,
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#444',
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#D4AF37',
+    color: colors.gold,
   },
   gridContent: {
     paddingHorizontal: 8,
@@ -181,9 +182,9 @@ const styles = StyleSheet.create({
   },
   skillCell: {
     width: '32%',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: colors.border,
     borderRadius: 4,
     paddingVertical: 10,
     paddingHorizontal: 8,
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
   skillName: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 3,
     height: 24,
@@ -207,12 +208,12 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#D4AF37',
+    color: colors.gold,
     marginBottom: 2,
   },
   xpLabel: {
     fontSize: 9,
-    color: '#999',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 4,
   },
@@ -221,9 +222,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   footer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#444',
+    borderTopColor: colors.border,
     paddingVertical: 16,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -233,26 +234,26 @@ const styles = StyleSheet.create({
   totalLevelLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#999',
+    color: colors.textSecondary,
   },
   totalLevelValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#D4AF37',
+    color: colors.gold,
   },
   loadingText: {
     fontSize: 14,
-    color: '#999',
+    color: colors.textSecondary,
     marginTop: 8,
   },
   errorText: {
     fontSize: 16,
-    color: '#ff6b6b',
+    color: colors.error,
     fontWeight: '600',
   },
   errorDetail: {
     fontSize: 12,
-    color: '#999',
+    color: colors.textSecondary,
     marginTop: 4,
   },
 });

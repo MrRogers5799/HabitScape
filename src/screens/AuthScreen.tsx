@@ -24,6 +24,7 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { colors } from '../constants/colors';
 import {
   isValidEmail,
   validatePassword,
@@ -144,10 +145,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>🎮 HabitScape</Text>
-          <Text style={styles.subtitle}>
-            Train your real-life skills like it's Old School RuneScape
-          </Text>
+          <Text style={styles.title}>HabitScape</Text>
+          <Text style={styles.subtitle}>Level up your real life.</Text>
         </View>
 
         {/* Form Container */}
@@ -276,7 +275,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -290,13 +289,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#D4AF37',
+    color: colors.gold,
     marginBottom: 10,
+    letterSpacing: 1,
   },
   subtitle: {
     fontSize: 14,
-    color: '#aaa',
+    color: colors.textSecondary,
     textAlign: 'center',
+    fontStyle: 'italic',
   },
   formContainer: {
     marginBottom: 40,
@@ -307,57 +308,57 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#444',
-    borderRadius: 8,
+    borderColor: colors.border,
+    borderRadius: 4,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 14,
   },
   inputError: {
-    borderColor: '#ff6b6b',
+    borderColor: colors.error,
   },
   errorText: {
-    color: '#ff6b6b',
+    color: colors.error,
     fontSize: 12,
     marginTop: 4,
   },
   timezoneValue: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: '#444',
-    borderRadius: 8,
+    borderColor: colors.border,
+    borderRadius: 4,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 14,
   },
   timezoneHint: {
-    color: '#888',
+    color: colors.textMuted,
     fontSize: 12,
     marginTop: 4,
   },
   errorContainer: {
-    backgroundColor: '#3d1f1f',
-    borderRadius: 8,
+    backgroundColor: '#3d1a0e',
+    borderRadius: 4,
     padding: 12,
     marginBottom: 20,
     borderLeftWidth: 4,
-    borderLeftColor: '#ff6b6b',
+    borderLeftColor: colors.error,
   },
   errorMessage: {
-    color: '#ff9999',
+    color: colors.errorText,
     fontSize: 13,
   },
   authButton: {
-    backgroundColor: '#D4AF37',
-    borderRadius: 8,
+    backgroundColor: colors.gold,
+    borderRadius: 4,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 20,
@@ -366,12 +367,13 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   authButtonText: {
-    color: '#1a1a1a',
+    color: colors.background,
     fontSize: 16,
     fontWeight: '700',
+    letterSpacing: 0.5,
   },
   toggleText: {
-    color: '#D4AF37',
+    color: colors.gold,
     fontSize: 13,
     textAlign: 'center',
     marginTop: 16,
@@ -381,7 +383,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footerText: {
-    color: '#666',
+    color: colors.textDisabled,
     fontSize: 12,
   },
 });
