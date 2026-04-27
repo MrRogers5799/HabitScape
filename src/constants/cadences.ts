@@ -1,36 +1,26 @@
 /**
  * Cadence Constants and Utilities
- * 
+ *
  * Defines the cadence system for activities, including:
  * - Cadence options (daily, weekly, etc.)
- * - Multipliers for fair XP scaling
  * - Helper functions for cadence management
- * 
- * The cadence multiplier ensures that fairness is maintained:
- * If you do an activity daily vs weekly, you should get the same
- * total XP in the same time period, just distributed differently.
+ *
+ * XP fairness is built into each activity's baseXP value, not the multiplier.
+ * Low-frequency activities (weekly, monthly) have higher baseXP to compensate
+ * for fewer completions per week. Each completion always earns exactly baseXP.
  */
 
 import { Cadence } from '../types';
 
 /**
- * Cadence information - maps cadence types to their metadata
- * Multiplier: How to scale base XP so fairness is maintained
- * 
- * Example: Weekly activity with base 700 XP and 0.14 multiplier:
- * - 1 completion = 700 × 0.14 = 98 XP per week
- * - User does it 1x/week = 98 XP/week
- * 
- * Daily activity with base 700 XP and 1.00 multiplier:
- * - 1 completion = 700 × 1.00 = 700 XP per day
- * - User does it 7x/week = 700 × 7 = 4,900 XP/week
- * - Weekly equivalent = 4,900 / 7 = 700 XP/week per day effort
+ * Cadence information - maps cadence types to their metadata.
+ * multiplier is always 1.0 — XP normalization lives in baseXP, not here.
  */
 export const CADENCE_CONFIG: Record<Cadence, {
   label: string;
   description: string;
   timesPerWeek: number;
-  multiplier: number; // Rounded to 2 decimals for fairness
+  multiplier: number;
 }> = {
   'daily': {
     label: 'Daily (7x/week)',
@@ -42,44 +32,43 @@ export const CADENCE_CONFIG: Record<Cadence, {
     label: '5x/week',
     description: 'Five times per week',
     timesPerWeek: 5,
-    multiplier: 5.00,
+    multiplier: 1.00,
   },
   '4x/week': {
     label: '4x/week',
     description: 'Four times per week',
     timesPerWeek: 4,
-    multiplier: 4.00,
+    multiplier: 1.00,
   },
   '3x/week': {
     label: '3x/week',
     description: 'Three times per week',
     timesPerWeek: 3,
-    multiplier: 3.00,
+    multiplier: 1.00,
   },
   '2x/week': {
     label: '2x/week',
     description: 'Twice per week',
     timesPerWeek: 2,
-    multiplier: 2.00,
+    multiplier: 1.00,
   },
   'weekly': {
     label: 'Weekly (1x/week)',
     description: 'Once per week',
     timesPerWeek: 1,
-    multiplier: 7.00,
+    multiplier: 1.00,
   },
   'monthly': {
     label: 'Monthly',
     description: 'Once per month',
     timesPerWeek: 0.25,
-    multiplier: 30.00,
+    multiplier: 1.00,
   },
 };
 
 /**
- * Helper function to get the multiplier for a cadence
- * @param cadence - The cadence type
- * @returns The multiplier value (0.00 to 1.00)
+ * Helper function to get the multiplier for a cadence — always 1.0.
+ * Retained for backwards compatibility with existing call sites.
  */
 export function getCadenceMultiplier(cadence: Cadence): number {
   return CADENCE_CONFIG[cadence].multiplier;
@@ -113,15 +102,11 @@ export function getTimesPerWeek(cadence: Cadence): number {
 }
 
 /**
- * Calculate XP earned for a single completion based on activity base XP and cadence
- * @param baseXP - The base XP value for the activity
- * @param cadence - The selected cadence
- * @returns XP earned per completion, rounded to 2 decimals
+ * Returns XP earned per completion. Always equal to baseXP — cadence does not
+ * scale XP. Frequency parity is handled by each activity's baseXP value.
  */
-export function calculateXPPerCompletion(baseXP: number, cadence: Cadence): number {
-  const multiplier = getCadenceMultiplier(cadence);
-  // Round to 2 decimal places for consistency
-  return Math.round(baseXP * multiplier * 100) / 100;
+export function calculateXPPerCompletion(baseXP: number, _cadence: Cadence): number {
+  return baseXP;
 }
 
 /**

@@ -42,13 +42,6 @@ export function SkillsHubScreen() {
   const { skills, loading, error } = useSkills();
   const { userActivities } = useActivities();
 
-  const totalLevel = useMemo(() => {
-    return skills.reduce((sum, skill) => {
-      const level = calculateLevel(skill.totalXP);
-      return sum + level;
-    }, 0);
-  }, [skills]);
-
   // Only show skills the user has engaged with — either XP earned or an active habit attached.
   // This keeps the grid clean and motivating rather than showing 22 greyed-out level-1 skills.
   const visibleSkills = useMemo(() => {
@@ -57,6 +50,10 @@ export function SkillsHubScreen() {
       .filter(skill => skill.totalXP > 0 || activeSkillIds.has(skill.skillName))
       .sort((a, b) => a.skillName.localeCompare(b.skillName));
   }, [skills, userActivities]);
+
+  const totalLevel = useMemo(() => {
+    return visibleSkills.reduce((sum, skill) => sum + calculateLevel(skill.totalXP), 0);
+  }, [visibleSkills]);
 
   /**
    * Render a single skill cell in the grid

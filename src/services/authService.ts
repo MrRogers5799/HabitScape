@@ -18,13 +18,15 @@ import {
   User as FirebaseUser,
   onAuthStateChanged,
   Unsubscribe,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { User } from '../types';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { OSRS_SKILLS } from '../constants/osrsSkills';
 import { ACTIVITY_TEMPLATES, DEFAULT_USER_ACTIVITIES } from '../constants/activities';
-import { getCadenceMultiplier } from '../constants/cadences';
 
 /**
  * Sign up a new user with email and password
@@ -98,10 +100,8 @@ export async function signUp(
         return Promise.resolve();
       }
 
-      // Use default cadence or first available cadence
       const cadence = template.defaultCadence || template.availableCadences[0];
-      const multiplier = getCadenceMultiplier(cadence);
-      const xpPerCompletion = template.baseXP * multiplier;
+      const xpPerCompletion = template.baseXP;
 
       // Create userActivity document
       const userActivityRef = doc(
@@ -116,8 +116,8 @@ export async function signUp(
         activityTemplateId: template.id,
         skillId: template.skillId,
         cadence,
-        cadenceMultiplier: multiplier,
-        xpPerCompletion: Math.round(xpPerCompletion),
+        cadenceMultiplier: 1,
+        xpPerCompletion,
         isActive: true,
         selectedAt: new Date(),
         nextResetTime: new Date(), // Will be calculated in the context
@@ -279,7 +279,7 @@ export function isValidEmail(email: string): boolean {
 /**
  * Validate password strength
  * Firebase requires at least 6 characters, but we can enforce stronger requirements
- * 
+ *
  * @param password - Password to validate
  * @returns Object with isValid and message
  */
@@ -287,10 +287,41 @@ export function validatePassword(
   password: string
 ): { isValid: boolean; message: string } {
   if (password.length < 6) {
-    return {
-      isValid: false,
-      message: 'Password must be at least 6 characters',
-    };
+    return { isValid: false, message: 'Password must be at least 6 characters' };
   }
   return { isValid: true, message: '' };
+}
+
+/**
+ * Update the user's timezone in their Firestore profile.
+ *
+ * @param uid - The user's Firebase UID
+ * @param timezone - IANA timezone string (e.g. "America/New_York")
+ */
+export async function updateUserTimezone(uid: string, timezone: string): Promise<void> {
+  const { updateDoc, doc } = await import('firebase/firestore');
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { timezone });
+}
+
+/**
+ * Change the current user's password.
+ * Requires reauthentication with the current password first — Firebase
+ * rejects sensitive operations if the session is too old.
+ *
+ * @param currentPassword - The user's existing password (for reauthentication)
+ * @param newPassword - The desired new password
+ */
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser || !currentUser.email) {
+    throw new Error('No authenticated user found');
+  }
+
+  const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+  await reauthenticateWithCredential(currentUser, credential);
+  await updatePassword(currentUser, newPassword);
 }

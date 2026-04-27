@@ -24,11 +24,12 @@ import {
   addUserActivity,
   removeUserActivity,
   undoActivityCompletion,
+  updateActivityStreaks,
 } from '../services/firestoreService';
+import { computeAllStreakUpdates } from '../utils/streakUtils';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
-import { getCadenceMultiplier } from '../constants/cadences';
 
 /**
  * Create the activities context
@@ -129,6 +130,22 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
   }, [user]);
 
   /**
+   * Once per session, evaluate whether any activities need their streak updated.
+   * Runs when both activities and completions are fully loaded, and only writes
+   * to Firestore if at least one activity has crossed a week boundary.
+   */
+  useEffect(() => {
+    if (!user || !userActivities.length || loading) return;
+
+    const updates = computeAllStreakUpdates(userActivities, completions);
+    if (updates.length === 0) return;
+
+    updateActivityStreaks(user.uid, updates).catch(err =>
+      console.error('Streak update failed:', err)
+    );
+  }, [user, userActivities, completions, loading]);
+
+  /**
    * Complete an activity and grant XP
    */
   const handleCompleteActivity = useCallback(
@@ -165,17 +182,16 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
           throw new Error(`Activity template ${activityTemplateId} not found`);
         }
         
-        // Calculate XP per completion based on cadence
-        const multiplier = getCadenceMultiplier(cadence);
-        const xpPerCompletion = Math.round(template.baseXP * multiplier);
-        
-        // Add activity to user's selections
+        // XP per completion is always baseXP — no cadence multiplier applied.
+        // Frequency parity is baked into each activity's baseXP value.
+        const xpPerCompletion = template.baseXP;
+
         await addUserActivity(
           user.uid,
           activityTemplateId,
           cadence,
           xpPerCompletion,
-          multiplier,
+          1,
           template.skillId,
           user.timezone ?? 'UTC'
         );

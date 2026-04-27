@@ -19,6 +19,8 @@ import {
   logOut as firebaseLogOut,
   onAuthStateChange,
   getUserProfile,
+  updateUserTimezone,
+  changePassword as firebaseChangePassword,
 } from '../services/authService';
 import { User, AuthContextType } from '../types';
 
@@ -122,6 +124,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function handleUpdateTimezone(timezone: string): Promise<void> {
+    if (!user) throw new Error('Not authenticated');
+    setError(null);
+    await updateUserTimezone(user.uid, timezone);
+    setUser(prev => prev ? { ...prev, timezone } : prev);
+  }
+
+  async function handleChangePassword(currentPassword: string, newPassword: string): Promise<void> {
+    setError(null);
+    await firebaseChangePassword(currentPassword, newPassword);
+  }
+
   /**
    * Handle user logout
    */
@@ -143,7 +157,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Context value that will be provided to components
   const value: AuthContextType = {
     user,
     loading,
@@ -151,6 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp: handleSignUp,
     logIn: handleLogIn,
     logOut: handleLogOut,
+    updateTimezone: handleUpdateTimezone,
+    changePassword: handleChangePassword,
   };
 
   return (

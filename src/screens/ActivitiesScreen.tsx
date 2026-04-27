@@ -26,7 +26,7 @@ import {
 import { useActivities } from '../context/ActivitiesContext';
 import { useSkills } from '../context/SkillsContext';
 import { Cadence, UserActivity, ActivityCompletion } from '../types';
-import { getCadenceLabel } from '../constants/cadences';
+import { getCadenceLabel, CADENCE_CONFIG } from '../constants/cadences';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { colors } from '../constants/colors';
 import { XPDrop } from '../components/XPDrop';
@@ -124,35 +124,103 @@ export function ActivitiesScreen() {
     [undoCompletion]
   );
 
-  /**
-   * Check if activity is completed today
-   */
-  const isActivityCompletedToday = (activityId: string): boolean => {
+  // --- Period helpers ---
+
+  const getWeekStart = (): Date => {
+    const now = new Date();
+    const daysFromMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    const start = new Date(now);
+    start.setDate(start.getDate() - daysFromMonday);
+    start.setHours(0, 0, 0, 0);
+    return start;
+  };
+
+  const getMonthStart = (): Date => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  };
+
+  const getTodayStart = (): Date => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    return completions.some(c => {
-      const completionDate = new Date(c.completedAt);
-      completionDate.setHours(0, 0, 0, 0);
-      return c.activityId === activityId && completionDate.getTime() === today.getTime();
-    });
+    return today;
   };
 
   /**
-   * Get completion records for today
+   * Count unique days an activity was completed within a given window.
+   * Deduplicates multiple completions on the same day.
+   */
+  const countCompletionDaysInWindow = (activityId: string, windowStart: Date): number => {
+    const days = new Set<number>();
+    completions.forEach(c => {
+      if (c.activityId !== activityId) return;
+      const d = new Date(c.completedAt);
+      if (d >= windowStart) {
+        const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        days.add(dayKey);
+      }
+    });
+    return days.size;
+  };
+
+  /**
+   * Returns the completion progress for an activity within its tracking period.
+   * { count, target, periodLabel }
+   */
+  const getActivityProgress = useCallback(
+    (activity: UserActivity): { count: number; target: number; periodLabel: string } => {
+      const { cadence } = activity;
+      const config = CADENCE_CONFIG[cadence];
+
+      if (cadence === 'daily') {
+        const count = countCompletionDaysInWindow(activity.id, getTodayStart());
+        return { count, target: 1, periodLabel: 'today' };
+      }
+
+      if (cadence === 'weekly') {
+        const count = countCompletionDaysInWindow(activity.id, getWeekStart());
+        return { count, target: 1, periodLabel: 'this week' };
+      }
+
+      if (cadence === 'monthly') {
+        const count = countCompletionDaysInWindow(activity.id, getMonthStart());
+        return { count, target: 1, periodLabel: 'this month' };
+      }
+
+      // Nx/week cadences — target is timesPerWeek
+      const count = countCompletionDaysInWindow(activity.id, getWeekStart());
+      return { count, target: config.timesPerWeek, periodLabel: 'this week' };
+    },
+    [completions]
+  );
+
+  /**
+   * Whether the activity is gated (checkbox should be disabled).
+   * Gated if: done today already, OR weekly/monthly quota is fully met.
+   */
+  const isActivityGated = useCallback(
+    (activity: UserActivity): boolean => {
+      const { count, target } = getActivityProgress(activity);
+      if (count >= target) return true;
+      // For Nx/week, also gate if already done today (can't log same day twice)
+      if (['5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence)) {
+        return countCompletionDaysInWindow(activity.id, getTodayStart()) > 0;
+      }
+      return false;
+    },
+    [getActivityProgress]
+  );
+
+  /**
+   * Completions from today, for the "Completed Today" history panel.
    */
   const todayCompletions = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return completions.filter(c => {
-      const completionDate = new Date(c.completedAt);
-      completionDate.setHours(0, 0, 0, 0);
-      return completionDate.getTime() === today.getTime();
-    });
+    const today = getTodayStart();
+    return completions.filter(c => new Date(c.completedAt) >= today);
   }, [completions]);
 
   /**
-   * Organize activities by cadence
+   * Organize activities by cadence. Section subtitle reflects the correct period.
    */
   const sections = useMemo(() => {
     const cadences: Cadence[] = ['daily', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly', 'monthly'];
@@ -160,19 +228,26 @@ export function ActivitiesScreen() {
 
     for (const cadence of cadences) {
       const cadenceActivities = userActivities.filter(a => a.cadence === cadence);
-      if (cadenceActivities.length > 0) {
-        const completedCount = cadenceActivities.filter(a =>
-          isActivityCompletedToday(a.id)
-        ).length;
+      if (cadenceActivities.length === 0) continue;
 
-        allSections.push({
-          title: getCadenceLabel(cadence),
-          subtitle: `${completedCount}/${cadenceActivities.length} completed`,
-          data: cadenceActivities,
-          cadence,
-          completedCount,
-        });
-      }
+      // Count activities that have fully met their quota for this period
+      const metQuotaCount = cadenceActivities.filter(a => {
+        const { count, target } = getActivityProgress(a);
+        return count >= target;
+      }).length;
+
+      const config = CADENCE_CONFIG[cadence];
+      const periodLabel =
+        cadence === 'daily' ? 'today'
+        : cadence === 'monthly' ? 'this month'
+        : 'this week';
+
+      allSections.push({
+        title: getCadenceLabel(cadence),
+        subtitle: `${metQuotaCount}/${cadenceActivities.length} done ${periodLabel}`,
+        data: cadenceActivities,
+        cadence,
+      });
     }
 
     return allSections;
@@ -182,29 +257,34 @@ export function ActivitiesScreen() {
    * Render a single activity item
    */
   const renderActivityItem = ({ item: activity }: { item: UserActivity }) => {
-    const isCompleted = isActivityCompletedToday(activity.id);
+    const gated = isActivityGated(activity);
     const isLoading = completingId === activity.id;
     const template = ACTIVITY_TEMPLATES.find(t => t.id === activity.id);
     const activityName = template?.activityName || activity.id;
+    const { count, target, periodLabel } = getActivityProgress(activity);
+    const quotaMet = count >= target;
+    const isNxWeek = ['5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence);
+    // For Nx/week: gated-today means done today but quota not yet met
+    const doneToday = isNxWeek && !quotaMet && gated;
 
     return (
       <TouchableOpacity
-        style={[styles.activityItem, isCompleted && styles.activityItemCompleted]}
+        style={[styles.activityItem, gated && styles.activityItemCompleted]}
         onPress={(e) => {
-          if (!isCompleted && !completingId) {
+          if (!gated && !completingId) {
             handleActivityPress(activity, e.nativeEvent.pageY);
           }
         }}
-        disabled={isCompleted || !!completingId}
+        disabled={gated || !!completingId}
       >
         {/* Checkbox */}
         <View style={[
           styles.checkbox,
-          isCompleted && styles.checkboxCompleted,
+          gated && styles.checkboxCompleted,
         ]}>
           {isLoading
             ? <ActivityIndicator size="small" color="#fff" />
-            : isCompleted && <Text style={styles.checkmark}>✓</Text>
+            : gated && <Text style={styles.checkmark}>✓</Text>
           }
         </View>
 
@@ -212,21 +292,30 @@ export function ActivitiesScreen() {
         <View style={styles.activityInfo}>
           <Text style={[
             styles.activityName,
-            isCompleted && styles.activityNameCompleted,
+            gated && styles.activityNameCompleted,
           ]}>
             {activityName}
           </Text>
           <Text style={styles.skillName}>
             {activity.skillId} • +{activity.xpPerCompletion} XP
+            {(activity.currentStreak ?? 0) > 0
+              ? `  🔥 ${activity.currentStreak}w`
+              : ''}
           </Text>
         </View>
 
-        {/* Status Indicator */}
-        {isCompleted && (
+        {/* Status badge — shows quota progress for Nx/week, "Done" for single-target */}
+        {isNxWeek ? (
+          <View style={[styles.completedBadge, quotaMet ? styles.quotaMetBadge : styles.progressBadge]}>
+            <Text style={styles.completedText}>
+              {doneToday ? `${count}/${target} ✓ today` : `${count}/${target}`}
+            </Text>
+          </View>
+        ) : quotaMet ? (
           <View style={styles.completedBadge}>
             <Text style={styles.completedText}>Done</Text>
           </View>
-        )}
+        ) : null}
       </TouchableOpacity>
     );
   };
@@ -236,15 +325,8 @@ export function ActivitiesScreen() {
    */
   const renderSectionHeader = ({ section }: { section: any }) => (
     <View style={styles.sectionHeader}>
-      <View>
-        <Text style={styles.sectionTitle}>{section.title}</Text>
-        <Text style={styles.sectionSubtitle}>{section.subtitle}</Text>
-      </View>
-      <View style={styles.progressIndicator}>
-        <Text style={styles.progressText}>
-          {section.completedCount}/{section.data.length}
-        </Text>
-      </View>
+      <Text style={styles.sectionTitle}>{section.title}</Text>
+      <Text style={styles.sectionSubtitle}>{section.subtitle}</Text>
     </View>
   );
 
@@ -492,17 +574,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
   },
-  progressIndicator: {
-    backgroundColor: colors.background,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.gold,
-  },
   activityItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -554,6 +625,20 @@ const styles = StyleSheet.create({
   },
   completedBadge: {
     backgroundColor: colors.success,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 12,
+  },
+  quotaMetBadge: {
+    backgroundColor: colors.success,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 12,
+  },
+  progressBadge: {
+    backgroundColor: colors.surfaceRaised,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,

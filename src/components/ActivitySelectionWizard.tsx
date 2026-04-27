@@ -26,7 +26,7 @@ import {
 import { UserActivity, Cadence } from '../types';
 import { OSRS_SKILLS } from '../constants/osrsSkills';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
-import { getCadenceLabel, getCadenceMultiplier } from '../constants/cadences';
+import { getCadenceLabel } from '../constants/cadences';
 
 interface ActivitySelectionWizardProps {
   /** Whether the modal is visible */
@@ -92,14 +92,8 @@ export function ActivitySelectionWizard({
     return ACTIVITY_TEMPLATES.find(a => a.id === selectedActivity);
   }, [selectedActivity]);
 
-  /**
-   * Calculate XP for selected cadence
-   */
-  const xpPerCompletion = useMemo(() => {
-    if (!activityTemplate) return 0;
-    const multiplier = getCadenceMultiplier(selectedCadence);
-    return Math.round(activityTemplate.baseXP * multiplier);
-  }, [activityTemplate, selectedCadence]);
+  // XP per completion is always the activity's baseXP — cadence does not scale it.
+  const xpPerCompletion = activityTemplate?.baseXP ?? 0;
 
   /**
    * Handle skill selection and move to next step
@@ -279,42 +273,38 @@ export function ActivitySelectionWizard({
       </Text>
 
       <ScrollView style={styles.optionsList}>
-        {activityTemplate?.availableCadences.map(cadence => {
-          const multiplier = getCadenceMultiplier(cadence);
-          const xp = Math.round(activityTemplate.baseXP * multiplier);
-          return (
-            <TouchableOpacity
-              key={cadence}
-              style={[
-                styles.cadenceOption,
-                selectedCadence === cadence && styles.cadenceOptionSelected,
-              ]}
-              onPress={() => handleSelectCadence(cadence)}
-            >
-              <View style={styles.cadenceInfo}>
-                <Text
-                  style={[
-                    styles.cadenceLabel,
-                    selectedCadence === cadence && styles.cadenceLabelSelected,
-                  ]}
-                >
-                  {getCadenceLabel(cadence)}
-                </Text>
-                <Text
-                  style={[
-                    styles.cadenceXP,
-                    selectedCadence === cadence && styles.cadenceXPSelected,
-                  ]}
-                >
-                  {xp} XP per completion (×{multiplier.toFixed(2)})
-                </Text>
-              </View>
-              {selectedCadence === cadence && (
-                <Text style={styles.checkmark}>✓</Text>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+        {activityTemplate?.availableCadences.map(cadence => (
+          <TouchableOpacity
+            key={cadence}
+            style={[
+              styles.cadenceOption,
+              selectedCadence === cadence && styles.cadenceOptionSelected,
+            ]}
+            onPress={() => handleSelectCadence(cadence)}
+          >
+            <View style={styles.cadenceInfo}>
+              <Text
+                style={[
+                  styles.cadenceLabel,
+                  selectedCadence === cadence && styles.cadenceLabelSelected,
+                ]}
+              >
+                {getCadenceLabel(cadence)}
+              </Text>
+              <Text
+                style={[
+                  styles.cadenceXP,
+                  selectedCadence === cadence && styles.cadenceXPSelected,
+                ]}
+              >
+                {activityTemplate.baseXP} XP per completion
+              </Text>
+            </View>
+            {selectedCadence === cadence && (
+              <Text style={styles.checkmark}>✓</Text>
+            )}
+          </TouchableOpacity>
+        ))}
       </ScrollView>
     </View>
   );

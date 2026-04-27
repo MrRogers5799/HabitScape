@@ -23,6 +23,7 @@ import {
   ActivityIndicator,
   Platform,
   KeyboardAvoidingView,
+  Modal,
 } from 'react-native';
 
 const TAGLINES = [
@@ -35,10 +36,8 @@ const TAGLINES = [
 ];
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
-import {
-  isValidEmail,
-  validatePassword,
-} from '../services/authService';
+import { isValidEmail, validatePassword } from '../services/authService';
+import { COMMON_TIMEZONES, getDefaultTimezone } from '../constants/timezones';
 
 interface AuthScreenProps {
   /** Optional: function to call when auth is complete */
@@ -72,7 +71,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [timezone, setTimezone] = useState('America/New_York');
+  const [timezone, setTimezone] = useState(getDefaultTimezone);
+  const [timezonePickerVisible, setTimezonePickerVisible] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [localLoading, setLocalLoading] = useState(false);
 
@@ -243,10 +243,16 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
           {isSignUp && (
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Timezone</Text>
-              <Text style={styles.timezoneValue}>{timezone}</Text>
-              <Text style={styles.timezoneHint}>
-                (Customize after login if needed)
-              </Text>
+              <TouchableOpacity
+                style={styles.timezoneButton}
+                onPress={() => setTimezonePickerVisible(true)}
+                disabled={isLoading}
+              >
+                <Text style={styles.timezoneButtonText}>
+                  {COMMON_TIMEZONES.find(tz => tz.value === timezone)?.label ?? timezone}
+                </Text>
+                <Text style={styles.timezoneChevron}>›</Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -294,6 +300,48 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
           <Text style={styles.footerText}>© 2026 HabitScape</Text>
         </View>
       </ScrollView>
+
+      {/* Timezone Picker Modal */}
+      <Modal
+        visible={timezonePickerVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setTimezonePickerVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Timezone</Text>
+              <TouchableOpacity onPress={() => setTimezonePickerVisible(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView>
+              {COMMON_TIMEZONES.map(tz => (
+                <TouchableOpacity
+                  key={tz.value}
+                  style={[
+                    styles.timezoneOption,
+                    timezone === tz.value && styles.timezoneOptionSelected,
+                  ]}
+                  onPress={() => {
+                    setTimezone(tz.value);
+                    setTimezonePickerVisible(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.timezoneLabel,
+                    timezone === tz.value && styles.timezoneLabelSelected,
+                  ]}>
+                    {tz.label}
+                  </Text>
+                  <Text style={styles.timezoneValue}>{tz.value}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -355,20 +403,80 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-  timezoneValue: {
+  timezoneButton: {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 4,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  timezoneButtonText: {
     color: colors.textPrimary,
     fontSize: 14,
+    flex: 1,
   },
-  timezoneHint: {
-    color: colors.textMuted,
-    fontSize: 12,
-    marginTop: 4,
+  timezoneChevron: {
+    color: colors.textSecondary,
+    fontSize: 20,
+    lineHeight: 22,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  modalClose: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    paddingHorizontal: 4,
+  },
+  timezoneOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderSubtle,
+  },
+  timezoneOptionSelected: {
+    backgroundColor: colors.background,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.gold,
+  },
+  timezoneLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  timezoneLabelSelected: {
+    color: colors.gold,
+  },
+  timezoneValue: {
+    fontSize: 11,
+    color: colors.textSecondary,
   },
   errorContainer: {
     backgroundColor: '#3d1a0e',

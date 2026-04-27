@@ -93,7 +93,7 @@ export interface UserActivity {
   skillId: string;
   /** User's chosen cadence for this activity (can differ from template default) */
   cadence: Cadence;
-  /** Multiplier based on user's chosen cadence */
+  /** Multiplier based on user's chosen cadence — always 1 */
   cadenceMultiplier: number;
   /** Final XP earned per completion */
   xpPerCompletion: number;
@@ -103,6 +103,12 @@ export interface UserActivity {
   selectedAt: Date;
   /** When this activity's completion counter resets */
   nextResetTime: Date;
+  /** Consecutive weeks the user has met their quota (0 if never or broken) */
+  currentStreak: number;
+  /** All-time highest streak for this activity */
+  longestStreak: number;
+  /** ISO date string (YYYY-MM-DD) of the Monday when streaks were last evaluated */
+  lastStreakCheckWeek: string;
 }
 
 /**
@@ -163,6 +169,10 @@ export interface AuthContextType {
   logIn: (email: string, password: string) => Promise<void>;
   /** Function to log out current user */
   logOut: () => Promise<void>;
+  /** Update the user's timezone in their Firestore profile */
+  updateTimezone: (timezone: string) => Promise<void>;
+  /** Change the user's password (requires current password for reauthentication) */
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 /**

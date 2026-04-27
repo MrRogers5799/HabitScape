@@ -534,6 +534,35 @@ export async function removeUserActivity(
 }
 
 /**
+ * UPDATE ACTIVITY STREAKS - Batch-write streak updates for multiple activities.
+ * Called once per session after the streak check runs in ActivitiesContext.
+ *
+ * @param userId - The user's Firebase UID
+ * @param updates - Array of streak updates computed by streakUtils
+ */
+export async function updateActivityStreaks(
+  userId: string,
+  updates: { activityId: string; currentStreak: number; longestStreak: number; lastStreakCheckWeek: string }[]
+): Promise<void> {
+  if (updates.length === 0) return;
+  try {
+    const batch = writeBatch(db);
+    for (const u of updates) {
+      const ref = doc(db, 'users', userId, 'userActivities', u.activityId);
+      batch.update(ref, {
+        currentStreak: u.currentStreak,
+        longestStreak: u.longestStreak,
+        lastStreakCheckWeek: u.lastStreakCheckWeek,
+      });
+    }
+    await batch.commit();
+  } catch (error) {
+    console.error('❌ Error updating activity streaks:', error);
+    throw error;
+  }
+}
+
+/**
  * UNDO ACTIVITY COMPLETION - Revoke XP and remove completion record (Phase 2)
  * 
  * Handles the undo functionality:
