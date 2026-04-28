@@ -23,7 +23,6 @@ interface HabitDetailModalProps {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-// Uses local time — avoids UTC-offset mismatches with toISOString()
 function localDateKey(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -37,6 +36,83 @@ function formatDateTime(date: Date): string {
   return `${datePart}  ·  ${timePart}`;
 }
 
+// Monday of the week containing `date`
+function getWeekMonday(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const dow = d.getDay(); // 0 = Sun
+  const diff = dow === 0 ? -6 : -(dow - 1);
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+// ─── completion rate ──────────────────────────────────────────────────────────
+
+function calculateCompletionRate(
+  completions: ActivityCompletion[],
+  activityId: string,
+  cadence: string,
+  timesPerWeek: number,
+  selectedAt: Date | undefined,
+): number | null {
+  const ac = completions.filter(c => c.activityId === activityId);
+  if (ac.length === 0) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(selectedAt ?? new Date(ac[ac.length - 1].completedAt));
+  start.setHours(0, 0, 0, 0);
+
+  if (cadence === 'daily') {
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (start > yesterday) return null;
+    const totalDays = Math.max(1, Math.round((yesterday.getTime() - start.getTime()) / 86_400_000) + 1);
+    const doneDays = new Set(ac.map(c => localDateKey(new Date(c.completedAt)))).size;
+    return Math.round(Math.min(doneDays / totalDays, 1) * 100);
+  }
+
+  if (cadence === 'monthly') {
+    const startMonth = new Date(start.getFullYear(), start.getMonth(), 1);
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (startMonth >= thisMonth) return null;
+    let hit = 0, total = 0;
+    const m = new Date(startMonth);
+    while (m < thisMonth) {
+      total++;
+      const inMonth = ac.filter(c => {
+        const d = new Date(c.completedAt);
+        return d.getFullYear() === m.getFullYear() && d.getMonth() === m.getMonth();
+      });
+      if (inMonth.length >= 1) hit++;
+      m.setMonth(m.getMonth() + 1);
+    }
+    return total === 0 ? null : Math.round((hit / total) * 100);
+  }
+
+  // Nx/week + weekly — evaluate closed Mon-Sun weeks
+  const firstMonday = getWeekMonday(start);
+  const thisMonday = getWeekMonday(today);
+  if (firstMonday >= thisMonday) return null;
+
+  let hit = 0, total = 0;
+  const weekStart = new Date(firstMonday);
+  while (weekStart < thisMonday) {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    const uniqueDays = new Set(
+      ac
+        .filter(c => { const d = new Date(c.completedAt); d.setHours(0,0,0,0); return d >= weekStart && d < weekEnd; })
+        .map(c => localDateKey(new Date(c.completedAt)))
+    ).size;
+    total++;
+    if (uniqueDays >= timesPerWeek) hit++;
+    weekStart.setDate(weekStart.getDate() + 7);
+  }
+  return total === 0 ? null : Math.round((hit / total) * 100);
+}
+
 // ─── calendar ────────────────────────────────────────────────────────────────
 
 interface CalendarDay {
@@ -44,18 +120,20 @@ interface CalendarDay {
   completed: boolean;
   isToday: boolean;
   isFuture: boolean;
+  isMissed: boolean;
 }
 
 function buildMonthCalendar(
   year: number,
   month: number,
   completions: ActivityCompletion[],
-  activityId: string
+  activityId: string,
+  cadence: string,
+  timesPerWeek: number,
 ): CalendarDay[][] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Use local date keys so evening completions aren't shifted to the next UTC day
   const completedDates = new Set<string>();
   completions.forEach(c => {
     if (c.activityId !== activityId) return;
@@ -64,39 +142,77 @@ function buildMonthCalendar(
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  const startDow = firstDay.getDay(); // 0 = Sunday
+  const startDow = firstDay.getDay();
 
   const weeks: CalendarDay[][] = [];
   let currentWeek: CalendarDay[] = [];
 
   for (let i = 0; i < startDow; i++) {
-    currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false });
+    currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false, isMissed: false });
   }
 
   for (let day = 1; day <= lastDay.getDate(); day++) {
     const date = new Date(year, month, day);
     date.setHours(0, 0, 0, 0);
-    const isFuture = date > today;
-    const isToday = date.getTime() === today.getTime();
-
     currentWeek.push({
       date,
       completed: completedDates.has(localDateKey(date)),
-      isToday,
-      isFuture,
+      isToday: date.getTime() === today.getTime(),
+      isFuture: date > today,
+      isMissed: false,
     });
-
-    if (currentWeek.length === 7) {
-      weeks.push(currentWeek);
-      currentWeek = [];
-    }
+    if (currentWeek.length === 7) { weeks.push(currentWeek); currentWeek = []; }
   }
 
   if (currentWeek.length > 0) {
     while (currentWeek.length < 7) {
-      currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false });
+      currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false, isMissed: false });
     }
     weeks.push(currentWeek);
+  }
+
+  // ── Post-process: mark missed days based on cadence ──
+  if (cadence === 'daily') {
+    for (const week of weeks) {
+      for (const day of week) {
+        if (day.date && !day.completed && !day.isFuture && !day.isToday) {
+          day.isMissed = true;
+        }
+      }
+    }
+  } else if (cadence === 'monthly') {
+    // Whole month missed if it has closed with 0 completions
+    const monthClosed = today > new Date(year, month + 1, 0);
+    if (monthClosed) {
+      const monthHits = completions.filter(c => {
+        if (c.activityId !== activityId) return false;
+        const d = new Date(c.completedAt);
+        return d.getFullYear() === year && d.getMonth() === month;
+      }).length;
+      if (monthHits === 0) {
+        for (const week of weeks) {
+          for (const day of week) {
+            if (day.date && !day.completed && !day.isFuture && !day.isToday) {
+              day.isMissed = true;
+            }
+          }
+        }
+      }
+    }
+  } else {
+    // Nx/week + weekly: evaluate each visual (Sun-Sat) calendar week
+    for (const week of weeks) {
+      const realDays = week.filter(d => d.date !== null);
+      if (realDays.length === 0) continue;
+      const allPast = realDays.every(d => !d.isFuture && !d.isToday);
+      if (!allPast) continue; // week still in progress — never mark missed
+      const hits = realDays.filter(d => d.completed).length;
+      if (hits < timesPerWeek) {
+        for (const day of week) {
+          if (day.date && !day.completed) day.isMissed = true;
+        }
+      }
+    }
   }
 
   return weeks;
@@ -104,6 +220,8 @@ function buildMonthCalendar(
 
 const MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const DAY_LABELS = ['S','M','T','W','T','F','S'];
+const SPARKLINE_WEEKS = 7;
+const BAR_MAX_HEIGHT = 44;
 
 // ─── component ───────────────────────────────────────────────────────────────
 
@@ -116,6 +234,9 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
 
   const template = ACTIVITY_TEMPLATES.find(t => t.id === activity.id);
   const activityName = template?.activityName ?? activity.id;
+  const cadenceConfig = CADENCE_CONFIG[activity.cadence];
+  const cadenceLabel = cadenceConfig?.label ?? activity.cadence;
+  const timesPerWeek = cadenceConfig?.timesPerWeek ?? 1;
 
   const activityCompletions = useMemo(
     () => completions.filter(c => c.activityId === activity.id),
@@ -127,12 +248,39 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
     [activityCompletions]
   );
 
-  const calendarWeeks = useMemo(
-    () => buildMonthCalendar(calYear, calMonth, completions, activity.id),
-    [calYear, calMonth, completions, activity.id]
+  const completionRate = useMemo(
+    () => calculateCompletionRate(completions, activity.id, activity.cadence, timesPerWeek, activity.selectedAt),
+    [completions, activity.id, activity.cadence, timesPerWeek, activity.selectedAt]
   );
 
-  const cadenceLabel = CADENCE_CONFIG[activity.cadence]?.label ?? activity.cadence;
+  // Weekly XP for sparkline — 7 most recent Mon-Sun weeks
+  const weeklyXP = useMemo(() => {
+    const thisMonday = getWeekMonday(now);
+    return Array.from({ length: SPARKLINE_WEEKS }, (_, i) => {
+      const weekStart = new Date(thisMonday);
+      weekStart.setDate(weekStart.getDate() - (SPARKLINE_WEEKS - 1 - i) * 7);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      const xp = activityCompletions
+        .filter(c => { const d = new Date(c.completedAt); d.setHours(0,0,0,0); return d >= weekStart && d < weekEnd; })
+        .reduce((sum, c) => sum + c.xpEarned, 0);
+      const label = i === SPARKLINE_WEEKS - 1
+        ? 'NOW'
+        : `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
+      return { label, xp };
+    });
+  }, [activityCompletions]);
+
+  const sparklineMax = useMemo(
+    () => Math.max(...weeklyXP.map(w => w.xp), 1),
+    [weeklyXP]
+  );
+
+  const calendarWeeks = useMemo(
+    () => buildMonthCalendar(calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek),
+    [calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek]
+  );
+
   const currentStreak = activity.currentStreak ?? 0;
   const longestStreak = activity.longestStreak ?? 0;
   const isAtCurrentMonth = calYear === now.getFullYear() && calMonth === now.getMonth();
@@ -148,7 +296,6 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
     else setCalMonth(m => m + 1);
   };
 
-  // Single flat section — date is shown inline on each row, no group headers needed
   const sections = useMemo(
     () => [{ title: '', data: activityCompletions }],
     [activityCompletions]
@@ -177,6 +324,14 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
               })()}
               <Text style={styles.cadenceLabel}>{cadenceLabel}</Text>
             </View>
+            {template?.description && (
+              <Text style={styles.activityDescription}>{template.description}</Text>
+            )}
+            {activity.selectedAt && (
+              <Text style={styles.trainingSince}>
+                Training since {new Date(activity.selectedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </Text>
+            )}
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeText}>✕</Text>
@@ -200,9 +355,13 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
               {/* Stats row */}
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>
-                    {currentStreak > 0 ? `🔥 ${currentStreak}` : '—'}
-                  </Text>
+                  {currentStreak > 0 ? (
+                    <Text style={styles.statValue}>
+                      {'🔥 '}<Text style={styles.statValueGold}>{currentStreak}</Text>
+                    </Text>
+                  ) : (
+                    <Text style={styles.statValue}>—</Text>
+                  )}
                   <Text style={styles.statLabel}>Streak</Text>
                 </View>
                 <View style={[styles.statItem, styles.statBorder]}>
@@ -219,11 +378,47 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
                   <Text style={styles.statValue}>{formatXP(totalXP)}</Text>
                   <Text style={styles.statLabel}>XP</Text>
                 </View>
+                <View style={[styles.statItem, styles.statBorder]}>
+                  {completionRate !== null ? (
+                    <Text style={styles.statValueGold}>{completionRate}%</Text>
+                  ) : (
+                    <Text style={styles.statValue}>—</Text>
+                  )}
+                  <Text style={styles.statLabel}>Rate</Text>
+                </View>
+              </View>
+
+              {/* Weekly XP sparkline */}
+              <View style={styles.sparklineSection}>
+                <Text style={styles.sparklineSectionLabel}>WEEKLY XP</Text>
+                <View style={styles.sparklineBars}>
+                  {weeklyXP.map((week, i) => {
+                    const fillHeight = week.xp > 0
+                      ? Math.max(Math.round((week.xp / sparklineMax) * BAR_MAX_HEIGHT), 4)
+                      : 0;
+                    const isNow = i === SPARKLINE_WEEKS - 1;
+                    return (
+                      <View key={i} style={styles.sparklineBarWrapper}>
+                        <View style={styles.sparklineTrack}>
+                          {fillHeight > 0 && (
+                            <View style={[
+                              styles.sparklineFill,
+                              { height: fillHeight },
+                              isNow && styles.sparklineFillNow,
+                            ]} />
+                          )}
+                        </View>
+                        <Text style={[styles.sparklineLabel, isNow && styles.sparklineLabelNow]}>
+                          {week.label}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
 
               {/* Calendar */}
               <View style={styles.calendarSection}>
-                {/* Month navigation */}
                 <View style={styles.calendarHeader}>
                   <TouchableOpacity onPress={prevMonth} style={styles.monthNavBtn}>
                     <Text style={styles.monthNavText}>‹</Text>
@@ -242,14 +437,12 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
                   </TouchableOpacity>
                 </View>
 
-                {/* Day-of-week labels */}
                 <View style={styles.calendarDayLabels}>
                   {DAY_LABELS.map((d, i) => (
                     <Text key={i} style={styles.dayLabelText}>{d}</Text>
                   ))}
                 </View>
 
-                {/* Week rows */}
                 {calendarWeeks.map((week, wi) => (
                   <View key={wi} style={styles.calendarWeekRow}>
                     {week.map((day, di) => (
@@ -257,11 +450,11 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
                         key={di}
                         style={[
                           styles.calendarDayCell,
-                          day.date === null                                         && styles.dayCellEmpty,
-                          day.date !== null && day.isFuture && !day.isToday        && styles.dayCellFuture,
-                          day.date !== null && !day.isFuture && !day.isToday && !day.completed && styles.dayCellMissed,
-                          day.date !== null && day.completed                       && styles.dayCellCompleted,
-                          day.isToday                                              && styles.dayCellToday,
+                          day.date === null                  && styles.dayCellEmpty,
+                          day.date !== null && day.isFuture && !day.isToday && styles.dayCellFuture,
+                          day.date !== null && day.isMissed  && styles.dayCellMissed,
+                          day.date !== null && day.completed && styles.dayCellCompleted,
+                          day.isToday                        && styles.dayCellToday,
                         ]}
                       >
                         {day.date !== null && (
@@ -279,7 +472,6 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
                   </View>
                 ))}
 
-                {/* Legend */}
                 <View style={styles.legendRow}>
                   <View style={styles.legendItem}>
                     <View style={[styles.legendSwatch, styles.dayCellCompleted]} />
@@ -337,9 +529,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...bevel.raised,
   },
-  headerText: {
-    flex: 1,
-  },
+  headerText: { flex: 1 },
   activityName: {
     fontFamily: fonts.heading,
     fontSize: 11,
@@ -367,6 +557,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.textSecondary,
   },
+  activityDescription: {
+    fontFamily: fonts.display,
+    fontSize: 16,
+    color: colors.textMuted,
+    marginTop: 6,
+    lineHeight: 20,
+  },
+  trainingSince: {
+    fontFamily: fonts.display,
+    fontSize: 15,
+    color: colors.textMuted,
+    marginTop: 3,
+  },
   closeButton: {
     paddingLeft: 12,
     paddingTop: 4,
@@ -376,9 +579,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.textSecondary,
   },
-  listContent: {
-    paddingBottom: 40,
-  },
+  listContent: { paddingBottom: 40 },
 
   // Stats row
   statsRow: {
@@ -399,14 +600,72 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontFamily: fonts.display,
-    fontSize: 22,
+    fontSize: 26,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  statValueGold: {
+    fontFamily: fonts.display,
+    fontSize: 26,
     color: colors.gold,
     marginBottom: 2,
   },
   statLabel: {
     fontFamily: fonts.heading,
-    fontSize: 7,
+    fontSize: 8,
     color: colors.textSecondary,
+  },
+
+  // Sparkline
+  sparklineSection: {
+    marginHorizontal: 12,
+    marginTop: 12,
+    backgroundColor: colors.surface,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    ...bevel.raised,
+  },
+  sparklineSectionLabel: {
+    fontFamily: fonts.heading,
+    fontSize: 8,
+    color: colors.textSecondary,
+    marginBottom: 10,
+    letterSpacing: 1,
+  },
+  sparklineBars: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  sparklineBarWrapper: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  sparklineTrack: {
+    width: '100%',
+    height: BAR_MAX_HEIGHT,
+    backgroundColor: colors.surfaceSunken,
+    ...bevel.inset,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  sparklineFill: {
+    width: '100%',
+    backgroundColor: colors.gold,
+    opacity: 0.7,
+  },
+  sparklineFillNow: {
+    opacity: 1,
+  },
+  sparklineLabel: {
+    fontFamily: fonts.display,
+    fontSize: 11,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+  sparklineLabelNow: {
+    color: colors.gold,
   },
 
   // Calendar panel
@@ -444,8 +703,6 @@ const styles = StyleSheet.create({
   monthNavDisabled: {
     color: colors.textMuted,
   },
-
-  // Day-of-week header
   calendarDayLabels: {
     flexDirection: 'row',
     marginBottom: 5,
@@ -457,14 +714,10 @@ const styles = StyleSheet.create({
     fontSize: 7,
     color: colors.textSecondary,
   },
-
-  // Week row
   calendarWeekRow: {
     flexDirection: 'row',
     marginBottom: 3,
   },
-
-  // Day cell base
   calendarDayCell: {
     flex: 1,
     aspectRatio: 1,
@@ -498,23 +751,15 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.goldDark,
     borderRightColor: colors.goldDark,
   },
-
-  // Day number text
   dayNumber: {
     fontFamily: fonts.display,
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 16,
   },
-  dayNumberCompleted: {
-    color: colors.successText,
-  },
-  dayNumberToday: {
-    color: colors.gold,
-  },
-  dayNumberFuture: {
-    color: colors.textMuted,
-  },
+  dayNumberCompleted: { color: colors.successText },
+  dayNumberToday: { color: colors.gold },
+  dayNumberFuture: { color: colors.textMuted },
 
   // Legend
   legendRow: {
@@ -540,7 +785,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
 
-  // History heading
+  // History
   historyHeadingRow: {
     paddingHorizontal: 14,
     paddingTop: 16,
@@ -551,8 +796,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: colors.textPrimary,
   },
-
-  // Completion rows — date+time on left, XP on right
   completionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -566,12 +809,12 @@ const styles = StyleSheet.create({
   },
   completionDateTime: {
     fontFamily: fonts.display,
-    fontSize: 17,
+    fontSize: 20,
     color: colors.textPrimary,
   },
   completionXP: {
     fontFamily: fonts.display,
-    fontSize: 18,
+    fontSize: 20,
     color: colors.gold,
   },
 
