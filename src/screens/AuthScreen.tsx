@@ -135,7 +135,14 @@ function Torch({ delayMs = 0 }: { delayMs?: number }) {
     <View style={tStyles.torch}>
       <Animated.View style={[tStyles.flame, { transform: [{ scaleX }, { scaleY }], opacity }]} />
       <Animated.View style={[tStyles.glow, { opacity }]} />
-      <View style={tStyles.stem} />
+      <View style={tStyles.stem}>
+        <LinearGradient
+          colors={['#6a4218', '#3a2208']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
       <View style={tStyles.foot} />
     </View>
   );
@@ -145,17 +152,24 @@ const tStyles = StyleSheet.create({
   torch: { alignItems: 'center', paddingBottom: 4 },
   flame: {
     width: 13, height: 20,
-    backgroundColor: '#ff8800',
     borderTopLeftRadius: 7, borderTopRightRadius: 7,
     borderBottomLeftRadius: 4, borderBottomRightRadius: 4,
+    backgroundImage: 'radial-gradient(ellipse at 50% 85%, #ff6600 0%, #ffcc00 50%, rgba(255,102,0,0) 100%)',
+    filter: 'blur(0.4px)',
     shadowColor: '#ffcc00',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.45,
     shadowRadius: 3,
   } as any,
-  glow:  { width: 20, height: 10, backgroundColor: 'rgba(255,130,0,0.2)', borderRadius: 10, marginTop: -5 },
-  stem:  { width: 7, height: 18, backgroundColor: '#4a2e12', borderRadius: 2 },
-  foot:  { width: 13, height: 4, backgroundColor: '#2a1806', borderRadius: 1 },
+  glow: {
+    width: 20, height: 10,
+    backgroundColor: 'rgba(255,130,0,0.22)',
+    borderRadius: 10,
+    filter: 'blur(5px)',
+    marginTop: -5,
+  } as any,
+  stem: { width: 7, height: 18, borderRadius: 2, overflow: 'hidden' },
+  foot: { width: 13, height: 4, backgroundColor: '#2a1806', borderRadius: 1 },
 });
 
 // ─── Stars Layer ─────────────────────────────────────────────────────────────
@@ -262,12 +276,19 @@ function ShootingStarsLayer() {
               left: cfg.xFrac * width,
               top: cfg.yFrac * height,
               width: 80,
-              height: 1,
-              backgroundColor: '#fffde8',
-              transform: [{ translateX }, { translateY }, { rotate: '-25deg' }],
+              height: 2,
+              overflow: 'hidden',
+              transform: [{ translateX }, { translateY }, { rotate: '20deg' }],
               opacity,
             }}
-          />
+          >
+            <LinearGradient
+              colors={['rgba(255,253,232,0)', '#fffde8', 'rgba(255,253,232,0)']}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={{ flex: 1 }}
+            />
+          </Animated.View>
         );
       })}
     </View>
@@ -565,8 +586,20 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
 
           {/* Login / Sign-up panel */}
           <View style={[s.panel, { width: panelWidth }]}>
-            <View style={s.panelRule} />
-            <View style={s.panelDivider} />
+            <View style={s.panelRule}>
+              <LinearGradient
+                colors={['rgba(200,168,87,0)', 'rgba(200,168,87,0.4)', 'rgba(200,168,87,0)']}
+                start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </View>
+            <View style={s.panelDivider}>
+              <LinearGradient
+                colors={['rgba(107,88,32,0)', 'rgba(107,88,32,0.33)', 'rgba(107,88,32,0)']}
+                start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </View>
 
             <View style={s.field}>
               <Text style={s.fieldLabel}>Email</Text>
@@ -764,11 +797,11 @@ const s = StyleSheet.create({
     position: 'absolute',
     top: 0, left: 14, right: 14,
     height: 2,
-    backgroundColor: 'rgba(200,168,87,0.4)',
+    overflow: 'hidden',
   },
   panelDivider: {
     height: 1,
-    backgroundColor: 'rgba(107,88,32,0.33)',
+    overflow: 'hidden',
     marginBottom: 16,
   },
 
