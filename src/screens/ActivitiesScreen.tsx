@@ -28,6 +28,7 @@ import { useSkills } from '../context/SkillsContext';
 import { Cadence, UserActivity, ActivityCompletion } from '../types';
 import { getCadenceLabel, CADENCE_CONFIG } from '../constants/cadences';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
+import { SKILL_COLORS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { XPDrop } from '../components/XPDrop';
@@ -303,12 +304,20 @@ export function ActivitiesScreen() {
           ]}>
             {activityName}
           </Text>
-          <Text style={styles.skillName}>
-            {activity.skillId} • +{activity.xpPerCompletion} XP
-            {(activity.currentStreak ?? 0) > 0
-              ? `  🔥 ${activity.currentStreak}`
-              : ''}
-          </Text>
+          <View style={styles.activityMeta}>
+            {(() => {
+              const c = SKILL_COLORS[activity.skillId] ?? '#888888';
+              return (
+                <View style={[styles.skillBadge, { backgroundColor: `${c}22`, borderColor: `${c}88` }]}>
+                  <Text style={[styles.skillBadgeText, { color: c }]}>{activity.skillId}</Text>
+                </View>
+              );
+            })()}
+            <Text style={styles.skillMetaText}>
+              +{activity.xpPerCompletion} XP
+              {(activity.currentStreak ?? 0) > 0 ? `  🔥 ${activity.currentStreak}` : ''}
+            </Text>
+          </View>
         </View>
 
         {/* Status badge — shows quota progress for Nx/week, "Done" for single-target */}
@@ -368,13 +377,23 @@ export function ActivitiesScreen() {
             <View key={completion.id} style={styles.completionItem}>
               <View style={styles.completionInfo}>
                 <Text style={styles.completionName}>{activityName}</Text>
-                <Text style={styles.completionMeta}>
-                  {activity?.skillId} • {completion.xpEarned} XP •{' '}
-                  {new Date(completion.completedAt).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </Text>
+                <View style={styles.activityMeta}>
+                  {activity?.skillId && (() => {
+                    const c = SKILL_COLORS[activity.skillId] ?? '#888888';
+                    return (
+                      <View style={[styles.skillBadge, { backgroundColor: `${c}22`, borderColor: `${c}88` }]}>
+                        <Text style={[styles.skillBadgeText, { color: c }]}>{activity.skillId}</Text>
+                      </View>
+                    );
+                  })()}
+                  <Text style={styles.skillMetaText}>
+                    {completion.xpEarned} XP •{' '}
+                    {new Date(completion.completedAt).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </Text>
+                </View>
               </View>
               <Pressable
                 onPress={() => handleUndoCompletion(completion)}
@@ -572,11 +591,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: 2,
   },
-  completionMeta: {
-    fontFamily: fonts.display,
-    fontSize: 15,
-    color: colors.textSecondary,
-  },
   undoButton: {
     backgroundColor: colors.successSurface,
     paddingHorizontal: 10,
@@ -656,9 +670,24 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textDecorationLine: 'line-through',
   },
-  skillName: {
+  activityMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  skillBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+  },
+  skillBadgeText: {
     fontFamily: fonts.display,
-    fontSize: 16,
+    fontSize: 14,
+  },
+  skillMetaText: {
+    fontFamily: fonts.display,
+    fontSize: 15,
     color: colors.textSecondary,
   },
   rowChevron: {

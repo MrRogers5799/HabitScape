@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { UserActivity, ActivityCompletion } from '../types';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
+import { SKILL_COLORS } from '../constants/osrsSkills';
 import { CADENCE_CONFIG } from '../constants/cadences';
 import { formatXP } from '../utils/xpCalculations';
 import { colors, bevel } from '../constants/colors';
@@ -165,7 +166,17 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.activityName}>{activityName}</Text>
-            <Text style={styles.activityMeta}>{activity.skillId} · {cadenceLabel}</Text>
+            <View style={styles.activityMeta}>
+              {(() => {
+                const c = SKILL_COLORS[activity.skillId] ?? '#888888';
+                return (
+                  <View style={[styles.skillBadge, { backgroundColor: `${c}22`, borderColor: `${c}88` }]}>
+                    <Text style={[styles.skillBadgeText, { color: c }]}>{activity.skillId}</Text>
+                  </View>
+                );
+              })()}
+              <Text style={styles.cadenceLabel}>{cadenceLabel}</Text>
+            </View>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeText}>✕</Text>
@@ -337,6 +348,21 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   activityMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  skillBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+  },
+  skillBadgeText: {
+    fontFamily: fonts.display,
+    fontSize: 15,
+  },
+  cadenceLabel: {
     fontFamily: fonts.display,
     fontSize: 18,
     color: colors.textSecondary,
