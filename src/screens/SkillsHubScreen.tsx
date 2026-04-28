@@ -69,10 +69,7 @@ export function SkillsHubScreen() {
         {SKILL_ICONS[skill.skillName] ? (
           <Image
             source={SKILL_ICONS[skill.skillName]}
-            style={[
-              styles.skillIcon,
-              { filter: `drop-shadow(0 0 4px ${SKILL_COLORS[skill.skillName] ?? '#888888'}66)` } as any,
-            ]}
+            style={styles.skillIcon}
             resizeMode="contain"
           />
         ) : (
@@ -99,7 +96,7 @@ export function SkillsHubScreen() {
             progress={progress}
             height={4}
             barColor={colors.gold}
-            backgroundColor={colors.background}
+            backgroundColor={colors.surfaceSunken}
           />
         </View>
       </View>

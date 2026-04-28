@@ -1,17 +1,17 @@
 export const colors = {
-  // Backgrounds — warm dark brown, lifted slightly for mobile readability
-  background:     '#2a1f0e',
-  surface:        '#382e1a',
-  surfaceRaised:  '#4a3e2a',
-  surfaceSunken:  '#201608',   // carved-stone section headers
+  // Backgrounds — warm dark brown with enough luminance to read on OLED/P3 displays
+  background:     '#1e1608',
+  surface:        '#3c3018',
+  surfaceRaised:  '#4e4228',
+  surfaceSunken:  '#141006',   // carved-stone section headers
 
   // Borders
   border:         '#5c4a28',
-  borderSubtle:   '#332918',
+  borderSubtle:   '#3a2e14',
 
   // Bevel — lighter top/left, darker bottom/right for the raised panel look
-  bevelLight:     '#8B7355',
-  bevelDark:      '#0d0a05',
+  bevelLight:     '#a08060',
+  bevelDark:      '#1a1208',
 
   // Gold — the classic OSRS accent, used sparingly
   gold:           '#D4AF37',
