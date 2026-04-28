@@ -472,10 +472,17 @@ interface AuthScreenProps {
 
 export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   const { logIn, signUp, loading, error: contextError } = useAuth();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
-  // Cap panel width on large screens (tablet / web)
-  const panelWidth = Math.min(width * 0.88, 340);
+  const isLandscape = width > height;
+  // Scale factor relative to design reference width, capped at 1.5× for tablets
+  const scale = Math.min(width / DESIGN_W, 1.5);
+
+  // Panel width: percentage-based with a higher cap for tablets
+  const panelWidth = Math.min(width * 0.88, 460);
+  // Vertical padding shrinks in landscape to avoid crowding
+  const overlayPaddingTop = isLandscape ? 16 : Math.max(Math.round(height * 0.07), 36);
+  const overlayPaddingBottom = isLandscape ? 12 : 24;
 
   // Form state
   const [isSignUp, setIsSignUp] = useState(false);
@@ -572,20 +579,25 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         style={StyleSheet.absoluteFill}
       >
         <ScrollView
-          contentContainerStyle={s.overlay}
+          contentContainerStyle={[s.overlay, { paddingTop: overlayPaddingTop, paddingBottom: overlayPaddingBottom }]}
           keyboardShouldPersistTaps="handled"
         >
           {/* Logo row */}
-          <View style={s.logoRow}>
+          <View style={[s.logoRow, { gap: Math.round(16 * scale) }]}>
             <Torch />
-            <Text style={s.title}>HabitScape</Text>
+            <Text style={[s.title, { fontSize: Math.round(21 * scale), lineHeight: Math.round(26 * scale) }]}>HabitScape</Text>
             <Torch delayMs={350} />
           </View>
 
-          <Text style={s.tagline}>Your grind starts here.</Text>
+          <Text style={[s.tagline, { fontSize: Math.round(20 * scale), marginBottom: Math.round(24 * scale) }]}>Your grind starts here.</Text>
 
           {/* Login / Sign-up panel */}
-          <View style={[s.panel, { width: panelWidth }]}>
+          <View style={[s.panel, {
+            width: panelWidth,
+            paddingTop: Math.round(22 * scale),
+            paddingHorizontal: Math.round(20 * scale),
+            paddingBottom: Math.round(20 * scale),
+          }]}>
             <View style={s.panelRule}>
               <LinearGradient
                 colors={['rgba(200,168,87,0)', 'rgba(200,168,87,0.4)', 'rgba(200,168,87,0)']}
@@ -604,7 +616,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
             <View style={s.field}>
               <Text style={s.fieldLabel}>Email</Text>
               <TextInput
-                style={[s.input, errors.email ? s.inputError : null]}
+                style={[s.input, errors.email ? s.inputError : null, { fontSize: Math.round(22 * scale) }]}
                 placeholder="Enter your email"
                 placeholderTextColor="#4a3c18"
                 value={email}
@@ -620,7 +632,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
             <View style={s.field}>
               <Text style={s.fieldLabel}>Password</Text>
               <TextInput
-                style={[s.input, errors.password ? s.inputError : null]}
+                style={[s.input, errors.password ? s.inputError : null, { fontSize: Math.round(22 * scale) }]}
                 placeholder="Enter your password"
                 placeholderTextColor="#4a3c18"
                 value={password}
@@ -638,7 +650,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                 <View style={s.field}>
                   <Text style={s.fieldLabel}>Confirm Password</Text>
                   <TextInput
-                    style={[s.input, errors.passwordConfirm ? s.inputError : null]}
+                    style={[s.input, errors.passwordConfirm ? s.inputError : null, { fontSize: Math.round(22 * scale) }]}
                     placeholder="Confirm your password"
                     placeholderTextColor="#4a3c18"
                     value={passwordConfirm}
@@ -676,7 +688,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
               {isLoading ? (
                 <ActivityIndicator color="#1c1204" />
               ) : (
-                <Text style={[s.btnText, btnError && s.btnErrorText]}>
+                <Text style={[s.btnText, btnError && s.btnErrorText, { fontSize: Math.round(13 * scale) }]}>
                   {btnError
                     ? '⚠ FILL ALL FIELDS'
                     : isSignUp ? 'CREATE ACCOUNT' : 'LOG IN'}
@@ -740,7 +752,13 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  scene: { flex: 1, backgroundColor: '#070520' },
+  scene: {
+    flex: 1,
+    // `width: 100%` is needed on web so the root view always stretches to
+    // fill its container regardless of how the browser flex chain resolves.
+    width: Platform.OS === 'web' ? ('100%' as any) : undefined,
+    backgroundColor: '#070520',
+  },
 
   // Vignette edges
   vigTop:    { position: 'absolute', top: 0,    left: 0, right: 0,  height: '40%' },
@@ -748,12 +766,10 @@ const s = StyleSheet.create({
   vigLeft:   { position: 'absolute', top: 0,    left: 0, bottom: 0, width: '28%'  },
   vigRight:  { position: 'absolute', top: 0,    right: 0,bottom: 0, width: '28%'  },
 
-  // Overlay layout
+  // Overlay layout — paddingTop/paddingBottom applied dynamically via inline style
   overlay: {
     flexGrow: 1,
     alignItems: 'center',
-    paddingTop: 54,
-    paddingBottom: 24,
   },
 
   // Logo row
@@ -776,11 +792,8 @@ const s = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // Panel — width applied dynamically
+  // Panel — width and padding applied dynamically
   panel: {
-    paddingTop: 22,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
     backgroundColor: '#2e2008',
     borderWidth: 2,
     borderTopColor: '#6b5820',
