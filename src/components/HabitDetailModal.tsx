@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Modal,
@@ -6,14 +6,13 @@ import {
   Text,
   TouchableOpacity,
   SectionList,
-  ScrollView,
 } from 'react-native';
 import { UserActivity, ActivityCompletion } from '../types';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { CADENCE_CONFIG } from '../constants/cadences';
 import { formatXP } from '../utils/xpCalculations';
-import { getWeekMonday, toDateStr } from '../utils/streakUtils';
-import { colors } from '../constants/colors';
+import { colors, bevel } from '../constants/colors';
+import { fonts } from '../constants/typography';
 
 interface HabitDetailModalProps {
   activity: UserActivity | null;
@@ -23,73 +22,100 @@ interface HabitDetailModalProps {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function sectionLabel(date: Date): string {
+// Uses local time — avoids UTC-offset mismatches with toISOString()
+function localDateKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatDateTime(date: Date): string {
+  const datePart = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const timePart = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return `${datePart}  ·  ${timePart}`;
+}
+
+// ─── calendar ────────────────────────────────────────────────────────────────
+
+interface CalendarDay {
+  date: Date | null;
+  completed: boolean;
+  isToday: boolean;
+  isFuture: boolean;
+}
+
+function buildMonthCalendar(
+  year: number,
+  month: number,
+  completions: ActivityCompletion[],
+  activityId: string
+): CalendarDay[][] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diffDays = Math.round((today.getTime() - d.getTime()) / 86_400_000);
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return date.toLocaleDateString('en-US', { weekday: 'long' });
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+  // Use local date keys so evening completions aren't shifted to the next UTC day
+  const completedDates = new Set<string>();
+  completions.forEach(c => {
+    if (c.activityId !== activityId) return;
+    completedDates.add(localDateKey(new Date(c.completedAt)));
+  });
 
-function formatTime(date: Date): string {
-  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDow = firstDay.getDay(); // 0 = Sunday
 
-/**
- * Builds a last-N-weeks consistency array, newest week first.
- * Each entry: { label, status: 'met' | 'missed' | 'current' }
- */
-function buildWeeklyConsistency(
-  activity: UserActivity,
-  completions: ActivityCompletion[],
-  weekCount = 8
-): { label: string; status: 'met' | 'missed' | 'current' }[] {
-  if (activity.cadence === 'monthly') return [];
+  const weeks: CalendarDay[][] = [];
+  let currentWeek: CalendarDay[] = [];
 
-  const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const thisWeekMonday = getWeekMonday(new Date());
-  const results = [];
-
-  for (let i = 0; i < weekCount; i++) {
-    const weekStart = new Date(thisWeekMonday.getTime() - i * msPerWeek);
-    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
-    const isCurrent = i === 0;
-
-    const label = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-    const uniqueDays = new Set<string>();
-    completions.forEach(c => {
-      if (c.activityId !== activity.id) return;
-      const d = new Date(c.completedAt);
-      if (d >= weekStart && d < weekEnd) {
-        uniqueDays.add(toDateStr(d));
-      }
-    });
-
-    const met = uniqueDays.size >= target;
-    results.push({
-      label,
-      status: isCurrent ? 'current' : met ? 'met' : 'missed',
-    } as const);
+  for (let i = 0; i < startDow; i++) {
+    currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false });
   }
 
-  return results;
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const date = new Date(year, month, day);
+    date.setHours(0, 0, 0, 0);
+    const isFuture = date > today;
+    const isToday = date.getTime() === today.getTime();
+
+    currentWeek.push({
+      date,
+      completed: completedDates.has(localDateKey(date)),
+      isToday,
+      isFuture,
+    });
+
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  }
+
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false });
+    }
+    weeks.push(currentWeek);
+  }
+
+  return weeks;
 }
+
+const MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DAY_LABELS = ['S','M','T','W','T','F','S'];
 
 // ─── component ───────────────────────────────────────────────────────────────
 
 export function HabitDetailModal({ activity, completions, onClose }: HabitDetailModalProps) {
   if (!activity) return null;
 
+  const now = new Date();
+  const [calYear, setCalYear] = useState(now.getFullYear());
+  const [calMonth, setCalMonth] = useState(now.getMonth());
+
   const template = ACTIVITY_TEMPLATES.find(t => t.id === activity.id);
   const activityName = template?.activityName ?? activity.id;
 
-  // Completions for this activity only, newest first
   const activityCompletions = useMemo(
     () => completions.filter(c => c.activityId === activity.id),
     [completions, activity.id]
@@ -100,25 +126,32 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
     [activityCompletions]
   );
 
-  const weeklyConsistency = useMemo(
-    () => buildWeeklyConsistency(activity, completions),
-    [activity, completions]
+  const calendarWeeks = useMemo(
+    () => buildMonthCalendar(calYear, calMonth, completions, activity.id),
+    [calYear, calMonth, completions, activity.id]
   );
-
-  // Group completions by date for the history list
-  const sections = useMemo(() => {
-    const groups = new Map<string, ActivityCompletion[]>();
-    for (const c of activityCompletions) {
-      const label = sectionLabel(new Date(c.completedAt));
-      if (!groups.has(label)) groups.set(label, []);
-      groups.get(label)!.push(c);
-    }
-    return Array.from(groups.entries()).map(([title, data]) => ({ title, data }));
-  }, [activityCompletions]);
 
   const cadenceLabel = CADENCE_CONFIG[activity.cadence]?.label ?? activity.cadence;
   const currentStreak = activity.currentStreak ?? 0;
   const longestStreak = activity.longestStreak ?? 0;
+  const isAtCurrentMonth = calYear === now.getFullYear() && calMonth === now.getMonth();
+
+  const prevMonth = () => {
+    if (calMonth === 0) { setCalYear(y => y - 1); setCalMonth(11); }
+    else setCalMonth(m => m - 1);
+  };
+
+  const nextMonth = () => {
+    if (isAtCurrentMonth) return;
+    if (calMonth === 11) { setCalYear(y => y + 1); setCalMonth(0); }
+    else setCalMonth(m => m + 1);
+  };
+
+  // Single flat section — date is shown inline on each row, no group headers needed
+  const sections = useMemo(
+    () => [{ title: '', data: activityCompletions }],
+    [activityCompletions]
+  );
 
   return (
     <Modal
@@ -142,14 +175,12 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
         <SectionList
           sections={sections}
           keyExtractor={item => item.id}
-          renderSectionHeader={({ section }) => (
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderText}>{section.title}</Text>
-            </View>
-          )}
+          renderSectionHeader={() => null}
           renderItem={({ item }) => (
             <View style={styles.completionRow}>
-              <Text style={styles.completionTime}>{formatTime(new Date(item.completedAt))}</Text>
+              <Text style={styles.completionDateTime}>
+                {formatDateTime(new Date(item.completedAt))}
+              </Text>
               <Text style={styles.completionXP}>+{item.xpEarned} XP</Text>
             </View>
           )}
@@ -175,58 +206,98 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
                 </View>
                 <View style={[styles.statItem, styles.statBorder]}>
                   <Text style={styles.statValue}>{formatXP(totalXP)}</Text>
-                  <Text style={styles.statLabel}>XP Earned</Text>
+                  <Text style={styles.statLabel}>XP</Text>
                 </View>
               </View>
 
-              {/* Weekly consistency */}
-              {weeklyConsistency.length > 0 && (
-                <View style={styles.consistencySection}>
-                  <Text style={styles.consistencyTitle}>Last 8 Weeks</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.consistencyRow}
+              {/* Calendar */}
+              <View style={styles.calendarSection}>
+                {/* Month navigation */}
+                <View style={styles.calendarHeader}>
+                  <TouchableOpacity onPress={prevMonth} style={styles.monthNavBtn}>
+                    <Text style={styles.monthNavText}>‹</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.calendarTitle}>
+                    {MONTH_NAMES[calMonth]} {calYear}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={nextMonth}
+                    style={styles.monthNavBtn}
+                    disabled={isAtCurrentMonth}
                   >
-                    {[...weeklyConsistency].reverse().map((week, i) => (
-                      <View key={i} style={styles.weekCell}>
-                        <View style={[
-                          styles.weekDot,
-                          week.status === 'met' && styles.weekDotMet,
-                          week.status === 'missed' && styles.weekDotMissed,
-                          week.status === 'current' && styles.weekDotCurrent,
-                        ]} />
-                        <Text style={styles.weekLabel}>{week.label}</Text>
+                    <Text style={[styles.monthNavText, isAtCurrentMonth && styles.monthNavDisabled]}>
+                      ›
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Day-of-week labels */}
+                <View style={styles.calendarDayLabels}>
+                  {DAY_LABELS.map((d, i) => (
+                    <Text key={i} style={styles.dayLabelText}>{d}</Text>
+                  ))}
+                </View>
+
+                {/* Week rows */}
+                {calendarWeeks.map((week, wi) => (
+                  <View key={wi} style={styles.calendarWeekRow}>
+                    {week.map((day, di) => (
+                      <View
+                        key={di}
+                        style={[
+                          styles.calendarDayCell,
+                          day.date === null                                         && styles.dayCellEmpty,
+                          day.date !== null && day.isFuture && !day.isToday        && styles.dayCellFuture,
+                          day.date !== null && !day.isFuture && !day.isToday && !day.completed && styles.dayCellMissed,
+                          day.date !== null && day.completed                       && styles.dayCellCompleted,
+                          day.isToday                                              && styles.dayCellToday,
+                        ]}
+                      >
+                        {day.date !== null && (
+                          <Text style={[
+                            styles.dayNumber,
+                            day.isFuture && !day.isToday && styles.dayNumberFuture,
+                            day.completed                && styles.dayNumberCompleted,
+                            day.isToday                  && styles.dayNumberToday,
+                          ]}>
+                            {day.date.getDate()}
+                          </Text>
+                        )}
                       </View>
                     ))}
-                  </ScrollView>
-                  <View style={styles.legendRow}>
-                    <View style={styles.legendItem}>
-                      <View style={[styles.legendDot, styles.weekDotMet]} />
-                      <Text style={styles.legendText}>Target met</Text>
-                    </View>
-                    <View style={styles.legendItem}>
-                      <View style={[styles.legendDot, styles.weekDotMissed]} />
-                      <Text style={styles.legendText}>Missed</Text>
-                    </View>
-                    <View style={styles.legendItem}>
-                      <View style={[styles.legendDot, styles.weekDotCurrent]} />
-                      <Text style={styles.legendText}>This week</Text>
-                    </View>
+                  </View>
+                ))}
+
+                {/* Legend */}
+                <View style={styles.legendRow}>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendSwatch, styles.dayCellCompleted]} />
+                    <Text style={styles.legendText}>Done</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendSwatch, styles.dayCellMissed]} />
+                    <Text style={styles.legendText}>Missed</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendSwatch, styles.dayCellToday]} />
+                    <Text style={styles.legendText}>Today</Text>
                   </View>
                 </View>
-              )}
+              </View>
 
-              {/* History heading */}
-              {sections.length > 0 && (
-                <Text style={styles.historyHeading}>History</Text>
+              {activityCompletions.length > 0 && (
+                <View style={styles.historyHeadingRow}>
+                  <Text style={styles.historyHeading}>History</Text>
+                </View>
               )}
             </>
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No completions yet.</Text>
-              <Text style={styles.emptySubtext}>Complete this habit to start tracking your progress.</Text>
+              <Text style={styles.emptySubtext}>
+                Complete this habit to start tracking your progress.
+              </Text>
             </View>
           }
           contentContainerStyle={styles.listContent}
@@ -244,6 +315,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
+  // Header
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -251,44 +324,47 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    ...bevel.raised,
   },
   headerText: {
     flex: 1,
   },
   activityName: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
+    fontSize: 11,
     color: colors.gold,
-    marginBottom: 4,
+    marginBottom: 6,
+    lineHeight: 18,
   },
   activityMeta: {
-    fontSize: 13,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textSecondary,
   },
   closeButton: {
     paddingLeft: 12,
-    paddingTop: 2,
+    paddingTop: 4,
   },
   closeText: {
-    fontSize: 18,
+    fontFamily: fonts.display,
+    fontSize: 22,
     color: colors.textSecondary,
   },
   listContent: {
     paddingBottom: 40,
   },
 
-  // Stats
+  // Stats row
   statsRow: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    marginHorizontal: 12,
+    marginTop: 12,
+    ...bevel.raised,
   },
   statItem: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   statBorder: {
@@ -296,143 +372,202 @@ const styles = StyleSheet.create({
     borderLeftColor: colors.border,
   },
   statValue: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.display,
+    fontSize: 22,
     color: colors.gold,
     marginBottom: 2,
   },
   statLabel: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
+    fontSize: 7,
     color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
 
-  // Weekly consistency
-  consistencySection: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderSubtle,
+  // Calendar panel
+  calendarSection: {
+    marginHorizontal: 12,
+    marginTop: 12,
+    backgroundColor: colors.surface,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    ...bevel.raised,
   },
-  consistencyTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+  calendarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 12,
   },
-  consistencyRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingBottom: 8,
-  },
-  weekCell: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  weekDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: colors.surfaceRaised,
-  },
-  weekDotMet: {
-    backgroundColor: colors.success,
-  },
-  weekDotMissed: {
-    backgroundColor: colors.destructive,
-    opacity: 0.7,
-  },
-  weekDotCurrent: {
-    backgroundColor: colors.gold,
-    opacity: 0.5,
-  },
-  weekLabel: {
+  calendarTitle: {
+    fontFamily: fonts.heading,
     fontSize: 9,
-    color: colors.textSecondary,
-    textAlign: 'center',
+    color: colors.textPrimary,
   },
+  monthNavBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    backgroundColor: colors.surfaceRaised,
+    ...bevel.raised,
+  },
+  monthNavText: {
+    fontFamily: fonts.display,
+    fontSize: 24,
+    color: colors.gold,
+    lineHeight: 24,
+  },
+  monthNavDisabled: {
+    color: colors.textMuted,
+  },
+
+  // Day-of-week header
+  calendarDayLabels: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  dayLabelText: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: fonts.heading,
+    fontSize: 7,
+    color: colors.textSecondary,
+  },
+
+  // Week row
+  calendarWeekRow: {
+    flexDirection: 'row',
+    marginBottom: 3,
+  },
+
+  // Day cell base
+  calendarDayCell: {
+    flex: 1,
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceRaised,
+    marginHorizontal: 1,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+  },
+  dayCellEmpty: {
+    backgroundColor: 'transparent',
+    borderColor: 'transparent',
+  },
+  dayCellMissed: {
+    backgroundColor: '#3a0e0e',
+    borderColor: '#5a1818',
+  },
+  dayCellCompleted: {
+    backgroundColor: colors.success,
+    borderColor: colors.successLight,
+  },
+  dayCellFuture: {
+    backgroundColor: colors.surfaceSunken,
+    borderColor: colors.borderSubtle,
+  },
+  dayCellToday: {
+    borderWidth: 2,
+    borderTopColor: colors.gold,
+    borderLeftColor: colors.gold,
+    borderBottomColor: colors.goldDark,
+    borderRightColor: colors.goldDark,
+  },
+
+  // Day number text
+  dayNumber: {
+    fontFamily: fonts.display,
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  dayNumberCompleted: {
+    color: colors.successText,
+  },
+  dayNumberToday: {
+    color: colors.gold,
+  },
+  dayNumberFuture: {
+    color: colors.textMuted,
+  },
+
+  // Legend
   legendRow: {
     flexDirection: 'row',
+    justifyContent: 'center',
     gap: 16,
-    marginTop: 4,
+    marginTop: 10,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
   },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 3,
-    backgroundColor: colors.surfaceRaised,
+  legendSwatch: {
+    width: 12,
+    height: 12,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
   },
   legendText: {
-    fontSize: 11,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.textSecondary,
   },
 
-  // History
-  historyHeading: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    paddingHorizontal: 16,
+  // History heading
+  historyHeadingRow: {
+    paddingHorizontal: 14,
     paddingTop: 16,
     paddingBottom: 4,
   },
-  sectionHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    backgroundColor: colors.background,
+  historyHeading: {
+    fontFamily: fonts.heading,
+    fontSize: 9,
+    color: colors.textPrimary,
   },
-  sectionHeaderText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
+
+  // Completion rows — date+time on left, XP on right
   completionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderSubtle,
+    paddingHorizontal: 14,
+    marginHorizontal: 12,
+    marginTop: 4,
     backgroundColor: colors.surface,
+    ...bevel.raised,
   },
-  completionTime: {
-    fontSize: 13,
+  completionDateTime: {
+    fontFamily: fonts.display,
+    fontSize: 17,
     color: colors.textPrimary,
   },
   completionXP: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.gold,
   },
 
-  // Empty
+  // Empty state
   emptyContainer: {
     paddingTop: 48,
     alignItems: 'center',
     paddingHorizontal: 32,
   },
   emptyText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
+    fontSize: 9,
     color: colors.textSecondary,
-    marginBottom: 6,
+    marginBottom: 10,
+    textAlign: 'center',
+    lineHeight: 16,
   },
   emptySubtext: {
-    fontSize: 13,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 22,
   },
 });
