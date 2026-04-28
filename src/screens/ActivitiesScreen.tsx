@@ -28,9 +28,11 @@ import { useSkills } from '../context/SkillsContext';
 import { Cadence, UserActivity, ActivityCompletion } from '../types';
 import { getCadenceLabel, CADENCE_CONFIG } from '../constants/cadences';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
-import { colors } from '../constants/colors';
+import { colors, bevel } from '../constants/colors';
+import { fonts } from '../constants/typography';
 import { XPDrop } from '../components/XPDrop';
 import { LevelUpModal } from '../components/LevelUpModal';
+import { HabitDetailModal } from '../components/HabitDetailModal';
 import { calculateLevel } from '../utils/xpCalculations';
 
 interface XPDropEntry {
@@ -66,6 +68,8 @@ export function ActivitiesScreen() {
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [xpDrops, setXPDrops] = useState<XPDropEntry[]>([]);
   const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<UserActivity | null>(null);
+  const [completedCollapsed, setCompletedCollapsed] = useState(true);
 
   /**
    * Handle pull-to-refresh
@@ -270,23 +274,26 @@ export function ActivitiesScreen() {
     return (
       <TouchableOpacity
         style={[styles.activityItem, gated && styles.activityItemCompleted]}
-        onPress={(e) => {
-          if (!gated && !completingId) {
-            handleActivityPress(activity, e.nativeEvent.pageY);
-          }
-        }}
-        disabled={gated || !!completingId}
+        onPress={() => setSelectedActivity(activity)}
+        activeOpacity={0.7}
       >
-        {/* Checkbox */}
-        <View style={[
-          styles.checkbox,
-          gated && styles.checkboxCompleted,
-        ]}>
+        {/* Checkbox — separate tap target for completion */}
+        <TouchableOpacity
+          style={[styles.checkbox, gated && styles.checkboxCompleted]}
+          onPress={(e) => {
+            e.stopPropagation();
+            if (!gated && !completingId) {
+              handleActivityPress(activity, e.nativeEvent.pageY);
+            }
+          }}
+          disabled={gated || !!completingId}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           {isLoading
             ? <ActivityIndicator size="small" color="#fff" />
             : gated && <Text style={styles.checkmark}>✓</Text>
           }
-        </View>
+        </TouchableOpacity>
 
         {/* Activity Info */}
         <View style={styles.activityInfo}>
@@ -316,6 +323,8 @@ export function ActivitiesScreen() {
             <Text style={styles.completedText}>Done</Text>
           </View>
         ) : null}
+
+        <Text style={styles.rowChevron}>›</Text>
       </TouchableOpacity>
     );
   };
@@ -331,15 +340,26 @@ export function ActivitiesScreen() {
   );
 
   /**
-   * Render completed activities section
+   * Render completed activities section (collapsible)
    */
   const renderCompletedSection = () => {
     if (todayCompletions.length === 0) return null;
 
     return (
       <View style={styles.completedSection}>
-        <Text style={styles.completedSectionTitle}>Completed Today ({todayCompletions.length})</Text>
-        {todayCompletions.map(completion => {
+        <Pressable
+          style={styles.completedSectionHeader}
+          onPress={() => setCompletedCollapsed(prev => !prev)}
+        >
+          <Text style={styles.completedSectionTitle}>
+            Completed Today ({todayCompletions.length})
+          </Text>
+          <Text style={styles.completedChevron}>
+            {completedCollapsed ? '›' : '⌄'}
+          </Text>
+        </Pressable>
+
+        {!completedCollapsed && todayCompletions.map(completion => {
           const activity = userActivities.find(a => a.id === completion.activityId);
           const template = ACTIVITY_TEMPLATES.find(t => t.id === completion.activityId);
           const activityName = template?.activityName || completion.activityId;
@@ -463,6 +483,13 @@ export function ActivitiesScreen() {
           onClose={() => setLevelUpEvent(null)}
         />
       )}
+
+      {/* Habit detail modal */}
+      <HabitDetailModal
+        activity={selectedActivity}
+        completions={completions}
+        onClose={() => setSelectedActivity(null)}
+      />
     </View>
   );
 }
@@ -481,187 +508,207 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    ...bevel.raised,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
+    fontSize: 16,
     color: colors.gold,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.textSecondary,
   },
   listContent: {
     paddingVertical: 8,
   },
+  // Completed Today — green OSRS quest-panel style
   completedSection: {
-    backgroundColor: colors.surface,
-    marginVertical: 12,
-    marginHorizontal: 16,
-    paddingVertical: 12,
+    backgroundColor: colors.successSurface,
+    marginVertical: 8,
+    marginHorizontal: 12,
+    paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 6,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.gold,
+    ...bevel.green,
+  },
+  completedSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   completedSectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.gold,
-    marginBottom: 12,
+    fontFamily: fonts.heading,
+    fontSize: 9,
+    color: colors.successText,
+  },
+  completedChevron: {
+    fontFamily: fonts.display,
+    fontSize: 22,
+    color: colors.successText,
+    lineHeight: 22,
   },
   completionItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 8,
-    marginBottom: 8,
+    marginBottom: 6,
     backgroundColor: colors.background,
-    borderRadius: 4,
+    ...bevel.inset,
   },
   completionInfo: {
     flex: 1,
     marginRight: 8,
   },
   completionName: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textPrimary,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   completionMeta: {
-    fontSize: 11,
+    fontFamily: fonts.display,
+    fontSize: 15,
     color: colors.textSecondary,
   },
   undoButton: {
-    backgroundColor: colors.success,
+    backgroundColor: colors.successSurface,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 4,
+    ...bevel.raised,
   },
   undoButtonPressed: {
     opacity: 0.7,
   },
   undoButtonText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.successText,
   },
   sectionHeader: {
-    backgroundColor: colors.surface,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    backgroundColor: colors.background,
+    paddingTop: 14,
+    paddingBottom: 5,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.surfaceRaised,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
+    fontSize: 9,
     color: colors.textPrimary,
-    marginBottom: 4,
   },
   sectionSubtitle: {
-    fontSize: 12,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.textSecondary,
   },
+  // Activity rows
   activityItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderSubtle,
-    backgroundColor: colors.background,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginHorizontal: 12,
+    marginTop: 4,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
   },
   activityItemCompleted: {
-    backgroundColor: '#1a2810',
-    opacity: 0.7,
+    backgroundColor: colors.successSurface,
+    opacity: 0.85,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: colors.gold,
-    borderRadius: 4,
+    width: 22,
+    height: 22,
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.background,
+    ...bevel.inset,
   },
   checkboxCompleted: {
     backgroundColor: colors.success,
-    borderColor: colors.success,
+    ...bevel.inset,
   },
   checkmark: {
-    color: colors.textPrimary,
+    color: colors.successText,
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 13,
   },
   activityInfo: {
     flex: 1,
   },
   activityName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 20,
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   activityNameCompleted: {
     color: colors.textSecondary,
     textDecorationLine: 'line-through',
   },
   skillName: {
-    fontSize: 12,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.textSecondary,
+  },
+  rowChevron: {
+    fontFamily: fonts.display,
+    fontSize: 22,
+    color: colors.textSecondary,
+    marginLeft: 6,
+    lineHeight: 24,
   },
   completedBadge: {
     backgroundColor: colors.success,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginLeft: 8,
+    ...bevel.raised,
   },
   quotaMetBadge: {
     backgroundColor: colors.success,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginLeft: 8,
+    ...bevel.raised,
   },
   progressBadge: {
-    backgroundColor: colors.surfaceRaised,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 12,
+    backgroundColor: colors.surfaceSunken,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginLeft: 8,
+    ...bevel.inset,
   },
   completedText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.successText,
   },
   loadingText: {
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textPrimary,
     marginTop: 12,
-    fontSize: 14,
   },
   errorText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 20,
     color: colors.error,
     marginBottom: 8,
   },
   errorDetail: {
-    fontSize: 12,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.errorText,
     textAlign: 'center',
     marginBottom: 16,
@@ -670,14 +717,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
     paddingHorizontal: 24,
     paddingVertical: 10,
-    borderRadius: 6,
+    ...bevel.raised,
   },
   retryText: {
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.background,
-    fontWeight: '600',
   },
   noActivitiesText: {
-    fontSize: 14,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textSecondary,
     textAlign: 'center',
     marginVertical: 16,
@@ -687,13 +736,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 24,
     color: colors.textPrimary,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 14,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textSecondary,
     textAlign: 'center',
   },

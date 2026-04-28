@@ -1,13 +1,17 @@
 /**
- * Login/Register Screen
- * 
- * Handles user authentication - both login and signup.
- * Features:
- * - Email and password input validation
- * - Toggle between login and signup modes
- * - Timezone selection for signup
- * - Error message display
- * - Loading state
+ * AuthScreen — Cinematic OSRS Login Screen
+ *
+ * Visual layers (back to front):
+ *   1. Sky gradient (LinearGradient)
+ *   2. Stars (Animated.View twinkle — percentage positioned)
+ *   3. Moon (View — dynamically scaled)
+ *   4. Castle + landscape SVG with animated windows inside
+ *   5. Ember particles (Animated.View — SVG-coord derived, dynamic)
+ *   6. Vignette (edge LinearGradients)
+ *   7. UI overlay — logo/torches/panel
+ *
+ * All screen-size-dependent positions are computed with useWindowDimensions()
+ * inside each sub-component so they stay correct on any device or orientation.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -19,54 +23,440 @@ import {
   Animated,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Platform,
   KeyboardAvoidingView,
   Modal,
+  useWindowDimensions,
 } from 'react-native';
-
-const TAGLINES = [
-  'Level up your real life.',
-  'Train hard. Level up. Repeat.',
-  'Your grind starts here.',
-  'Build legendary habits.',
-  'One XP at a time.',
-  "The greatest journey begins with 1 XP.",
-];
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, {
+  Rect,
+  Polygon,
+  Ellipse,
+  Path,
+  Defs,
+  Filter,
+  FeGaussianBlur,
+} from 'react-native-svg';
 import { useAuth } from '../context/AuthContext';
-import { colors } from '../constants/colors';
+import { fonts } from '../constants/typography';
 import { isValidEmail, validatePassword } from '../services/authService';
 import { COMMON_TIMEZONES, getDefaultTimezone } from '../constants/timezones';
 
+// ─── Design reference width ───────────────────────────────────────────────────
+
+const DESIGN_W = 390;
+
+// ─── Animated SVG Rect ───────────────────────────────────────────────────────
+
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
+
+// ─── Module-level stable configs (no screen dimension dependencies) ───────────
+
+interface StarCfg {
+  x: number; y: number; size: number;
+  dur: number; delay: number; lo: number; hi: number;
+}
+
+function genStars(n: number): StarCfg[] {
+  const arr: StarCfg[] = [];
+  for (let i = 0; i < n; i++) {
+    arr.push({
+      x: Math.random() * 100,       // % of screen width
+      y: Math.random() * 68,        // % of screen height (upper portion)
+      size: Math.random() < 0.2 ? 2 : 1,
+      dur: (2 + Math.random() * 4) * 1000,
+      delay: Math.random() * 7 * 1000,
+      lo: 0.12 + Math.random() * 0.22,
+      hi: 0.7 + Math.random() * 0.3,
+    });
+  }
+  return arr;
+}
+
+// Per-ember randomness — no screen deps, stable across renders
+const EMBER_RANDOMS = Array.from({ length: 18 }, (_, i) => ({
+  windowIdx: Math.floor(i / 3),
+  dx: (Math.random() - 0.5) * 12,
+  dur: (2 + Math.random() * 2) * 1000,
+  delay: Math.random() * 3 * 1000,
+  jitter: Math.random() * 8 - 4,
+}));
+
+// SVG-coordinate centers of the glowing castle windows (viewBox 0 0 390 240)
+const WINDOW_SVG = [
+  { x: 177, y: 85,  w: 10, h: 14, fill: '#cc7700', dur: 2000, delay: 0    },
+  { x: 203, y: 85,  w: 10, h: 14, fill: '#cc7700', dur: 2000, delay: 800  },
+  { x: 177, y: 107, w: 10, h: 12, fill: '#bb6400', dur: 2800, delay: 300  },
+  { x: 203, y: 107, w: 10, h: 12, fill: '#bb6400', dur: 2800, delay: 1100 },
+  { x: 155, y: 102, w: 8,  h: 11, fill: '#cc7700', dur: 3200, delay: 500  },
+  { x: 227, y: 102, w: 8,  h: 11, fill: '#cc7700', dur: 3200, delay: 1300 },
+];
+
+// Window center coordinates used for ember origins
+const WINDOW_CENTERS = WINDOW_SVG.map(w => ({ x: w.x + w.w / 2, y: w.y + w.h / 2 }));
+
+const STAR_CFGS = genStars(100);
+
+// Shooting star base configs as fractions (computed into pixels per-render)
+const SHOOT_BASE = [
+  { xFrac: 0.154, yFrac: 0.08, dur: 9000,  delay: 1000  },
+  { xFrac: 0.513, yFrac: 0.14, dur: 14000, delay: 5000  },
+  { xFrac: 0.821, yFrac: 0.05, dur: 11000, delay: 11000 },
+];
+
+// ─── Torch Component ──────────────────────────────────────────────────────────
+
+function Torch({ delayMs = 0 }: { delayMs?: number }) {
+  const anim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(delayMs),
+        Animated.timing(anim, { toValue: 0.2,  duration: 260, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0.45, duration: 325, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0.65, duration: 260, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0.82, duration: 221, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 1,    duration: 234, useNativeDriver: true }),
+        Animated.timing(anim, { toValue: 0,    duration: 0,   useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, []);
+
+  const scaleX = anim.interpolate({ inputRange: [0, 0.2, 0.45, 0.65, 0.82, 1], outputRange: [1, 0.82, 1.1, 0.88, 1.06, 1] });
+  const scaleY = anim.interpolate({ inputRange: [0, 0.2, 0.45, 0.65, 0.82, 1], outputRange: [1, 1.12, 0.9, 1.06, 0.95, 1] });
+  const opacity = anim.interpolate({ inputRange: [0, 0.2, 0.45, 0.65, 0.82, 1], outputRange: [1, 0.88, 1, 0.82, 0.95, 1] });
+
+  return (
+    <View style={tStyles.torch}>
+      <Animated.View style={[tStyles.flame, { transform: [{ scaleX }, { scaleY }], opacity }]} />
+      <Animated.View style={[tStyles.glow, { opacity }]} />
+      <View style={tStyles.stem} />
+      <View style={tStyles.foot} />
+    </View>
+  );
+}
+
+const tStyles = StyleSheet.create({
+  torch: { alignItems: 'center', paddingBottom: 4 },
+  flame: {
+    width: 13, height: 20,
+    backgroundColor: '#ff8800',
+    borderTopLeftRadius: 7, borderTopRightRadius: 7,
+    borderBottomLeftRadius: 4, borderBottomRightRadius: 4,
+    shadowColor: '#ffcc00',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+  } as any,
+  glow:  { width: 20, height: 10, backgroundColor: 'rgba(255,130,0,0.2)', borderRadius: 10, marginTop: -5 },
+  stem:  { width: 7, height: 18, backgroundColor: '#4a2e12', borderRadius: 2 },
+  foot:  { width: 13, height: 4, backgroundColor: '#2a1806', borderRadius: 1 },
+});
+
+// ─── Stars Layer ─────────────────────────────────────────────────────────────
+// Uses percentage-based positioning — no screen dims needed.
+
+function StarsLayer() {
+  const anims = useRef(STAR_CFGS.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    const loops = anims.map((anim, i) => {
+      const cfg = STAR_CFGS[i];
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(cfg.delay),
+          Animated.timing(anim, { toValue: 1, duration: cfg.dur / 2, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0, duration: cfg.dur / 2, useNativeDriver: true }),
+        ])
+      );
+    });
+    loops.forEach(l => l.start());
+    return () => loops.forEach(l => l.stop());
+  }, []);
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {STAR_CFGS.map((cfg, i) => {
+        const opacity = anims[i].interpolate({ inputRange: [0, 1], outputRange: [cfg.lo, cfg.hi] });
+        return (
+          <Animated.View
+            key={i}
+            style={{
+              position: 'absolute',
+              left: `${cfg.x}%` as any,
+              top: `${cfg.y}%` as any,
+              width: cfg.size,
+              height: cfg.size,
+              borderRadius: cfg.size,
+              backgroundColor: '#fffde8',
+              opacity,
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
+// ─── Moon ─────────────────────────────────────────────────────────────────────
+
+function Moon() {
+  const { width } = useWindowDimensions();
+  const scale = Math.min(width / DESIGN_W, 1);
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        top: 44 * scale,
+        right: 52 * scale,
+        width: 56 * scale,
+        height: 56 * scale,
+        borderRadius: 28 * scale,
+        backgroundColor: '#fff8cc',
+        shadowColor: '#ffe888',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.9,
+        shadowRadius: 18 * scale,
+        elevation: 8,
+      }}
+    />
+  );
+}
+
+// ─── Shooting Stars ───────────────────────────────────────────────────────────
+
+function ShootingStarsLayer() {
+  const { width, height } = useWindowDimensions();
+  const anims = useRef(SHOOT_BASE.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    const loops = anims.map((anim, i) => {
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(SHOOT_BASE[i].delay),
+          Animated.timing(anim, { toValue: 1, duration: SHOOT_BASE[i].dur, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0, duration: 0,                 useNativeDriver: true }),
+        ])
+      );
+    });
+    loops.forEach(l => l.start());
+    return () => loops.forEach(l => l.stop());
+  }, []);
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {SHOOT_BASE.map((cfg, i) => {
+        const opacity = anims[i].interpolate({ inputRange: [0, 0.03, 0.10, 1], outputRange: [0, 1, 0, 0] });
+        const translateX = anims[i].interpolate({ inputRange: [0, 1], outputRange: [0, 160] });
+        const translateY = anims[i].interpolate({ inputRange: [0, 1], outputRange: [0, 70] });
+        return (
+          <Animated.View
+            key={i}
+            style={{
+              position: 'absolute',
+              left: cfg.xFrac * width,
+              top: cfg.yFrac * height,
+              width: 80,
+              height: 1,
+              backgroundColor: '#fffde8',
+              transform: [{ translateX }, { translateY }, { rotate: '-25deg' }],
+              opacity,
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
+// ─── Ember Particles ─────────────────────────────────────────────────────────
+// Positions derived from SVG window coordinates at render time.
+
+function EmbersLayer() {
+  const { width, height } = useWindowDimensions();
+  const svgH = 240 * (width / DESIGN_W);
+  const svgTop = height - svgH;
+  const xScale = width / DESIGN_W;
+  const yScale = svgH / 240;
+
+  const anims = useRef(EMBER_RANDOMS.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    const loops = anims.map((anim, i) => {
+      const cfg = EMBER_RANDOMS[i];
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(cfg.delay),
+          Animated.timing(anim, { toValue: 1, duration: cfg.dur, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0, duration: 0,       useNativeDriver: true }),
+        ])
+      );
+    });
+    loops.forEach(l => l.start());
+    return () => loops.forEach(l => l.stop());
+  }, []);
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {EMBER_RANDOMS.map((cfg, i) => {
+        const win = WINDOW_CENTERS[cfg.windowIdx];
+        const ox = win.x * xScale + cfg.jitter;
+        const oy = svgTop + win.y * yScale;
+        const opacity    = anims[i].interpolate({ inputRange: [0, 0.2, 1], outputRange: [0, 0.9, 0] });
+        const translateY = anims[i].interpolate({ inputRange: [0, 1], outputRange: [0, -40] });
+        const translateX = anims[i].interpolate({ inputRange: [0, 1], outputRange: [0, cfg.dx] });
+        return (
+          <Animated.View
+            key={i}
+            style={{
+              position: 'absolute',
+              left: ox,
+              top: oy,
+              width: 2, height: 2,
+              borderRadius: 1,
+              backgroundColor: '#ff9900',
+              opacity,
+              transform: [{ translateX }, { translateY }],
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+}
+
+// ─── Landscape SVG with animated windows inside ───────────────────────────────
+// Window glow lives inside the SVG — no overlay positioning needed.
+
+function LandscapeSVG() {
+  const { width } = useWindowDimensions();
+  const svgH = 240 * (width / DESIGN_W);
+
+  // One Animated.Value per window
+  const winAnims = useRef(WINDOW_SVG.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    const loops = winAnims.map((anim, i) => {
+      const { dur, delay } = WINDOW_SVG[i];
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(anim, { toValue: 1, duration: dur / 2, useNativeDriver: false }),
+          Animated.timing(anim, { toValue: 0, duration: dur / 2, useNativeDriver: false }),
+        ])
+      );
+    });
+    loops.forEach(l => l.start());
+    return () => loops.forEach(l => l.stop());
+  }, []);
+
+  return (
+    <Svg
+      style={{ position: 'absolute', bottom: 0, left: 0 }}
+      width={width}
+      height={svgH}
+      viewBox="0 0 390 240"
+      preserveAspectRatio="none"
+    >
+      <Defs>
+        <Filter id="soft"><FeGaussianBlur stdDeviation="1.5" /></Filter>
+      </Defs>
+
+      {/* Distant haze hills */}
+      <Path d="M0,120 C70,88 160,108 230,94 C290,82 350,100 390,90 L390,240 L0,240 Z" fill="#0c1a09" />
+
+      {/* Rear tower left */}
+      <Rect x="150" y="88" width="20" height="62" fill="#0b0b0d" />
+      <Rect x="148" y="80" width="7"  height="10" fill="#0b0b0d" />
+      <Rect x="158" y="80" width="7"  height="10" fill="#0b0b0d" />
+      <Rect x="168" y="80" width="5"  height="10" fill="#0b0b0d" />
+
+      {/* Main keep */}
+      <Rect x="168" y="68" width="54" height="92" fill="#0d0d10" />
+      <Rect x="166" y="57" width="10" height="13" fill="#0d0d10" />
+      <Rect x="180" y="57" width="10" height="13" fill="#0d0d10" />
+      <Rect x="194" y="57" width="10" height="13" fill="#0d0d10" />
+      <Rect x="208" y="57" width="10" height="13" fill="#0d0d10" />
+
+      {/* Rear tower right */}
+      <Rect x="220" y="88" width="20" height="62" fill="#0b0b0d" />
+      <Rect x="217" y="80" width="5"  height="10" fill="#0b0b0d" />
+      <Rect x="225" y="80" width="7"  height="10" fill="#0b0b0d" />
+      <Rect x="235" y="80" width="7"  height="10" fill="#0b0b0d" />
+
+      {/* Flag pole + pennant */}
+      <Rect x="193" y="28" width="2" height="30" fill="#181826" />
+      <Polygon points="195,30 210,36 195,43" fill="#2a1a45" opacity="0.85" />
+
+      {/* Gate */}
+      <Rect    x="181" y="128" width="28" height="32" fill="#070709" />
+      <Ellipse cx="195" cy="128" rx="14" ry="9" fill="#070709" />
+      <Rect x="183" y="128" width="2" height="32" fill="#0d0d10" opacity="0.6" />
+      <Rect x="189" y="128" width="2" height="32" fill="#0d0d10" opacity="0.6" />
+      <Rect x="195" y="128" width="2" height="32" fill="#0d0d10" opacity="0.6" />
+      <Rect x="201" y="128" width="2" height="32" fill="#0d0d10" opacity="0.6" />
+      <Rect x="207" y="128" width="2" height="32" fill="#0d0d10" opacity="0.6" />
+      <Rect x="183" y="134" width="26" height="2" fill="#0d0d10" opacity="0.6" />
+      <Rect x="183" y="142" width="26" height="2" fill="#0d0d10" opacity="0.6" />
+
+      {/* Animated glowing windows — driven by winAnims, no overlay needed */}
+      {WINDOW_SVG.map((w, i) => (
+        <AnimatedRect
+          key={i}
+          x={w.x} y={w.y} width={w.w} height={w.h}
+          fill={w.fill}
+          fillOpacity={winAnims[i].interpolate({ inputRange: [0, 1], outputRange: [0.65, 0.92] }) as any}
+        />
+      ))}
+
+      {/* Window halo glows */}
+      <Ellipse cx="182" cy="92"  rx="14" ry="10" fill="#ff8800" opacity="0.05" />
+      <Ellipse cx="208" cy="92"  rx="14" ry="10" fill="#ff8800" opacity="0.05" />
+
+      {/* Mid hills */}
+      <Path d="M0,158 C55,136 115,152 175,141 C225,132 285,150 390,138 L390,240 L0,240 Z" fill="#121f0d" />
+
+      {/* Trees — left cluster */}
+      <Rect x="28"  y="158" width="4" height="22" fill="#0c1808" /><Ellipse cx="30"  cy="151" rx="14" ry="12" fill="#0d1d08" />
+      <Rect x="64"  y="153" width="4" height="24" fill="#0c1808" /><Ellipse cx="66"  cy="145" rx="16" ry="13" fill="#0e2009" />
+      <Rect x="98"  y="156" width="4" height="20" fill="#0c1808" /><Ellipse cx="100" cy="149" rx="13" ry="11" fill="#0d1c08" />
+      <Rect x="128" y="158" width="3" height="18" fill="#0c1808" /><Ellipse cx="130" cy="152" rx="11" ry="10" fill="#0d1b08" />
+
+      {/* Trees — right cluster */}
+      <Rect x="262" y="156" width="4" height="20" fill="#0c1808" /><Ellipse cx="264" cy="149" rx="13" ry="11" fill="#0d1c08" />
+      <Rect x="294" y="153" width="4" height="24" fill="#0c1808" /><Ellipse cx="296" cy="145" rx="16" ry="13" fill="#0e2009" />
+      <Rect x="328" y="157" width="4" height="21" fill="#0c1808" /><Ellipse cx="330" cy="150" rx="14" ry="12" fill="#0d1d08" />
+      <Rect x="360" y="158" width="3" height="19" fill="#0c1808" /><Ellipse cx="362" cy="151" rx="11" ry="10" fill="#0d1b08" />
+
+      {/* Foreground hill */}
+      <Path d="M0,178 C70,163 150,176 230,169 C300,163 355,174 390,168 L390,240 L0,240 Z" fill="#182c10" />
+
+      {/* Ground strip + mist */}
+      <Rect x="0" y="220" width="390" height="20" fill="#121f0a" />
+      <Path d="M0,192 C80,184 170,194 260,186 C320,181 360,192 390,187 L390,240 L0,240 Z" fill="rgba(18,32,10,0.55)" />
+    </Svg>
+  );
+}
+
+// ─── Main AuthScreen ──────────────────────────────────────────────────────────
+
 interface AuthScreenProps {
-  /** Optional: function to call when auth is complete */
   onAuthSuccess?: () => void;
 }
 
-/**
- * Auth Screen Component
- * Displays login/signup form
- */
 export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
-  // Auth state
   const { logIn, signUp, loading, error: contextError } = useAuth();
+  const { width } = useWindowDimensions();
 
-  // Cycling tagline
-  const [taglineIndex, setTaglineIndex] = useState(0);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  // Cap panel width on large screens (tablet / web)
+  const panelWidth = Math.min(width * 0.88, 340);
 
-  useEffect(() => {
-    const cycle = setInterval(() => {
-      Animated.timing(fadeAnim, { toValue: 0, duration: 400, useNativeDriver: true }).start(() => {
-        setTaglineIndex(prev => (prev + 1) % TAGLINES.length);
-        Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
-      });
-    }, 3500);
-    return () => clearInterval(cycle);
-  }, []);
-
-  // UI state
+  // Form state
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -75,365 +465,421 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   const [timezonePickerVisible, setTimezonePickerVisible] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [localLoading, setLocalLoading] = useState(false);
+  const [btnError, setBtnError] = useState(false);
 
-  /**
-   * Validate form inputs
-   */
   function validateForm(): boolean {
-    const newErrors: { [key: string]: string } = {};
-
-    // Check email
+    const e: { [k: string]: string } = {};
     if (!email.trim()) {
-      newErrors.email = 'Email is required';
+      e.email = 'Email is required';
     } else if (!isValidEmail(email)) {
-      newErrors.email = 'Please enter a valid email';
+      e.email = 'Please enter a valid email';
     }
-
-    // Check password
     if (!password) {
-      newErrors.password = 'Password is required';
+      e.password = 'Password is required';
     } else {
-      const validation = validatePassword(password);
-      if (!validation.isValid) {
-        newErrors.password = validation.message;
-      }
+      const v = validatePassword(password);
+      if (!v.isValid) e.password = v.message;
     }
-
-    // Additional checks for signup
     if (isSignUp) {
-      if (!passwordConfirm) {
-        newErrors.passwordConfirm = 'Please confirm your password';
-      } else if (password !== passwordConfirm) {
-        newErrors.passwordConfirm = 'Passwords do not match';
-      }
+      if (!passwordConfirm) e.passwordConfirm = 'Please confirm your password';
+      else if (password !== passwordConfirm) e.passwordConfirm = 'Passwords do not match';
     }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(e);
+    return Object.keys(e).length === 0;
   }
 
-  /**
-   * Handle login
-   */
-  async function handleLogin() {
+  async function handleAuth() {
+    if (!email || !password) {
+      setBtnError(true);
+      setTimeout(() => setBtnError(false), 1800);
+      return;
+    }
     if (!validateForm()) return;
-
     try {
       setLocalLoading(true);
-      await logIn(email, password);
-      // Navigation will happen automatically when user state updates
+      if (isSignUp) {
+        await signUp(email, password, timezone);
+      } else {
+        await logIn(email, password);
+      }
       onAuthSuccess?.();
-    } catch (err) {
-      // Error is already shown via contextError
+    } catch {
+      // contextError surfaced below
     } finally {
       setLocalLoading(false);
-    }
-  }
-
-  /**
-   * Handle signup
-   */
-  async function handleSignUp() {
-    if (!validateForm()) return;
-
-    try {
-      setLocalLoading(true);
-      await signUp(email, password, timezone);
-      // Navigation will happen automatically when user state updates
-      onAuthSuccess?.();
-    } catch (err) {
-      // Error is already shown via contextError
-    } finally {
-      setLocalLoading(false);
-    }
-  }
-
-  /**
-   * Handle auth button press
-   */
-  function handleAuthPress() {
-    if (isSignUp) {
-      handleSignUp();
-    } else {
-      handleLogin();
     }
   }
 
   const isLoading = loading || localLoading;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>HabitScape</Text>
-          <Animated.Text style={[styles.subtitle, { opacity: fadeAnim }]}>
-            {TAGLINES[taglineIndex]}
-          </Animated.Text>
-        </View>
+    <View style={s.scene}>
+      {/* 1 ─ Sky gradient */}
+      <LinearGradient
+        colors={['#030210', '#06041a', '#0a0818', '#0c1010', '#0d1a0a']}
+        locations={[0, 0.2, 0.45, 0.65, 1]}
+        style={StyleSheet.absoluteFill}
+      />
 
-        {/* Form Container */}
-        <View style={styles.formContainer}>
-          {/* Email Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, errors.email ? styles.inputError : null]}
-              placeholder="Enter your email"
-              placeholderTextColor="#999"
-              value={email}
-              onChangeText={setEmail}
-              editable={!isLoading}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            {errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
-            )}
+      {/* 2 ─ Stars */}
+      <StarsLayer />
+
+      {/* 3 ─ Moon */}
+      <Moon />
+
+      {/* 4 ─ Castle + landscape (windows animated inside SVG) */}
+      <LandscapeSVG />
+
+      {/* 5 ─ Embers */}
+      <EmbersLayer />
+
+      {/* 6 ─ Shooting stars */}
+      <ShootingStarsLayer />
+
+      {/* 7 ─ Vignette */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <LinearGradient colors={['rgba(0,0,0,0.45)', 'transparent']} style={s.vigTop} />
+        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.55)']} style={s.vigBottom} />
+        <LinearGradient colors={['rgba(0,0,0,0.35)', 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.vigLeft} />
+        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.35)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.vigRight} />
+      </View>
+
+      {/* 8 ─ UI overlay */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={StyleSheet.absoluteFill}
+      >
+        <ScrollView
+          contentContainerStyle={s.overlay}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Logo row */}
+          <View style={s.logoRow}>
+            <Torch />
+            <Text style={s.title}>HabitScape</Text>
+            <Torch delayMs={350} />
           </View>
 
-          {/* Password Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={[styles.input, errors.password ? styles.inputError : null]}
-              placeholder="Enter your password"
-              placeholderTextColor="#999"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              editable={!isLoading}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            {errors.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            )}
-          </View>
+          <Text style={s.tagline}>Your grind starts here.</Text>
 
-          {/* Password Confirmation (signup only) */}
-          {isSignUp && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm Password</Text>
+          {/* Login / Sign-up panel */}
+          <View style={[s.panel, { width: panelWidth }]}>
+            <View style={s.panelRule} />
+            <View style={s.panelDivider} />
+
+            <View style={s.field}>
+              <Text style={s.fieldLabel}>Email</Text>
               <TextInput
-                style={[
-                  styles.input,
-                  errors.passwordConfirm ? styles.inputError : null,
-                ]}
-                placeholder="Confirm your password"
-                placeholderTextColor="#999"
-                value={passwordConfirm}
-                onChangeText={setPasswordConfirm}
-                secureTextEntry
-                editable={!isLoading}
+                style={[s.input, errors.email ? s.inputError : null]}
+                placeholder="Enter your email"
+                placeholderTextColor="#4a3c18"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!isLoading}
               />
-              {errors.passwordConfirm && (
-                <Text style={styles.errorText}>{errors.passwordConfirm}</Text>
-              )}
+              {errors.email ? <Text style={s.fieldError}>{errors.email}</Text> : null}
             </View>
-          )}
 
-          {/* Timezone Selection (signup only) */}
-          {isSignUp && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Timezone</Text>
-              <TouchableOpacity
-                style={styles.timezoneButton}
-                onPress={() => setTimezonePickerVisible(true)}
-                disabled={isLoading}
-              >
-                <Text style={styles.timezoneButtonText}>
-                  {COMMON_TIMEZONES.find(tz => tz.value === timezone)?.label ?? timezone}
-                </Text>
-                <Text style={styles.timezoneChevron}>›</Text>
-              </TouchableOpacity>
+            <View style={s.field}>
+              <Text style={s.fieldLabel}>Password</Text>
+              <TextInput
+                style={[s.input, errors.password ? s.inputError : null]}
+                placeholder="Enter your password"
+                placeholderTextColor="#4a3c18"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                editable={!isLoading}
+              />
+              {errors.password ? <Text style={s.fieldError}>{errors.password}</Text> : null}
             </View>
-          )}
 
-          {/* Context Error Display */}
-          {contextError && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorMessage}>❌ {contextError}</Text>
-            </View>
-          )}
+            {isSignUp && (
+              <>
+                <View style={s.field}>
+                  <Text style={s.fieldLabel}>Confirm Password</Text>
+                  <TextInput
+                    style={[s.input, errors.passwordConfirm ? s.inputError : null]}
+                    placeholder="Confirm your password"
+                    placeholderTextColor="#4a3c18"
+                    value={passwordConfirm}
+                    onChangeText={setPasswordConfirm}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    editable={!isLoading}
+                  />
+                  {errors.passwordConfirm ? <Text style={s.fieldError}>{errors.passwordConfirm}</Text> : null}
+                </View>
 
-          {/* Auth Button */}
-          <TouchableOpacity
-            style={[styles.authButton, isLoading ? styles.authButtonDisabled : null]}
-            onPress={handleAuthPress}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.authButtonText}>
-                {isSignUp ? 'Create Account' : 'Log In'}
-              </Text>
+                <View style={s.field}>
+                  <Text style={s.fieldLabel}>Timezone</Text>
+                  <TouchableOpacity
+                    style={s.input}
+                    onPress={() => setTimezonePickerVisible(true)}
+                    disabled={isLoading}
+                  >
+                    <Text style={s.inputValueText}>
+                      {COMMON_TIMEZONES.find(tz => tz.value === timezone)?.label ?? timezone}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
             )}
-          </TouchableOpacity>
 
-          {/* Toggle Mode Button */}
-          <TouchableOpacity
-            onPress={() => {
-              setIsSignUp(!isSignUp);
-              setErrors({});
-            }}
-            disabled={isLoading}
-          >
-            <Text style={styles.toggleText}>
-              {isSignUp
-                ? 'Already have an account? Log In'
-                : "Don't have an account? Sign Up"}
+            {contextError ? <Text style={s.contextError}>{contextError}</Text> : null}
+
+            <TouchableOpacity
+              style={[s.btnPrimary, btnError && s.btnError, isLoading && s.btnDisabled]}
+              onPress={handleAuth}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#1c1204" />
+              ) : (
+                <Text style={[s.btnText, btnError && s.btnErrorText]}>
+                  {btnError
+                    ? '⚠ FILL ALL FIELDS'
+                    : isSignUp ? 'CREATE ACCOUNT' : 'LOG IN'}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <Text style={s.toggleText}>
+              {isSignUp ? 'Have an account? ' : "Don't have an account? "}
+              <Text
+                style={s.toggleLink}
+                onPress={() => { setIsSignUp(!isSignUp); setErrors({}); setBtnError(false); }}
+              >
+                {isSignUp ? 'Log In' : 'Sign Up'}
+              </Text>
             </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Phase 1 MVP</Text>
-          <Text style={styles.footerText}>© 2026 HabitScape</Text>
-        </View>
-      </ScrollView>
+          <View style={s.footer}>
+            <Text style={s.footerText}>Phase 1 MVP</Text>
+            <Text style={s.footerText}>© 2026 HabitScape</Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-      {/* Timezone Picker Modal */}
+      {/* Timezone picker modal */}
       <Modal
         visible={timezonePickerVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setTimezonePickerVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Timezone</Text>
+        <View style={s.modalOverlay}>
+          <View style={s.modalSheet}>
+            <View style={s.modalHeader}>
+              <Text style={s.modalTitle}>Select Timezone</Text>
               <TouchableOpacity onPress={() => setTimezonePickerVisible(false)}>
-                <Text style={styles.modalClose}>✕</Text>
+                <Text style={s.modalClose}>✕</Text>
               </TouchableOpacity>
             </View>
             <ScrollView>
               {COMMON_TIMEZONES.map(tz => (
                 <TouchableOpacity
                   key={tz.value}
-                  style={[
-                    styles.timezoneOption,
-                    timezone === tz.value && styles.timezoneOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setTimezone(tz.value);
-                    setTimezonePickerVisible(false);
-                  }}
+                  style={[s.tzOption, timezone === tz.value && s.tzOptionActive]}
+                  onPress={() => { setTimezone(tz.value); setTimezonePickerVisible(false); }}
                 >
-                  <Text style={[
-                    styles.timezoneLabel,
-                    timezone === tz.value && styles.timezoneLabelSelected,
-                  ]}>
+                  <Text style={[s.tzLabel, timezone === tz.value && s.tzLabelActive]}>
                     {tz.label}
                   </Text>
-                  <Text style={styles.timezoneValue}>{tz.value}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
         </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollContent: {
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const s = StyleSheet.create({
+  scene: { flex: 1, backgroundColor: '#030210' },
+
+  // Vignette edges
+  vigTop:    { position: 'absolute', top: 0,    left: 0, right: 0,  height: '40%' },
+  vigBottom: { position: 'absolute', bottom: 0, left: 0, right: 0,  height: '50%' },
+  vigLeft:   { position: 'absolute', top: 0,    left: 0, bottom: 0, width: '28%'  },
+  vigRight:  { position: 'absolute', top: 0,    right: 0,bottom: 0, width: '28%'  },
+
+  // Overlay layout
+  overlay: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-  },
-  header: {
-    marginBottom: 40,
     alignItems: 'center',
+    paddingTop: 54,
+    paddingBottom: 24,
   },
+
+  // Logo row
+  logoRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 16, marginBottom: 5 },
   title: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: colors.gold,
-    marginBottom: 10,
-    letterSpacing: 1,
+    fontFamily: fonts.heading,
+    fontSize: 21,
+    color: '#c8a857',
+    lineHeight: 24,
+    textShadowColor: 'rgba(200,168,87,0.65)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 24,
   },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
+  tagline: {
+    fontFamily: fonts.display,
+    fontSize: 20,
     fontStyle: 'italic',
+    color: '#8a7040',
+    marginBottom: 24,
+    letterSpacing: 0.5,
   },
-  formContainer: {
-    marginBottom: 40,
+
+  // Panel — width applied dynamically
+  panel: {
+    paddingTop: 22,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    backgroundColor: '#2e2008',
+    borderWidth: 2,
+    borderTopColor: '#6b5820',
+    borderLeftColor: '#6b5820',
+    borderBottomColor: '#0a0700',
+    borderRightColor: '#0a0700',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    elevation: 12,
   },
-  inputGroup: {
-    marginBottom: 20,
+  panelRule: {
+    position: 'absolute',
+    top: 0, left: 14, right: 14,
+    height: 2,
+    backgroundColor: 'rgba(200,168,87,0.4)',
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: 8,
+  panelDivider: {
+    height: 1,
+    backgroundColor: 'rgba(107,88,32,0.33)',
+    marginBottom: 16,
+  },
+
+  // Fields
+  field: { marginBottom: 14 },
+  fieldLabel: {
+    fontFamily: fonts.heading,
+    fontSize: 9,
+    color: '#c8a857',
+    marginBottom: 5,
+    letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: colors.textPrimary,
-    fontSize: 14,
+    width: '100%',
+    paddingVertical: 9,
+    paddingHorizontal: 11,
+    backgroundColor: '#1a1104',
+    borderWidth: 2,
+    borderTopColor: '#0a0700',
+    borderLeftColor: '#0a0700',
+    borderBottomColor: '#6b5820',
+    borderRightColor: '#6b5820',
+    color: '#d4b86a',
+    fontFamily: fonts.display,
+    fontSize: 22,
+    justifyContent: 'center',
   },
   inputError: {
-    borderColor: colors.error,
+    borderTopColor: '#ff8888',
+    borderLeftColor: '#ff8888',
   },
-  errorText: {
-    color: colors.error,
-    fontSize: 12,
-    marginTop: 4,
+  inputValueText: {
+    color: '#d4b86a',
+    fontFamily: fonts.display,
+    fontSize: 22,
   },
-  timezoneButton: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  fieldError: {
+    fontFamily: fonts.display,
+    fontSize: 16,
+    color: '#ff8888',
+    marginTop: 3,
+  },
+  contextError: {
+    fontFamily: fonts.display,
+    fontSize: 17,
+    color: '#ff8888',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+
+  // Button
+  btnPrimary: {
+    width: '100%',
+    paddingVertical: 12,
+    marginTop: 2,
+    marginBottom: 14,
+    backgroundColor: '#c8a857',
+    borderWidth: 2,
+    borderTopColor: '#ffee66',
+    borderLeftColor: '#ffee66',
+    borderBottomColor: '#3a2c08',
+    borderRightColor: '#3a2c08',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
   },
-  timezoneButtonText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    flex: 1,
+  btnError: {
+    backgroundColor: '#8a2020',
+    borderTopColor: '#ff8888',
+    borderLeftColor: '#ff8888',
+    borderBottomColor: '#3a0808',
+    borderRightColor: '#3a0808',
   },
-  timezoneChevron: {
-    color: colors.textSecondary,
-    fontSize: 20,
-    lineHeight: 22,
+  btnDisabled: { opacity: 0.75 },
+  btnText: {
+    fontFamily: fonts.heading,
+    fontSize: 13,
+    color: '#1c1204',
+    letterSpacing: 0.7,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
+  btnErrorText: { color: '#ffffff' },
+
+  // Toggle
+  toggleText: {
+    fontFamily: fonts.display,
+    fontSize: 19,
+    color: '#8a7040',
+    textAlign: 'center',
   },
+  toggleLink: { color: '#c8a857' },
+
+  // Footer
+  footer: { marginTop: 'auto' as any, paddingTop: 20, alignItems: 'center' },
+  footerText: {
+    fontFamily: fonts.heading,
+    fontSize: 7,
+    color: '#2e2410',
+    lineHeight: 14,
+  },
+
+  // Timezone modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   modalSheet: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: '#2e2008',
     maxHeight: '70%',
+    borderWidth: 2,
+    borderTopColor: '#6b5820',
+    borderLeftColor: '#6b5820',
+    borderBottomColor: '#0a0700',
+    borderRightColor: '#0a0700',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -441,83 +887,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 14,
+    backgroundColor: '#1a1104',
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: '#6b5820',
   },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  modalClose: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    paddingHorizontal: 4,
-  },
-  timezoneOption: {
+  modalTitle: { fontFamily: fonts.heading, fontSize: 10, color: '#c8a857' },
+  modalClose: { fontFamily: fonts.display, fontSize: 22, color: '#8a7040', paddingHorizontal: 4 },
+  tzOption: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderSubtle,
+    borderBottomColor: '#0a0700',
   },
-  timezoneOptionSelected: {
-    backgroundColor: colors.background,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.gold,
-  },
-  timezoneLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  timezoneLabelSelected: {
-    color: colors.gold,
-  },
-  timezoneValue: {
-    fontSize: 11,
-    color: colors.textSecondary,
-  },
-  errorContainer: {
-    backgroundColor: '#3d1a0e',
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.error,
-  },
-  errorMessage: {
-    color: colors.errorText,
-    fontSize: 13,
-  },
-  authButton: {
-    backgroundColor: colors.gold,
-    borderRadius: 4,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  authButtonDisabled: {
-    opacity: 0.6,
-  },
-  authButtonText: {
-    color: colors.background,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  toggleText: {
-    color: colors.gold,
-    fontSize: 13,
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  footer: {
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  footerText: {
-    color: colors.textDisabled,
-    fontSize: 12,
-  },
+  tzOptionActive: { backgroundColor: '#1a1104', borderLeftWidth: 3, borderLeftColor: '#c8a857' },
+  tzLabel:       { fontFamily: fonts.display, fontSize: 18, color: '#d4b86a' },
+  tzLabelActive: { color: '#c8a857' },
 });

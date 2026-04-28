@@ -22,7 +22,8 @@ import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { ActivitySelectionWizard } from '../components/ActivitySelectionWizard';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
-import { colors } from '../constants/colors';
+import { colors, bevel } from '../constants/colors';
+import { fonts } from '../constants/typography';
 import { Cadence } from '../types';
 import { COMMON_TIMEZONES } from '../constants/timezones';
 
@@ -183,7 +184,7 @@ export function SettingsScreen() {
             ]}
             onPress={() => setWizardVisible(true)}
           >
-            <Text style={styles.manageButtonText}>⚙️ Manage Activities</Text>
+            <Text style={styles.manageButtonText}>Manage Activities</Text>
           </Pressable>
         </View>
 
@@ -345,7 +346,7 @@ export function SettingsScreen() {
             disabled={loggingOut}
           >
             <Text style={styles.logoutButtonText}>
-              {loggingOut ? 'Logging Out...' : confirmLogout ? '⚠️ Confirm Log Out' : 'Log Out'}
+              {loggingOut ? 'LOGGING OUT...' : confirmLogout ? 'CONFIRM LOG OUT' : 'LOG OUT'}
             </Text>
           </Pressable>
           {confirmLogout && (
@@ -371,273 +372,62 @@ export function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    backgroundColor: colors.surface,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.gold,
-  },
-  section: {
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderSubtle,
-    paddingTop: 12,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.gold,
-    marginBottom: 12,
-    paddingHorizontal: 16,
-  },
-  activityStatsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    backgroundColor: colors.surface,
-    borderRadius: 4,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.gold,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: '600',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.gold,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: colors.border,
-    marginHorizontal: 12,
-  },
-  manageButton: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: colors.gold,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  manageButtonPressed: {
-    backgroundColor: colors.goldDark,
-  },
-  manageButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.background,
-  },
-  settingItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderSubtle,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  settingLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 6,
-  },
-  settingValue: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    fontWeight: '500',
-    flex: 1,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  inlineButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.gold,
-  },
-  inlineButtonPressed: {
-    opacity: 0.7,
-  },
-  inlineButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.gold,
-  },
-  passwordForm: {
-    marginTop: 4,
-    gap: 8,
-  },
-  textInput: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: colors.textPrimary,
-  },
-  fieldError: {
-    fontSize: 12,
-    color: colors.error,
-    marginBottom: 4,
-  },
-  formButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: colors.gold,
-    borderRadius: 6,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  saveButtonPressed: {
-    opacity: 0.8,
-  },
-  saveButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.background,
-  },
-  cancelInlineButton: {
-    flex: 1,
-    borderRadius: 6,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cancelInlineText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  header: { backgroundColor: colors.surface, paddingVertical: 14, paddingHorizontal: 16, ...bevel.raised },
+  headerTitle: { fontFamily: fonts.heading, fontSize: 16, color: colors.gold },
+  section: { marginTop: 12 },
+  sectionTitle: { fontFamily: fonts.heading, fontSize: 9, color: colors.gold, marginBottom: 10, paddingHorizontal: 16, paddingTop: 14 },
+
+  // Activity stats
+  activityStatsContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 12, marginBottom: 10, paddingVertical: 12, paddingHorizontal: 12, backgroundColor: colors.surface, ...bevel.raised },
+  statItem: { flex: 1, alignItems: 'center' },
+  statLabel: { fontFamily: fonts.heading, fontSize: 8, color: colors.textSecondary, marginBottom: 4, textTransform: 'uppercase' },
+  statValue: { fontFamily: fonts.display, fontSize: 28, color: colors.gold },
+  statDivider: { width: 2, height: 30, backgroundColor: colors.bevelDark, marginHorizontal: 12 },
+  manageButton: { marginHorizontal: 12, marginBottom: 10, paddingVertical: 10, paddingHorizontal: 16, backgroundColor: colors.gold, alignItems: 'center', ...bevel.raised },
+  manageButtonPressed: { opacity: 0.85 },
+  manageButtonText: { fontFamily: fonts.display, fontSize: 21, color: colors.background },
+
+  // Account items
+  settingItem: { paddingVertical: 12, paddingHorizontal: 16, marginHorizontal: 12, marginTop: 4, backgroundColor: colors.surface, ...bevel.raised },
+  settingLabel: { fontFamily: fonts.heading, fontSize: 8, color: colors.textSecondary, marginBottom: 6, textTransform: 'uppercase' },
+  settingValue: { fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, flex: 1 },
+  settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  inlineButton: { paddingHorizontal: 12, paddingVertical: 6, ...bevel.raised },
+  inlineButtonPressed: { opacity: 0.7 },
+  inlineButtonText: { fontFamily: fonts.heading, fontSize: 8, color: colors.gold },
+  passwordForm: { marginTop: 8, gap: 8 },
+  textInput: { backgroundColor: colors.surfaceSunken, paddingHorizontal: 12, paddingVertical: 10, fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, ...bevel.inset },
+  fieldError: { fontFamily: fonts.display, fontSize: 16, color: colors.error, marginBottom: 4 },
+  formButtons: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  saveButton: { flex: 1, backgroundColor: colors.gold, paddingVertical: 10, alignItems: 'center', ...bevel.raised },
+  saveButtonPressed: { opacity: 0.8 },
+  saveButtonText: { fontFamily: fonts.heading, fontSize: 9, color: colors.background },
+  cancelInlineButton: { flex: 1, paddingVertical: 10, alignItems: 'center', ...bevel.inset },
+  cancelInlineText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
+
   // Timezone modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
-  },
-  modalSheet: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: '70%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  modalClose: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    paddingHorizontal: 4,
-  },
-  timezoneList: {
-    paddingVertical: 8,
-  },
-  timezoneOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderSubtle,
-  },
-  timezoneOptionSelected: {
-    backgroundColor: colors.background,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.gold,
-  },
-  timezoneLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  timezoneLabelSelected: {
-    color: colors.gold,
-  },
-  timezoneValue: {
-    fontSize: 11,
-    color: colors.textSecondary,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  logoutContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 8,
-    gap: 8,
-  },
-  logoutConfirmText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  logoutButton: {
-    backgroundColor: colors.destructive,
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  logoutButtonConfirm: {
-    backgroundColor: colors.destructiveDark,
-  },
-  logoutButtonPressed: {
-    opacity: 0.85,
-  },
-  logoutButtonDisabled: {
-    opacity: 0.5,
-  },
-  logoutButtonText: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  cancelButton: {
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  cancelButtonText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: colors.surface, maxHeight: '70%', ...bevel.raised },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: colors.surfaceSunken, ...bevel.inset },
+  modalTitle: { fontFamily: fonts.heading, fontSize: 10, color: colors.gold },
+  modalClose: { fontFamily: fonts.display, fontSize: 22, color: colors.textSecondary, paddingHorizontal: 4 },
+  timezoneList: { paddingVertical: 4 },
+  timezoneOption: { paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.bevelDark },
+  timezoneOptionSelected: { backgroundColor: colors.surfaceSunken, borderLeftWidth: 3, borderLeftColor: colors.gold },
+  timezoneLabel: { fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, marginBottom: 2 },
+  timezoneLabelSelected: { color: colors.gold },
+  timezoneValue: { fontFamily: fonts.display, fontSize: 14, color: colors.textSecondary },
+
+  // Logout
+  scrollContent: { paddingBottom: 32 },
+  logoutContainer: { paddingHorizontal: 12, paddingTop: 24, paddingBottom: 8, gap: 8 },
+  logoutConfirmText: { fontFamily: fonts.display, fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: 4 },
+  logoutButton: { backgroundColor: colors.destructive, paddingVertical: 12, alignItems: 'center', borderWidth: 2, borderTopColor: '#ff8888', borderLeftColor: '#ff8888', borderBottomColor: colors.bevelDark, borderRightColor: colors.bevelDark },
+  logoutButtonConfirm: { backgroundColor: colors.destructiveDark },
+  logoutButtonPressed: { opacity: 0.85 },
+  logoutButtonDisabled: { opacity: 0.5 },
+  logoutButtonText: { fontFamily: fonts.display, fontSize: 24, color: '#ffffff', letterSpacing: 1 },
+  cancelButton: { alignItems: 'center', paddingVertical: 10 },
+  cancelButtonText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
 });

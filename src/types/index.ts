@@ -169,6 +169,8 @@ export interface AuthContextType {
   logIn: (email: string, password: string) => Promise<void>;
   /** Function to log out current user */
   logOut: () => Promise<void>;
+  /** Update the user's display name in their Firestore profile */
+  updateDisplayName: (displayName: string) => Promise<void>;
   /** Update the user's timezone in their Firestore profile */
   updateTimezone: (timezone: string) => Promise<void>;
   /** Change the user's password (requires current password for reauthentication) */

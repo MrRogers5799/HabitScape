@@ -50,6 +50,31 @@ export const SKILL_DESCRIPTIONS: Record<string, string> = {
   Construction: 'Building and creating structure',
 };
 
+export const SKILL_COLORS: Record<string, string> = {
+  Attack:       '#cc3333',
+  Strength:     '#ff8833',
+  Defense:      '#4488cc',
+  Hitpoints:    '#cc3333',
+  Ranged:       '#44aa44',
+  Prayer:       '#dde8aa',
+  Magic:        '#6688ff',
+  Cooking:      '#e09030',
+  Woodcutting:  '#558833',
+  Fletching:    '#44aa66',
+  Fishing:      '#4499cc',
+  Firemaking:   '#ff6622',
+  Crafting:     '#cc8844',
+  Smithing:     '#aaaaaa',
+  Mining:       '#8877cc',
+  Herblore:     '#44cc55',
+  Agility:      '#ffcc33',
+  Thieving:     '#aa44bb',
+  Slayer:       '#dd2222',
+  Farming:      '#77aa33',
+  Runecrafting: '#ddaaff',
+  Construction: '#cc9955',
+};
+
 // Static requires are mandatory for React Native's Metro bundler
 export const SKILL_ICONS: Record<string, ReturnType<typeof require>> = {
   Attack:       require('../../assets/icons/skills/attack.png'),

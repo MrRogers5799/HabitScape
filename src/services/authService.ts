@@ -298,6 +298,12 @@ export function validatePassword(
  * @param uid - The user's Firebase UID
  * @param timezone - IANA timezone string (e.g. "America/New_York")
  */
+export async function updateUserDisplayName(uid: string, displayName: string): Promise<void> {
+  const { updateDoc, doc } = await import('firebase/firestore');
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { displayName });
+}
+
 export async function updateUserTimezone(uid: string, timezone: string): Promise<void> {
   const { updateDoc, doc } = await import('firebase/firestore');
   const userRef = doc(db, 'users', uid);

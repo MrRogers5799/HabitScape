@@ -28,8 +28,9 @@ import { useActivities } from '../context/ActivitiesContext';
 import { Skill } from '../types';
 import { calculateLevel, calculateProgress, formatXP } from '../utils/xpCalculations';
 import { ProgressBar } from '../components/ProgressBar';
-import { SKILL_ICONS } from '../constants/osrsSkills';
-import { colors } from '../constants/colors';
+import { SKILL_ICONS, SKILL_COLORS } from '../constants/osrsSkills';
+import { colors, bevel } from '../constants/colors';
+import { fonts } from '../constants/typography';
 
 /**
  * Skills Hub Screen Component
@@ -68,7 +69,10 @@ export function SkillsHubScreen() {
         {SKILL_ICONS[skill.skillName] ? (
           <Image
             source={SKILL_ICONS[skill.skillName]}
-            style={styles.skillIcon}
+            style={[
+              styles.skillIcon,
+              { filter: `drop-shadow(0 0 4px ${SKILL_COLORS[skill.skillName] ?? '#888888'}66)` } as any,
+            ]}
             resizeMode="contain"
           />
         ) : (
@@ -80,8 +84,11 @@ export function SkillsHubScreen() {
           {skill.skillName}
         </Text>
 
-        {/* Level X/99 */}
-        <Text style={styles.levelText}>{currentLevel}/99</Text>
+        {/* Level — large number + /99 in smaller muted text */}
+        <Text style={styles.levelRow}>
+          <Text style={styles.levelValue}>{currentLevel}</Text>
+          <Text style={styles.levelMax}>/99</Text>
+        </Text>
 
         {/* Current XP */}
         <Text style={styles.xpLabel}>XP: {formatXP(skill.totalXP)}</Text>
@@ -147,7 +154,7 @@ export function SkillsHubScreen() {
 
       {/* Footer with Total Level */}
       <View style={styles.footer}>
-        <Text style={styles.totalLevelLabel}>Total Level:</Text>
+        <Text style={styles.totalLevelLabel}>TOTAL LEVEL</Text>
         <Text style={styles.totalLevelValue}>{totalLevel}</Text>
       </View>
     </View>
@@ -167,19 +174,18 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    ...bevel.raised,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
+    fontSize: 16,
     color: colors.gold,
   },
   gridContent: {
     paddingHorizontal: 8,
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   gridRow: {
     justifyContent: 'space-between',
@@ -188,36 +194,45 @@ const styles = StyleSheet.create({
   skillCell: {
     width: '32%',
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 4,
     paddingVertical: 10,
     paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    ...bevel.raised,
   },
   skillIcon: {
-    width: 36,
-    height: 36,
-    marginBottom: 4,
+    width: 38,
+    height: 38,
+    marginBottom: 7,
     imageRendering: 'pixelated',
   } as any,
   skillName: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 3,
-    height: 24,
+    marginBottom: 1,
+    height: 22,
   },
-  levelText: {
-    fontSize: 16,
-    fontWeight: '700',
+  levelRow: {
+    lineHeight: 28,
+    marginBottom: 1,
+  },
+  levelValue: {
+    fontFamily: fonts.display,
+    fontSize: 28,
     color: colors.gold,
-    marginBottom: 2,
+    lineHeight: 28,
+  },
+  levelMax: {
+    fontFamily: fonts.display,
+    fontSize: 17,
+    color: colors.textSecondary,
+    lineHeight: 28,
   },
   xpLabel: {
-    fontSize: 9,
+    fontFamily: fonts.display,
+    fontSize: 13,
     color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 4,
@@ -228,48 +243,50 @@ const styles = StyleSheet.create({
   },
   footer: {
     backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    ...bevel.raised,
   },
   totalLevelLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
+    fontSize: 9,
     color: colors.textSecondary,
   },
   totalLevelValue: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontFamily: fonts.display,
+    fontSize: 38,
     color: colors.gold,
   },
   loadingText: {
-    fontSize: 14,
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textSecondary,
     marginTop: 8,
   },
   emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.display,
+    fontSize: 20,
     color: colors.textSecondary,
     marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 13,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
     paddingHorizontal: 32,
   },
   errorText: {
-    fontSize: 16,
+    fontFamily: fonts.display,
+    fontSize: 20,
     color: colors.error,
-    fontWeight: '600',
   },
   errorDetail: {
-    fontSize: 12,
+    fontFamily: fonts.display,
+    fontSize: 16,
     color: colors.textSecondary,
     marginTop: 4,
   },

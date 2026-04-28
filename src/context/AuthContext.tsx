@@ -19,6 +19,7 @@ import {
   logOut as firebaseLogOut,
   onAuthStateChange,
   getUserProfile,
+  updateUserDisplayName,
   updateUserTimezone,
   changePassword as firebaseChangePassword,
 } from '../services/authService';
@@ -124,6 +125,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function handleUpdateDisplayName(displayName: string): Promise<void> {
+    if (!user) throw new Error('Not authenticated');
+    setError(null);
+    await updateUserDisplayName(user.uid, displayName);
+    setUser(prev => prev ? { ...prev, displayName } : prev);
+  }
+
   async function handleUpdateTimezone(timezone: string): Promise<void> {
     if (!user) throw new Error('Not authenticated');
     setError(null);
@@ -164,6 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp: handleSignUp,
     logIn: handleLogIn,
     logOut: handleLogOut,
+    updateDisplayName: handleUpdateDisplayName,
     updateTimezone: handleUpdateTimezone,
     changePassword: handleChangePassword,
   };

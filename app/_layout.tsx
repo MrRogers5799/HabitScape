@@ -4,9 +4,25 @@ import { ActivitiesProvider } from '@/src/context/ActivitiesContext';
 import { Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
+import { VT323_400Regular } from '@expo-google-fonts/vt323';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    PressStart2P: PressStart2P_400Regular,
+    VT323: VT323_400Regular,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
+
   return (
     <SafeAreaProvider>
       <AuthProvider>
@@ -20,4 +36,3 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
-

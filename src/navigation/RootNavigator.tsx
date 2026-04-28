@@ -9,8 +9,10 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image } from 'react-native';
+import { PlatformPressable } from '@react-navigation/elements';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
+import { fonts } from '../constants/typography';
 
 const TAB_ICONS = {
   activities: require('../../assets/icons/tabs/activities.png'),
@@ -43,14 +45,31 @@ function TabNavigator() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: 1,
+          borderTopColor: colors.bevelLight,
+          borderTopWidth: 2,
+          height: 58,
         },
         tabBarActiveTintColor: colors.gold,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
+          fontFamily: fonts.display,
+          fontSize: 15,
+        },
+        tabBarButton: (props) => {
+          const focused = (props as any).accessibilityState?.selected;
+          return (
+            <PlatformPressable
+              {...(props as any)}
+              style={[
+                (props as any).style,
+                focused && {
+                  borderTopWidth: 2,
+                  borderTopColor: colors.gold,
+                  backgroundColor: colors.surfaceSunken,
+                },
+              ]}
+            />
+          );
         },
       }}
     >
