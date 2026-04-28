@@ -542,18 +542,21 @@ export async function removeUserActivity(
  */
 export async function updateActivityStreaks(
   userId: string,
-  updates: { activityId: string; currentStreak: number; longestStreak: number; lastStreakCheckWeek: string }[]
+  updates: { activityId: string; currentStreak: number; longestStreak: number; lastStreakCheckDate?: string; lastStreakCheckWeek?: string }[]
 ): Promise<void> {
   if (updates.length === 0) return;
   try {
     const batch = writeBatch(db);
     for (const u of updates) {
       const ref = doc(db, 'users', userId, 'userActivities', u.activityId);
-      batch.update(ref, {
+      const fields: Record<string, unknown> = {
         currentStreak: u.currentStreak,
         longestStreak: u.longestStreak,
-        lastStreakCheckWeek: u.lastStreakCheckWeek,
-      });
+      };
+      if (u.lastStreakCheckDate !== undefined) fields.lastStreakCheckDate = u.lastStreakCheckDate;
+      if (u.lastStreakCheckWeek !== undefined) fields.lastStreakCheckWeek = u.lastStreakCheckWeek;
+      if (u.streakVersion !== undefined) fields.streakVersion = u.streakVersion;
+      batch.update(ref, fields);
     }
     await batch.commit();
   } catch (error) {

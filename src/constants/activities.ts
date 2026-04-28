@@ -150,11 +150,11 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
   },
   {
     id: 'hydration',
-    activityName: 'Drink 8 Glasses Water',
+    activityName: 'Drink 8 Glasses Water (64 oz)',
     skillId: 'Hitpoints',
     baseXP: 50,
     category: 'health',
-    description: 'Daily hydration goal',
+    description: 'Daily hydration goal — 8 cups / 64 oz of water',
     defaultCadence: 'daily',
     availableCadences: ['daily'],
   },
@@ -300,6 +300,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
 
   // ===== COOKING =====
   // Real-world theme: nutrition, preparing food, culinary skill
+  {
+    id: 'home-cooked-meal',
+    activityName: 'Eat a Home Cooked Meal',
+    skillId: 'Cooking',
+    baseXP: 150,
+    category: 'health',
+    description: 'Cook and eat a meal at home instead of eating out',
+    defaultCadence: 'daily',
+    availableCadences: ['daily', '5x/week', '4x/week', '3x/week', '2x/week'],
+  },
   {
     id: 'meal-prep',
     activityName: 'Meal Prep',

@@ -26,7 +26,7 @@ import {
   undoActivityCompletion,
   updateActivityStreaks,
 } from '../services/firestoreService';
-import { computeAllStreakUpdates } from '../utils/streakUtils';
+import { computeCompletionStreakUpdate, computeStreakResets, computeUndoStreakUpdate } from '../utils/streakUtils';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
@@ -130,23 +130,21 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
   }, [user]);
 
   /**
-   * Once per session, evaluate whether any activities need their streak updated.
-   * Runs when both activities and completions are fully loaded, and only writes
-   * to Firestore if at least one activity has crossed a week boundary.
+   * On app load, reset streaks for missed days (daily) or missed weekly targets (non-daily).
    */
   useEffect(() => {
     if (!user || !userActivities.length || loading) return;
 
-    const updates = computeAllStreakUpdates(userActivities, completions);
-    if (updates.length === 0) return;
+    const resets = computeStreakResets(userActivities, completions);
+    if (resets.length === 0) return;
 
-    updateActivityStreaks(user.uid, updates).catch(err =>
-      console.error('Streak update failed:', err)
+    updateActivityStreaks(user.uid, resets).catch(err =>
+      console.error('Streak reset failed:', err)
     );
   }, [user, userActivities, completions, loading]);
 
   /**
-   * Complete an activity and grant XP
+   * Complete an activity and grant XP, then immediately increment its streak.
    */
   const handleCompleteActivity = useCallback(
     async (activityId: string) => {
@@ -155,14 +153,21 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
       try {
         setError(null);
         await completeActivity(user.uid, activityId);
-        // Real-time listener will update completions automatically
+
+        const activity = userActivities.find(a => a.id === activityId);
+        if (activity) {
+          const streakUpdate = computeCompletionStreakUpdate(activity, completions);
+          if (streakUpdate) {
+            await updateActivityStreaks(user.uid, [streakUpdate]);
+          }
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to complete activity';
         setError(message);
         throw err;
       }
     },
-    [user]
+    [user, userActivities, completions]
   );
 
   /**
@@ -250,7 +255,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
   );
 
   /**
-   * Undo an activity completion and revoke XP
+   * Undo an activity completion and revoke XP, then recompute the streak.
    */
   const handleUndoCompletion = useCallback(
     async (completionId: string) => {
@@ -262,9 +267,22 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
       try {
         console.log('🔄 Undo context: Processing completion', completionId);
         setError(null);
+
+        const undoneCompletion = completions.find(c => c.id === completionId);
+
         await undoActivityCompletion(user.uid, completionId);
         console.log('✅ Undo context: Completion deleted successfully');
-        // Real-time listener will update completions automatically
+
+        if (undoneCompletion) {
+          const activity = userActivities.find(a => a.id === undoneCompletion.activityId);
+          if (activity) {
+            const remainingCompletions = completions.filter(c => c.id !== completionId);
+            const streakUpdate = computeUndoStreakUpdate(activity, remainingCompletions);
+            if (streakUpdate) {
+              await updateActivityStreaks(user.uid, [streakUpdate]);
+            }
+          }
+        }
       } catch (err) {
         console.error('❌ Undo context error:', err);
         const message = err instanceof Error ? err.message : 'Failed to undo completion';
@@ -272,7 +290,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
         throw err;
       }
     },
-    [user]
+    [user, completions, userActivities]
   );
 
   /**

@@ -67,11 +67,13 @@ export function SkillsHubScreen() {
       <View style={styles.skillCell}>
         {/* Skill Icon */}
         {SKILL_ICONS[skill.skillName] ? (
-          <Image
-            source={SKILL_ICONS[skill.skillName]}
-            style={styles.skillIcon}
-            resizeMode="contain"
-          />
+          <View style={{ filter: `drop-shadow(0 0 4px ${SKILL_COLORS[skill.skillName] ?? '#888888'}66)` } as any}>
+            <Image
+              source={SKILL_ICONS[skill.skillName]}
+              style={styles.skillIcon}
+              resizeMode="contain"
+            />
+          </View>
         ) : (
           <View style={styles.skillIcon} />
         )}

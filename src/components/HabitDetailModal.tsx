@@ -190,13 +190,13 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
                   <Text style={styles.statValue}>
-                    {currentStreak > 0 ? `🔥 ${currentStreak}w` : '—'}
+                    {currentStreak > 0 ? `🔥 ${currentStreak}` : '—'}
                   </Text>
                   <Text style={styles.statLabel}>Streak</Text>
                 </View>
                 <View style={[styles.statItem, styles.statBorder]}>
                   <Text style={styles.statValue}>
-                    {longestStreak > 0 ? `${longestStreak}w` : '—'}
+                    {longestStreak > 0 ? `${longestStreak}` : '—'}
                   </Text>
                   <Text style={styles.statLabel}>Best</Text>
                 </View>

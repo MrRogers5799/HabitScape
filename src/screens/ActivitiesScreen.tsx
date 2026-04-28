@@ -306,7 +306,7 @@ export function ActivitiesScreen() {
           <Text style={styles.skillName}>
             {activity.skillId} • +{activity.xpPerCompletion} XP
             {(activity.currentStreak ?? 0) > 0
-              ? `  🔥 ${activity.currentStreak}w`
+              ? `  🔥 ${activity.currentStreak}`
               : ''}
           </Text>
         </View>

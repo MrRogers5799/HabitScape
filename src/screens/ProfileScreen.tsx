@@ -190,7 +190,7 @@ export function ProfileScreen() {
           <Text style={styles.statLabel}>Completions</Text>
         </View>
         <View style={[styles.statCell, styles.statBorder]}>
-          <Text style={styles.statValue}>{longestStreak > 0 ? `${longestStreak}w` : '—'}</Text>
+          <Text style={styles.statValue}>{longestStreak > 0 ? `${longestStreak}` : '—'}</Text>
           <Text style={styles.statLabel}>Best Streak</Text>
         </View>
       </View>

@@ -10,7 +10,7 @@
  * Cadence Type - represents how frequently an activity should be completed
  * Examples: daily (7x/week), 3x/week, weekly (1x/week), monthly
  */
-export type Cadence = 'daily' | '5x/week' | '4x/week' | '3x/week' | '2x/week' | 'weekly' | 'monthly';
+export type Cadence = 'daily' | '6x/week' | '5x/week' | '4x/week' | '3x/week' | '2x/week' | 'weekly' | 'monthly';
 
 /**
  * User object - represents a user account in the system
@@ -103,12 +103,16 @@ export interface UserActivity {
   selectedAt: Date;
   /** When this activity's completion counter resets */
   nextResetTime: Date;
-  /** Consecutive weeks the user has met their quota (0 if never or broken) */
+  /** Consecutive completions (daily) or total completions since last reset (non-daily) */
   currentStreak: number;
   /** All-time highest streak for this activity */
   longestStreak: number;
-  /** ISO date string (YYYY-MM-DD) of the Monday when streaks were last evaluated */
-  lastStreakCheckWeek: string;
+  /** ISO date string (YYYY-MM-DD) of the last day a completion was logged — daily cadence only */
+  lastStreakCheckDate?: string;
+  /** ISO date string (YYYY-MM-DD) of the Monday when the weekly target was last evaluated — non-daily cadences */
+  lastStreakCheckWeek?: string;
+  /** Streak system version — used to trigger one-time migrations. Current version: 2 */
+  streakVersion?: number;
 }
 
 /**

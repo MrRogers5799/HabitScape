@@ -28,6 +28,12 @@ export const CADENCE_CONFIG: Record<Cadence, {
     timesPerWeek: 7,
     multiplier: 1.00,
   },
+  '6x/week': {
+    label: '6x/week',
+    description: 'Six times per week',
+    timesPerWeek: 6,
+    multiplier: 1.00,
+  },
   '5x/week': {
     label: '5x/week',
     description: 'Five times per week',
@@ -160,7 +166,7 @@ export function calculateNextResetTime(cadence: Cadence, userTimezone: string): 
     return nextMonday;
   }
 
-  if (cadence === '2x/week' || cadence === '3x/week' || cadence === '4x/week' || cadence === '5x/week') {
+  if (cadence === '2x/week' || cadence === '3x/week' || cadence === '4x/week' || cadence === '5x/week' || cadence === '6x/week') {
     // For multi-week cadences, reset happens daily (user picks their days)
     // For MVP simplicity, we'll treat it as daily reset for the checklist
     return tomorrow;

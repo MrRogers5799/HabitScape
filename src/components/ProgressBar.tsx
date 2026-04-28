@@ -32,7 +32,6 @@ export function ProgressBar({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    overflow: 'hidden',
     justifyContent: 'center',
     paddingHorizontal: 1,
     ...bevel.inset,
