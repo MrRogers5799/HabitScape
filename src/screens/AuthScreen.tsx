@@ -220,9 +220,9 @@ function Moon() {
         backgroundColor: '#fff8cc',
         shadowColor: '#ffe888',
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.9,
-        shadowRadius: 18 * scale,
-        elevation: 8,
+        shadowOpacity: 0.4,
+        shadowRadius: 8 * scale,
+        elevation: 4,
       }}
     />
   );
@@ -368,41 +368,41 @@ function LandscapeSVG() {
       </Defs>
 
       {/* Distant haze hills */}
-      <Path d="M0,120 C70,88 160,108 230,94 C290,82 350,100 390,90 L390,240 L0,240 Z" fill="#1e3d14" />
+      <Path d="M0,120 C70,88 160,108 230,94 C290,82 350,100 390,90 L390,240 L0,240 Z" fill="#15280e" />
 
       {/* Rear tower left */}
-      <Rect x="150" y="88" width="20" height="62" fill="#19191f" />
-      <Rect x="148" y="80" width="7"  height="10" fill="#19191f" />
-      <Rect x="158" y="80" width="7"  height="10" fill="#19191f" />
-      <Rect x="168" y="80" width="5"  height="10" fill="#19191f" />
+      <Rect x="150" y="88" width="20" height="62" fill="#16161c" />
+      <Rect x="148" y="80" width="7"  height="10" fill="#16161c" />
+      <Rect x="158" y="80" width="7"  height="10" fill="#16161c" />
+      <Rect x="168" y="80" width="5"  height="10" fill="#16161c" />
 
       {/* Main keep */}
-      <Rect x="168" y="68" width="54" height="92" fill="#1d1d26" />
-      <Rect x="166" y="57" width="10" height="13" fill="#1d1d26" />
-      <Rect x="180" y="57" width="10" height="13" fill="#1d1d26" />
-      <Rect x="194" y="57" width="10" height="13" fill="#1d1d26" />
-      <Rect x="208" y="57" width="10" height="13" fill="#1d1d26" />
+      <Rect x="168" y="68" width="54" height="92" fill="#18181e" />
+      <Rect x="166" y="57" width="10" height="13" fill="#18181e" />
+      <Rect x="180" y="57" width="10" height="13" fill="#18181e" />
+      <Rect x="194" y="57" width="10" height="13" fill="#18181e" />
+      <Rect x="208" y="57" width="10" height="13" fill="#18181e" />
 
       {/* Rear tower right */}
-      <Rect x="220" y="88" width="20" height="62" fill="#19191f" />
-      <Rect x="217" y="80" width="5"  height="10" fill="#19191f" />
-      <Rect x="225" y="80" width="7"  height="10" fill="#19191f" />
-      <Rect x="235" y="80" width="7"  height="10" fill="#19191f" />
+      <Rect x="220" y="88" width="20" height="62" fill="#16161c" />
+      <Rect x="217" y="80" width="5"  height="10" fill="#16161c" />
+      <Rect x="225" y="80" width="7"  height="10" fill="#16161c" />
+      <Rect x="235" y="80" width="7"  height="10" fill="#16161c" />
 
       {/* Flag pole + pennant */}
-      <Rect x="193" y="28" width="2" height="30" fill="#26263c" />
-      <Polygon points="195,30 210,36 195,43" fill="#3c2860" opacity="0.9" />
+      <Rect x="193" y="28" width="2" height="30" fill="#22223a" />
+      <Polygon points="195,30 210,36 195,43" fill="#38245a" opacity="0.9" />
 
       {/* Gate */}
-      <Rect    x="181" y="128" width="28" height="32" fill="#111116" />
-      <Ellipse cx="195" cy="128" rx="14" ry="9" fill="#111116" />
-      <Rect x="183" y="128" width="2" height="32" fill="#1d1d26" opacity="0.6" />
-      <Rect x="189" y="128" width="2" height="32" fill="#1d1d26" opacity="0.6" />
-      <Rect x="195" y="128" width="2" height="32" fill="#1d1d26" opacity="0.6" />
-      <Rect x="201" y="128" width="2" height="32" fill="#1d1d26" opacity="0.6" />
-      <Rect x="207" y="128" width="2" height="32" fill="#1d1d26" opacity="0.6" />
-      <Rect x="183" y="134" width="26" height="2" fill="#1d1d26" opacity="0.6" />
-      <Rect x="183" y="142" width="26" height="2" fill="#1d1d26" opacity="0.6" />
+      <Rect    x="181" y="128" width="28" height="32" fill="#0e0e10" />
+      <Ellipse cx="195" cy="128" rx="14" ry="9" fill="#0e0e10" />
+      <Rect x="183" y="128" width="2" height="32" fill="#18181e" opacity="0.6" />
+      <Rect x="189" y="128" width="2" height="32" fill="#18181e" opacity="0.6" />
+      <Rect x="195" y="128" width="2" height="32" fill="#18181e" opacity="0.6" />
+      <Rect x="201" y="128" width="2" height="32" fill="#18181e" opacity="0.6" />
+      <Rect x="207" y="128" width="2" height="32" fill="#18181e" opacity="0.6" />
+      <Rect x="183" y="134" width="26" height="2" fill="#18181e" opacity="0.6" />
+      <Rect x="183" y="142" width="26" height="2" fill="#18181e" opacity="0.6" />
 
       {/* Animated glowing windows — driven by winAnims, no overlay needed */}
       {WINDOW_SVG.map((w, i) => (
@@ -419,26 +419,26 @@ function LandscapeSVG() {
       <Ellipse cx="208" cy="92"  rx="14" ry="10" fill="#ff8800" opacity="0.05" />
 
       {/* Mid hills */}
-      <Path d="M0,158 C55,136 115,152 175,141 C225,132 285,150 390,138 L390,240 L0,240 Z" fill="#263e1a" />
+      <Path d="M0,158 C55,136 115,152 175,141 C225,132 285,150 390,138 L390,240 L0,240 Z" fill="#1c2e14" />
 
       {/* Trees — left cluster */}
-      <Rect x="28"  y="158" width="4" height="22" fill="#192e0c" /><Ellipse cx="30"  cy="151" rx="14" ry="12" fill="#1e3e10" />
-      <Rect x="64"  y="153" width="4" height="24" fill="#192e0c" /><Ellipse cx="66"  cy="145" rx="16" ry="13" fill="#204012" />
-      <Rect x="98"  y="156" width="4" height="20" fill="#192e0c" /><Ellipse cx="100" cy="149" rx="13" ry="11" fill="#1c3c10" />
-      <Rect x="128" y="158" width="3" height="18" fill="#192e0c" /><Ellipse cx="130" cy="152" rx="11" ry="10" fill="#1a3a0e" />
+      <Rect x="28"  y="158" width="4" height="22" fill="#12230a" /><Ellipse cx="30"  cy="151" rx="14" ry="12" fill="#162d0c" />
+      <Rect x="64"  y="153" width="4" height="24" fill="#12230a" /><Ellipse cx="66"  cy="145" rx="16" ry="13" fill="#182e0d" />
+      <Rect x="98"  y="156" width="4" height="20" fill="#12230a" /><Ellipse cx="100" cy="149" rx="13" ry="11" fill="#152a0b" />
+      <Rect x="128" y="158" width="3" height="18" fill="#12230a" /><Ellipse cx="130" cy="152" rx="11" ry="10" fill="#13280a" />
 
       {/* Trees — right cluster */}
-      <Rect x="262" y="156" width="4" height="20" fill="#192e0c" /><Ellipse cx="264" cy="149" rx="13" ry="11" fill="#1c3c10" />
-      <Rect x="294" y="153" width="4" height="24" fill="#192e0c" /><Ellipse cx="296" cy="145" rx="16" ry="13" fill="#204012" />
-      <Rect x="328" y="157" width="4" height="21" fill="#192e0c" /><Ellipse cx="330" cy="150" rx="14" ry="12" fill="#1e3e10" />
-      <Rect x="360" y="158" width="3" height="19" fill="#192e0c" /><Ellipse cx="362" cy="151" rx="11" ry="10" fill="#1a3a0e" />
+      <Rect x="262" y="156" width="4" height="20" fill="#12230a" /><Ellipse cx="264" cy="149" rx="13" ry="11" fill="#152a0b" />
+      <Rect x="294" y="153" width="4" height="24" fill="#12230a" /><Ellipse cx="296" cy="145" rx="16" ry="13" fill="#182e0d" />
+      <Rect x="328" y="157" width="4" height="21" fill="#12230a" /><Ellipse cx="330" cy="150" rx="14" ry="12" fill="#162d0c" />
+      <Rect x="360" y="158" width="3" height="19" fill="#12230a" /><Ellipse cx="362" cy="151" rx="11" ry="10" fill="#13280a" />
 
       {/* Foreground hill */}
-      <Path d="M0,178 C70,163 150,176 230,169 C300,163 355,174 390,168 L390,240 L0,240 Z" fill="#2e5020" />
+      <Path d="M0,178 C70,163 150,176 230,169 C300,163 355,174 390,168 L390,240 L0,240 Z" fill="#233e18" />
 
       {/* Ground strip + mist */}
-      <Rect x="0" y="220" width="390" height="20" fill="#1e3610" />
-      <Path d="M0,192 C80,184 170,194 260,186 C320,181 360,192 390,187 L390,240 L0,240 Z" fill="rgba(30,54,16,0.55)" />
+      <Rect x="0" y="220" width="390" height="20" fill="#182a0d" />
+      <Path d="M0,192 C80,184 170,194 260,186 C320,181 360,192 390,187 L390,240 L0,240 Z" fill="rgba(22,40,12,0.55)" />
     </Svg>
   );
 }
