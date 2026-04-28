@@ -516,7 +516,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
     <View style={s.scene}>
       {/* 1 ─ Sky gradient */}
       <LinearGradient
-        colors={['#030210', '#06041a', '#0a0818', '#0c1010', '#0d1a0a']}
+        colors={['#070520', '#0c0a28', '#10101e', '#121618', '#101f10']}
         locations={[0, 0.2, 0.45, 0.65, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -706,7 +706,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  scene: { flex: 1, backgroundColor: '#030210' },
+  scene: { flex: 1, backgroundColor: '#070520' },
 
   // Vignette edges
   vigTop:    { position: 'absolute', top: 0,    left: 0, right: 0,  height: '40%' },

@@ -1,9 +1,9 @@
 export const colors = {
   // Backgrounds — warm dark brown, lifted slightly for mobile readability
-  background:     '#241c0c',
-  surface:        '#332918',
-  surfaceRaised:  '#443826',
-  surfaceSunken:  '#1a1208',   // carved-stone section headers
+  background:     '#2a1f0e',
+  surface:        '#382e1a',
+  surfaceRaised:  '#4a3e2a',
+  surfaceSunken:  '#201608',   // carved-stone section headers
 
   // Borders
   border:         '#5c4a28',
