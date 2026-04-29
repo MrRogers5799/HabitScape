@@ -356,9 +356,10 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
                   {currentStreak > 0 ? (
-                    <Text style={styles.statValue}>
-                      {'🔥 '}<Text style={styles.statValueGold}>{currentStreak}</Text>
-                    </Text>
+                    <View style={styles.streakDisplay}>
+                      <Text style={styles.streakEmoji}>🔥</Text>
+                      <Text style={styles.statValueGold}>{currentStreak}</Text>
+                    </View>
                   ) : (
                     <Text style={styles.statValue}>—</Text>
                   )}
@@ -609,6 +610,16 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: colors.gold,
     marginBottom: 2,
+  },
+  streakDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginBottom: 2,
+  },
+  streakEmoji: {
+    fontSize: 18,
+    lineHeight: 26,
   },
   statLabel: {
     fontFamily: fonts.heading,
