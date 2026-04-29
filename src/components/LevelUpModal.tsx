@@ -1,6 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { colors } from '../constants/colors';
+import { ConfettiBurst } from './ConfettiBurst';
+
+// To enable the level-up sound:
+// 1. Drop an MP3 into assets/sounds/levelup.mp3
+// 2. Replace `null` below with: require('../../assets/sounds/levelup.mp3')
+const LEVELUP_SOUND_FILE: number | null = null;
 
 interface LevelUpModalProps {
   visible: boolean;
@@ -14,19 +22,33 @@ export function LevelUpModal({ visible, skillName, newLevel, onClose }: LevelUpM
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (visible) {
-      scale.setValue(0.5);
-      opacity.setValue(0);
-      Animated.parallel([
-        Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
-      ]).start();
+    if (!visible) return;
+
+    scale.setValue(0.5);
+    opacity.setValue(0);
+    Animated.parallel([
+      Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+    ]).start();
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    let sound: Audio.Sound | null = null;
+    if (LEVELUP_SOUND_FILE !== null) {
+      Audio.Sound.createAsync(LEVELUP_SOUND_FILE, { shouldPlay: true })
+        .then(({ sound: s }) => { sound = s; })
+        .catch(() => {});
     }
+
+    return () => {
+      sound?.unloadAsync();
+    };
   }, [visible]);
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.overlay}>
+        <ConfettiBurst active={visible} />
         <Animated.View style={[styles.card, { opacity, transform: [{ scale }] }]}>
           <Text style={styles.congratsText}>LEVEL UP!</Text>
           <Text style={styles.skillName}>{skillName}</Text>

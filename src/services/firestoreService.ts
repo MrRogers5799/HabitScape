@@ -621,3 +621,58 @@ export async function undoActivityCompletion(
     throw error;
   }
 }
+
+/**
+ * COMPLETE ONBOARDING - Atomic batch write for the first-time user flow.
+ *
+ * In a single Firestore batch:
+ *  1. Sets user.profileComplete = true and saves the display name
+ *  2. Creates a userActivity document for every activity the user selected
+ *
+ * @param userId    - The user's Firebase UID
+ * @param displayName - Chosen adventurer name (may be empty string)
+ * @param activities  - Activities selected during onboarding with their cadences
+ * @param timezone  - User's timezone for nextResetTime calculation
+ */
+export async function completeOnboarding(
+  userId: string,
+  displayName: string,
+  activities: { templateId: string; cadence: Cadence; skillId: string; baseXP: number }[],
+  timezone: string
+): Promise<void> {
+  try {
+    const batch = writeBatch(db);
+
+    const userRef = doc(db, 'users', userId);
+    batch.update(userRef, {
+      profileComplete: true,
+      displayName: displayName.trim(),
+    });
+
+    for (const { templateId, cadence, skillId, baseXP } of activities) {
+      const xpPerCompletion = calculateXPPerCompletion(baseXP, cadence);
+      const nextResetTime = calculateNextResetTime(cadence, timezone);
+      const activityRef = doc(db, 'users', userId, 'userActivities', templateId);
+      batch.set(activityRef, {
+        id: templateId,
+        activityTemplateId: templateId,
+        skillId,
+        cadence,
+        cadenceMultiplier: 1,
+        xpPerCompletion,
+        isActive: true,
+        selectedAt: Timestamp.now(),
+        nextResetTime: Timestamp.fromDate(nextResetTime),
+        currentStreak: 0,
+        longestStreak: 0,
+        streakVersion: 2,
+      });
+    }
+
+    await batch.commit();
+    console.log(`✅ Onboarding complete for user ${userId} with ${activities.length} activities`);
+  } catch (error) {
+    console.error('❌ Error completing onboarding:', error);
+    throw error;
+  }
+}

@@ -26,7 +26,6 @@ import { auth, db } from './firebase';
 import { User } from '../types';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { OSRS_SKILLS } from '../constants/osrsSkills';
-import { ACTIVITY_TEMPLATES, DEFAULT_USER_ACTIVITIES } from '../constants/activities';
 
 /**
  * Sign up a new user with email and password
@@ -89,44 +88,7 @@ export async function signUp(
     });
 
     await Promise.all(skillsInitPromises);
-
-    // Step 4: Initialize default activities for this user
-    // This creates userActivities documents for each default activity
-    const defaultActivitiesPromises = DEFAULT_USER_ACTIVITIES.map(activityId => {
-      // Find the activity template
-      const template = ACTIVITY_TEMPLATES.find(a => a.id === activityId);
-      if (!template) {
-        console.warn(`⚠️ Activity template not found: ${activityId}`);
-        return Promise.resolve();
-      }
-
-      const cadence = template.defaultCadence || template.availableCadences[0];
-      const xpPerCompletion = template.baseXP;
-
-      // Create userActivity document
-      const userActivityRef = doc(
-        db,
-        'users',
-        firebaseUser.uid,
-        'userActivities',
-        template.id
-      );
-      return setDoc(userActivityRef, {
-        id: template.id,
-        activityTemplateId: template.id,
-        skillId: template.skillId,
-        cadence,
-        cadenceMultiplier: 1,
-        xpPerCompletion,
-        isActive: true,
-        selectedAt: new Date(),
-        nextResetTime: new Date(), // Will be calculated in the context
-      });
-    });
-
-    const activityResults = await Promise.all(defaultActivitiesPromises);
-    const createdCount = activityResults.filter(r => r !== undefined).length;
-    console.log(`✅ User ${email} signed up successfully with ${createdCount} default activities`);
+    console.log(`✅ User ${email} signed up successfully — activities will be set during onboarding`);
   } catch (error) {
     // Handle specific Firebase Auth errors
     if (error instanceof Error) {
@@ -318,6 +280,12 @@ export async function updateUserTimezone(uid: string, timezone: string): Promise
  * @param currentPassword - The user's existing password (for reauthentication)
  * @param newPassword - The desired new password
  */
+export async function setProfileComplete(uid: string): Promise<void> {
+  const { updateDoc, doc } = await import('firebase/firestore');
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { profileComplete: true });
+}
+
 export async function changePassword(
   currentPassword: string,
   newPassword: string

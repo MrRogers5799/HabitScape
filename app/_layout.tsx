@@ -1,6 +1,7 @@
 import { AuthProvider } from '@/src/context/AuthContext';
 import { SkillsProvider } from '@/src/context/SkillsContext';
 import { ActivitiesProvider } from '@/src/context/ActivitiesContext';
+import { WorkoutProvider } from '@/src/context/WorkoutContext';
 import { Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -28,8 +29,10 @@ export default function RootLayout() {
       <AuthProvider>
         <SkillsProvider>
           <ActivitiesProvider>
-            <Slot />
-            <StatusBar barStyle="light-content" />
+            <WorkoutProvider>
+              <Slot />
+              <StatusBar barStyle="light-content" />
+            </WorkoutProvider>
           </ActivitiesProvider>
         </SkillsProvider>
       </AuthProvider>

@@ -179,6 +179,11 @@ export interface AuthContextType {
   updateTimezone: (timezone: string) => Promise<void>;
   /** Change the user's password (requires current password for reauthentication) */
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  /** Finalize onboarding: saves display name + selected activities, sets profileComplete: true */
+  completeOnboarding: (
+    displayName: string,
+    activities: { templateId: string; cadence: Cadence; skillId: string; baseXP: number }[]
+  ) => Promise<void>;
 }
 
 /**
@@ -197,6 +202,65 @@ export interface SkillsContextType {
   /** Function to get a specific skill by ID */
   getSkill: (skillId: string) => Skill | undefined;
 }
+
+// ─── Workout Types (#10) ──────────────────────────────────────────────────────
+
+export interface WorkoutTemplate {
+  id: string;
+  name: string;
+  /** Optional: links to an OSRS skill so completing a session grants XP */
+  linkedSkillId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface TemplateExercise {
+  id: string;
+  templateId: string;
+  name: string;
+  defaultSets: number;
+  /** Optional rep target shown during a session, e.g. "8-12", "5x5", "AMRAP" */
+  repRange?: string;
+  /** Zero-based position for display ordering */
+  sortOrder: number;
+  createdAt: Date;
+}
+
+export type WeightUnit = 'kg' | 'lbs';
+
+export interface WorkoutSession {
+  id: string;
+  templateId: string;
+  /** Denormalized so history survives template rename/delete */
+  templateName: string;
+  startedAt: Date;
+  /** null while the session is still in progress */
+  completedAt: Date | null;
+  notes?: string;
+}
+
+export interface SetLog {
+  id: string;
+  sessionId: string;
+  exerciseId: string;
+  /** Denormalized so history survives exercise rename/delete */
+  exerciseName: string;
+  setNumber: number;
+  reps: number | null;
+  weight: number | null;
+  unit: WeightUnit;
+  completedAt: Date;
+}
+
+/**
+ * Firestore schema (all under users/{uid}/):
+ *   workoutTemplates/{templateId}                  → WorkoutTemplate
+ *   workoutTemplates/{templateId}/exercises/{id}   → TemplateExercise
+ *   workoutSessions/{sessionId}                    → WorkoutSession
+ *   workoutSessions/{sessionId}/sets/{setId}       → SetLog
+ */
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * ActivitiesContextType - type for activities context provider

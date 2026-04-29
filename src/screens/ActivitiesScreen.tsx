@@ -31,6 +31,7 @@ import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { SKILL_COLORS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import * as Haptics from 'expo-haptics';
 import { XPDrop } from '../components/XPDrop';
 import { LevelUpModal } from '../components/LevelUpModal';
 import { HabitDetailModal } from '../components/HabitDetailModal';
@@ -94,6 +95,7 @@ export function ActivitiesScreen() {
     const levelBefore = skillBefore ? calculateLevel(skillBefore.totalXP) : 1;
     try {
       setCompletingId(activity.id);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       await completeActivity(activity.id);
 
       // Show XP drop
@@ -208,7 +210,7 @@ export function ActivitiesScreen() {
       const { count, target } = getActivityProgress(activity);
       if (count >= target) return true;
       // For Nx/week, also gate if already done today (can't log same day twice)
-      if (['5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence)) {
+      if (['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence)) {
         return countCompletionDaysInWindow(activity.id, getTodayStart()) > 0;
       }
       return false;
@@ -228,7 +230,7 @@ export function ActivitiesScreen() {
    * Organize activities by cadence. Section subtitle reflects the correct period.
    */
   const sections = useMemo(() => {
-    const cadences: Cadence[] = ['daily', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly', 'monthly'];
+    const cadences: Cadence[] = ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly', 'monthly'];
     const allSections = [];
 
     for (const cadence of cadences) {
@@ -268,7 +270,7 @@ export function ActivitiesScreen() {
     const activityName = template?.activityName || activity.id;
     const { count, target, periodLabel } = getActivityProgress(activity);
     const quotaMet = count >= target;
-    const isNxWeek = ['5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence);
+    const isNxWeek = ['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence);
     // For Nx/week: gated-today means done today but quota not yet met
     const doneToday = isNxWeek && !quotaMet && gated;
 
@@ -313,10 +315,12 @@ export function ActivitiesScreen() {
                 </View>
               );
             })()}
-            <Text style={styles.skillMetaText}>
-              +{activity.xpPerCompletion} XP
-              {(activity.currentStreak ?? 0) > 0 ? `  🔥 ${activity.currentStreak}` : ''}
-            </Text>
+            <Text style={styles.skillMetaText}>+{activity.xpPerCompletion} XP</Text>
+            {(activity.currentStreak ?? 0) > 0 && (
+              <Text style={styles.streakText}>
+                {'🔥 '}<Text style={styles.streakValue}>{activity.currentStreak}</Text>
+              </Text>
+            )}
           </View>
         </View>
 
@@ -689,6 +693,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: 15,
     color: colors.textSecondary,
+  },
+  streakText: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.textSecondary,
+  },
+  streakValue: {
+    fontFamily: fonts.display,
+    fontSize: 26,
+    color: colors.gold,
   },
   rowChevron: {
     fontFamily: fonts.display,

@@ -23,6 +23,7 @@ import {
   updateUserTimezone,
   changePassword as firebaseChangePassword,
 } from '../services/authService';
+import { completeOnboarding as firestoreCompleteOnboarding } from '../services/firestoreService';
 import { User, AuthContextType } from '../types';
 
 /**
@@ -144,6 +145,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await firebaseChangePassword(currentPassword, newPassword);
   }
 
+  async function handleCompleteOnboarding(
+    displayName: string,
+    activities: { templateId: string; cadence: import('../types').Cadence; skillId: string; baseXP: number }[]
+  ): Promise<void> {
+    if (!user) throw new Error('Not authenticated');
+    await firestoreCompleteOnboarding(user.uid, displayName, activities, user.timezone);
+    setUser(prev => prev ? { ...prev, profileComplete: true, displayName: displayName.trim() } : prev);
+  }
+
   /**
    * Handle user logout
    */
@@ -175,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateDisplayName: handleUpdateDisplayName,
     updateTimezone: handleUpdateTimezone,
     changePassword: handleChangePassword,
+    completeOnboarding: handleCompleteOnboarding,
   };
 
   return (

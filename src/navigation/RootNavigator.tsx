@@ -10,6 +10,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -23,10 +24,12 @@ const TAB_ICONS = {
 
 // Screens
 import { AuthScreen } from '../screens/AuthScreen';
+import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { ActivitiesScreen } from '../screens/ActivitiesScreen';
 import { SkillsHubScreen } from '../screens/SkillsHubScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { WorkoutNavigator } from './WorkoutNavigator';
 
 // Navigation instances
 const Stack = createNativeStackNavigator();
@@ -112,6 +115,23 @@ function TabNavigator() {
         }}
       />
 
+      {/* Workout Tab */}
+      <Tab.Screen
+        name="WorkoutTab"
+        component={WorkoutNavigator}
+        options={{
+          title: 'Workout',
+          tabBarLabel: 'Workout',
+          tabBarIcon: ({ focused, size }) => (
+            <MaterialCommunityIcons
+              name="dumbbell"
+              size={size}
+              color={focused ? colors.gold : colors.textSecondary}
+            />
+          ),
+        }}
+      />
+
       {/* Settings Tab */}
       <Tab.Screen
         name="SettingsTab"
@@ -149,22 +169,26 @@ export function RootNavigator() {
       }}
     >
       {!user ? (
-        // Auth Stack - shown when user is NOT logged in
+        // Not logged in → Auth
         <Stack.Screen
           name="Auth"
           component={AuthScreen}
-          options={{
-            animationTypeForReplace: 'pop',
-          }}
+          options={{ animationTypeForReplace: 'pop' }}
+        />
+      ) : user.profileComplete === false ? (
+        // Logged in but hasn't completed onboarding yet
+        // Note: undefined (old accounts) falls through to App — only strict false triggers onboarding
+        <Stack.Screen
+          name="Onboarding"
+          component={OnboardingScreen}
+          options={{ animationTypeForReplace: 'push' }}
         />
       ) : (
-        // App Stack - shown when user IS logged in
+        // Fully set up → main app
         <Stack.Screen
           name="App"
           component={TabNavigator}
-          options={{
-            animationTypeForReplace: 'pop',
-          }}
+          options={{ animationTypeForReplace: 'pop' }}
         />
       )}
     </Stack.Navigator>
