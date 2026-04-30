@@ -175,9 +175,8 @@ export function RootNavigator() {
           component={AuthScreen}
           options={{ animationTypeForReplace: 'pop' }}
         />
-      ) : user.profileComplete === false ? (
-        // Logged in but hasn't completed onboarding yet
-        // Note: undefined (old accounts) falls through to App — only strict false triggers onboarding
+      ) : user.profileComplete !== true ? (
+        // Logged in but hasn't completed onboarding
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}
