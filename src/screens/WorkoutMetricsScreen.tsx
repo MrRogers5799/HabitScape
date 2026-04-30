@@ -309,7 +309,7 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
     if (!user) return;
     getTemplateSessionHistory(user.uid, templateId)
       .then(h => setHistory(h))
-      .catch(() => {})
+      .catch(e => Alert.alert('Could not load history', e?.message ?? String(e)))
       .finally(() => setLoading(false));
   }, [user?.uid, templateId]);
 

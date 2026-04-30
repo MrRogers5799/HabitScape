@@ -236,7 +236,7 @@ export function TemplateDetailScreen({ route, navigation }: Props) {
       user.uid,
       templateId,
       ex => { setExercises(ex); setLoadingExercises(false); },
-      () => setLoadingExercises(false)
+      (e: Error) => { setLoadingExercises(false); Alert.alert('Could not load exercises', e?.message ?? String(e)); }
     );
     return unsub;
   }, [user?.uid, templateId]);
