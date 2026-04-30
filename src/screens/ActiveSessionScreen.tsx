@@ -463,7 +463,7 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 14 }]}>
         <TouchableOpacity style={styles.abandonBtn} onPress={handleAbandon}>
           <Text style={styles.abandonBtnText}>✕ End</Text>
         </TouchableOpacity>
@@ -551,8 +551,8 @@ const styles = StyleSheet.create({
   // Header
   header: {
     backgroundColor: colors.surface,
-    paddingHorizontal: 14,
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,

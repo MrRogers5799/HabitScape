@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle, Path, Text as SvgText } from 'react-native-svg';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParamList } from '../navigation/WorkoutNavigator';
@@ -22,52 +22,110 @@ import { fonts } from '../constants/typography';
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'WorkoutMetrics'>;
 type SessionEntry = { session: WorkoutSession; sets: SetLog[] };
 
+type ProgressPoint = {
+  date: Date;
+  volume: number;      // Σ(weight × reps) across all sets
+  maxWeight: number;   // heaviest single set
+  est1RM: number;      // Epley: max(weight × (1 + reps/30))
+  isPR: boolean;       // volume exceeds all prior sessions for this exercise
+};
+
 type ExerciseProgress = {
   name: string;
   unit: string;
-  points: Array<{ date: Date; maxWeight: number }>;
+  points: ProgressPoint[];
 };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatVolume(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}k`;
+  return String(Math.round(v));
+}
+
+function calcEst1RM(sets: SetLog[]): number {
+  return Math.round(
+    Math.max(
+      0,
+      ...sets.map(s => {
+        if (!s.weight || !s.reps || s.reps <= 0) return 0;
+        return s.weight * (1 + s.reps / 30); // Epley formula
+      })
+    )
+  );
+}
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
 
-function SparkLine({ values, width, height = 60 }: { values: number[]; width: number; height?: number }) {
-  if (values.length < 2) return null;
+function SparkLine({
+  points,
+  width,
+  height = 64,
+}: {
+  points: ProgressPoint[];
+  width: number;
+  height?: number;
+}) {
+  if (points.length < 1) return null;
+
+  const values = points.map(p => p.volume);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
-  const pad = 8;
+  const pad = 10;
   const cw = width - pad * 2;
-  const ch = height - pad * 2;
-  const xStep = cw / (values.length - 1);
+  const ch = height - pad * 2 - 14; // leave 14px room at top for PR labels
 
-  const pts = values.map((v, i) => ({
-    x: pad + i * xStep,
-    y: pad + ch - ((v - min) / range) * ch,
+  const coords = values.map((v, i) => ({
+    x: points.length === 1 ? width / 2 : pad + (i / (points.length - 1)) * cw,
+    y: pad + 14 + ch - ((v - min) / range) * ch,
   }));
 
-  const d = pts
-    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+  const d = coords
+    .map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`)
     .join(' ');
 
   return (
     <Svg width={width} height={height}>
-      <Path
-        d={d}
-        stroke={colors.gold}
-        strokeWidth={2}
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {pts.map((p, i) => (
-        <Circle
-          key={i}
-          cx={p.x}
-          cy={p.y}
-          r={i === pts.length - 1 ? 4 : 2.5}
-          fill={i === pts.length - 1 ? colors.gold : `${colors.gold}77`}
+      {points.length > 1 && (
+        <Path
+          d={d}
+          stroke={colors.gold}
+          strokeWidth={2}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-      ))}
+      )}
+      {coords.map((c, i) => {
+        const isLast = i === coords.length - 1;
+        const isPR = points[i].isPR;
+        return (
+          <React.Fragment key={i}>
+            {isPR && (
+              <SvgText
+                x={c.x}
+                y={c.y - 9}
+                fill={colors.successText}
+                fontSize={8}
+                fontWeight="bold"
+                textAnchor="middle"
+              >
+                PR
+              </SvgText>
+            )}
+            <Circle
+              cx={c.x}
+              cy={c.y}
+              r={isPR || isLast ? 5 : 3}
+              fill={isPR ? colors.successText : isLast ? colors.gold : `${colors.gold}55`}
+              stroke={isPR ? colors.success : 'none'}
+              strokeWidth={isPR ? 1.5 : 0}
+            />
+          </React.Fragment>
+        );
+      })}
     </Svg>
   );
 }
@@ -84,6 +142,7 @@ function SessionCard({
   onToggle: () => void;
 }) {
   const { session, sets } = item;
+
   const grouped: Record<string, SetLog[]> = {};
   for (const s of sets) {
     if (!grouped[s.exerciseName]) grouped[s.exerciseName] = [];
@@ -93,6 +152,11 @@ function SessionCard({
   const durationMin = Math.round(
     (session.completedAt!.getTime() - session.startedAt.getTime()) / 60000
   );
+  const sessionVolume = sets.reduce(
+    (sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0),
+    0
+  );
+  const unit = sets[0]?.unit ?? 'lbs';
 
   return (
     <View style={styles.sessionCard}>
@@ -106,7 +170,11 @@ function SessionCard({
             })}
           </Text>
           <Text style={styles.sessionSummary}>
-            {exerciseNames.length} exercise{exerciseNames.length !== 1 ? 's' : ''} · {sets.length} set{sets.length !== 1 ? 's' : ''} · {durationMin}m
+            {exerciseNames.length} exercise{exerciseNames.length !== 1 ? 's' : ''}
+            {' · '}
+            {formatVolume(sessionVolume)} {unit} volume
+            {' · '}
+            {durationMin}m
           </Text>
         </View>
         <Text style={styles.chevron}>{expanded ? '▲' : '▼'}</Text>
@@ -114,21 +182,36 @@ function SessionCard({
 
       {expanded && (
         <View style={styles.sessionCardBody}>
-          {exerciseNames.map(name => (
-            <View key={name} style={styles.exGroup}>
-              <Text style={styles.exGroupName}>{name}</Text>
-              {grouped[name].map(s => (
-                <View key={s.id} style={styles.setLogRow}>
-                  <Text style={styles.setLogNum}>Set {s.setNumber}</Text>
-                  <Text style={styles.setLogVal}>
-                    {s.weight != null ? `${s.weight} ${s.unit}` : '—'}
-                    {' × '}
-                    {s.reps != null ? `${s.reps} reps` : '—'}
+          {exerciseNames.map(name => {
+            const exSets = grouped[name];
+            const exVolume = exSets.reduce(
+              (sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0),
+              0
+            );
+            return (
+              <View key={name} style={styles.exGroup}>
+                <View style={styles.exGroupHeader}>
+                  <Text style={styles.exGroupName}>{name}</Text>
+                  <Text style={styles.exGroupVolume}>
+                    {formatVolume(exVolume)} {exSets[0]?.unit}
                   </Text>
                 </View>
-              ))}
-            </View>
-          ))}
+                {exSets.map(s => (
+                  <View key={s.id} style={styles.setLogRow}>
+                    <Text style={styles.setLogNum}>Set {s.setNumber}</Text>
+                    <Text style={styles.setLogVal}>
+                      {s.weight != null ? `${s.weight} ${s.unit}` : '—'}
+                      {' × '}
+                      {s.reps != null ? `${s.reps} reps` : '—'}
+                      {s.weight && s.reps
+                        ? `  =  ${formatVolume(s.weight * s.reps)} ${s.unit}`
+                        : ''}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            );
+          })}
         </View>
       )}
     </View>
@@ -154,36 +237,51 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
       .finally(() => setLoading(false));
   }, []);
 
-  // Per-exercise progress points (oldest → newest for charts)
+  // Build per-exercise progress (oldest → newest for chart)
   const exerciseProgress = useMemo<ExerciseProgress[]>(() => {
     const map = new Map<string, ExerciseProgress>();
+
     for (const { session, sets } of history) {
       if (!session.completedAt) continue;
+
       const byEx: Record<string, SetLog[]> = {};
       for (const s of sets) {
         if (!byEx[s.exerciseName]) byEx[s.exerciseName] = [];
         byEx[s.exerciseName].push(s);
       }
+
       for (const [name, exSets] of Object.entries(byEx)) {
-        const weights = exSets.map(s => s.weight ?? 0).filter(w => w > 0);
-        if (weights.length === 0) continue;
         if (!map.has(name)) map.set(name, { name, unit: exSets[0].unit, points: [] });
-        map.get(name)!.points.push({
-          date: session.completedAt!,
-          maxWeight: Math.max(...weights),
-        });
+        const ep = map.get(name)!;
+
+        const volume = exSets.reduce(
+          (sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0),
+          0
+        );
+        const maxWeight = Math.max(0, ...exSets.map(s => s.weight ?? 0));
+        const est1RM = calcEst1RM(exSets);
+        const prevMaxVolume = ep.points.length > 0
+          ? Math.max(...ep.points.map(p => p.volume))
+          : -Infinity;
+        const isPR = ep.points.length > 0 && volume > prevMaxVolume;
+
+        ep.points.push({ date: session.completedAt!, volume, maxWeight, est1RM, isPR });
       }
     }
+
     return Array.from(map.values())
-      .filter(ep => ep.points.length >= 2)
+      .filter(ep => ep.points.length >= 1)
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [history]);
 
-  // Newest-first for history list
   const historyDesc = useMemo(() => [...history].reverse(), [history]);
 
-  const totalSets = history.reduce((acc, { sets }) => acc + sets.length, 0);
-  // 24px horizontal screen padding × 2 + 12px card padding × 2
+  const totalVolume = history.reduce(
+    (sum, { sets }) =>
+      sum + sets.reduce((s2, s) => s2 + (s.weight ?? 0) * (s.reps ?? 0), 0),
+    0
+  );
+  const unit = history[0]?.sets[0]?.unit ?? 'lbs';
   const chartWidth = screenWidth - 72;
 
   return (
@@ -233,8 +331,8 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statCell}>
-                <Text style={styles.statValue}>{totalSets}</Text>
-                <Text style={styles.statLabel}>total sets</Text>
+                <Text style={styles.statValue}>{formatVolume(totalVolume)}</Text>
+                <Text style={styles.statLabel}>total {unit}</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statCell}>
@@ -248,42 +346,66 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
               </View>
             </View>
 
-            {/* Progress charts — OSRS green quest panel, only shown with ≥ 2 sessions per exercise */}
+            {/* Progress */}
             {exerciseProgress.length > 0 && (
-              <View style={styles.progressSection}>
-                <Text style={styles.progressSectionTitle}>Progress</Text>
+              <>
+                <Text style={styles.sectionTitle}>Progress</Text>
                 {exerciseProgress.map(ep => {
                   const latest = ep.points[ep.points.length - 1];
                   const first = ep.points[0];
-                  const delta = latest.maxWeight - first.maxWeight;
+                  const volumeDelta = ep.points.length > 1
+                    ? latest.volume - first.volume
+                    : 0;
+                  const prCount = ep.points.filter(p => p.isPR).length;
+
                   return (
-                    <View key={ep.name} style={styles.progressCard}>
+                    <View key={ep.name} style={[styles.progressCard, latest.isPR && styles.progressCardPR]}>
+                      {/* Name + volume + delta */}
                       <View style={styles.progressCardHeader}>
                         <Text style={styles.progressExName}>{ep.name}</Text>
-                        <View style={styles.progressLatestGroup}>
-                          <Text style={styles.progressLatestWeight}>
-                            {latest.maxWeight} {ep.unit}
+                        <View style={styles.progressCardRight}>
+                          <Text style={styles.progressVolume}>
+                            {formatVolume(latest.volume)} {ep.unit}
                           </Text>
-                          {delta !== 0 && (
-                            <Text style={[styles.progressDelta, delta > 0 ? styles.progressDeltaUp : styles.progressDeltaDown]}>
-                              {delta > 0 ? `+${delta}` : delta}
+                          {volumeDelta !== 0 && (
+                            <Text style={[
+                              styles.progressDelta,
+                              volumeDelta > 0 ? styles.progressDeltaUp : styles.progressDeltaDown,
+                            ]}>
+                              {volumeDelta > 0 ? '+' : ''}{formatVolume(volumeDelta)}
                             </Text>
                           )}
                         </View>
                       </View>
-                      <SparkLine values={ep.points.map(p => p.maxWeight)} width={chartWidth} />
-                      <View style={styles.chartAxisRow}>
-                        <Text style={styles.chartAxisLabel}>
-                          {first.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                        </Text>
-                        <Text style={styles.chartAxisLabel}>
-                          {latest.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                        </Text>
-                      </View>
+
+                      {/* Inline secondary stats */}
+                      <Text style={styles.progressMeta}>
+                        {latest.maxWeight} {ep.unit} max
+                        {'  ·  '}
+                        Est. 1RM {latest.est1RM} {ep.unit}
+                        {prCount > 0 ? `  ·  ${prCount} PR${prCount !== 1 ? 's' : ''}` : ''}
+                      </Text>
+
+                      {/* Sparkline */}
+                      {ep.points.length >= 2 && (
+                        <>
+                          <SparkLine points={ep.points} width={chartWidth} />
+                          <View style={styles.chartAxisRow}>
+                            <Text style={styles.chartAxisLabel}>
+                              {first.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </Text>
+                            <Text style={styles.chartAxisLabelCenter}>volume ({ep.unit})</Text>
+                            <Text style={styles.chartAxisLabel}>
+                              {latest.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </Text>
+                          </View>
+                        </>
+                      )}
                     </View>
                   );
                 })}
-              </View>
+                <View style={styles.sectionSpacer} />
+              </>
             )}
 
             {/* Session history */}
@@ -312,8 +434,9 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 14,
     backgroundColor: colors.surface,
     ...bevel.raised,
   },
@@ -325,7 +448,7 @@ const styles = StyleSheet.create({
   // Scroll
   scroll: { paddingHorizontal: 12, paddingBottom: 32, paddingTop: 12 },
 
-  // Action buttons
+  // Actions
   actionRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   startBtn: {
     flex: 2,
@@ -344,7 +467,7 @@ const styles = StyleSheet.create({
   },
   manageBtnText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
 
-  // Empty state
+  // Empty
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 8 },
   emptyTitle: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
   emptySubtext: { fontFamily: fonts.display, fontSize: 14, color: colors.textMuted, textAlign: 'center' },
@@ -358,42 +481,55 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   statCell: { flex: 1, alignItems: 'center', gap: 2 },
-  statValue: { fontFamily: fonts.display, fontSize: 22, color: colors.gold },
+  statValue: { fontFamily: fonts.display, fontSize: 20, color: colors.gold },
   statLabel: { fontFamily: fonts.display, fontSize: 12, color: colors.textMuted },
   statDivider: { width: 1, backgroundColor: colors.border, marginVertical: 4 },
 
-  // Progress section — OSRS green quest-panel style
-  progressSection: {
-    backgroundColor: colors.successSurface,
-    ...bevel.green,
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 8,
-    marginBottom: 16,
-  },
-  progressSectionTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 9,
-    color: colors.successText,
-    marginBottom: 10,
-  },
+  // Progress cards — one per exercise, standard surface
   progressCard: {
-    marginBottom: 14,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 6,
+    marginBottom: 6,
+  },
+  progressCardPR: {
+    borderTopColor: colors.gold,
+    borderLeftColor: colors.gold,
+    borderBottomColor: colors.goldDark,
+    borderRightColor: colors.goldDark,
   },
   progressCardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
-  progressExName: { fontFamily: fonts.display, fontSize: 15, color: colors.successText, flex: 1 },
-  progressLatestGroup: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  progressLatestWeight: { fontFamily: fonts.display, fontSize: 15, color: colors.gold },
-  progressDelta: { fontFamily: fonts.display, fontSize: 13 },
+  progressExName: { fontFamily: fonts.display, fontSize: 16, color: colors.textPrimary, flex: 1 },
+  progressCardRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  progressVolume: { fontFamily: fonts.display, fontSize: 14, color: colors.gold },
+  progressDelta: { fontFamily: fonts.display, fontSize: 12 },
   progressDeltaUp: { color: colors.successText },
   progressDeltaDown: { color: colors.error },
-  chartAxisRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 },
-  chartAxisLabel: { fontFamily: fonts.display, fontSize: 11, color: `${colors.successText}88` },
+  progressMeta: {
+    fontFamily: fonts.display,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginBottom: 4,
+  },
+
+  // Chart axis
+  chartAxisRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+    marginBottom: 2,
+  },
+  chartAxisLabel: { fontFamily: fonts.display, fontSize: 11, color: colors.textMuted },
+  chartAxisLabelCenter: { fontFamily: fonts.display, fontSize: 10, color: colors.textDisabled },
+  sectionSpacer: { height: 10 },
 
   // Section title
   sectionTitle: {
@@ -421,7 +557,7 @@ const styles = StyleSheet.create({
   sessionSummary: { fontFamily: fonts.display, fontSize: 13, color: colors.textMuted, marginTop: 2 },
   chevron: { fontFamily: fonts.display, fontSize: 11, color: colors.textMuted, marginLeft: 8 },
 
-  // Session card body
+  // Session body
   sessionCardBody: {
     borderTopWidth: 1,
     borderTopColor: colors.border,
@@ -430,8 +566,15 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
   },
-  exGroup: { marginBottom: 10 },
-  exGroupName: { fontFamily: fonts.display, fontSize: 14, color: colors.gold, marginBottom: 4 },
+  exGroup: { marginBottom: 12 },
+  exGroupHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  exGroupName: { fontFamily: fonts.display, fontSize: 14, color: colors.gold },
+  exGroupVolume: { fontFamily: fonts.display, fontSize: 13, color: colors.textMuted },
   setLogRow: { flexDirection: 'row', gap: 10, paddingVertical: 2 },
   setLogNum: { fontFamily: fonts.display, fontSize: 13, color: colors.textMuted, width: 48 },
   setLogVal: { fontFamily: fonts.display, fontSize: 13, color: colors.textSecondary },

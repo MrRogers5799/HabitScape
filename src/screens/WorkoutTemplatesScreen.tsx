@@ -307,10 +307,10 @@ export function WorkoutTemplatesScreen({ navigation }: Props) {
             </View>
             <View style={styles.headerActions}>
               <TouchableOpacity style={styles.headerActionBtn} onPress={() => setImportModalVisible(true)}>
-                <Text style={styles.headerActionText}>📥 Import</Text>
+                <Text style={styles.headerActionText}>Import</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.headerActionBtn} onPress={toggleShareMode}>
-                <Text style={styles.headerActionText}>📤 Share</Text>
+                <Text style={styles.headerActionText}>Share</Text>
               </TouchableOpacity>
             </View>
           </View>
