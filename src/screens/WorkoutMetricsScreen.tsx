@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   useWindowDimensions,
   View,
@@ -15,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParamList } from '../navigation/WorkoutNavigator';
 import { useAuth } from '../context/AuthContext';
 import { SetLog, WorkoutSession } from '../types';
-import { getTemplateSessionHistory } from '../services/workoutService';
+import { getTemplateSessionHistory, updateSetLog } from '../services/workoutService';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
@@ -130,18 +132,26 @@ function SparkLine({
   );
 }
 
-// ─── Session card (collapsible) ───────────────────────────────────────────────
+// ─── Session card (collapsible + inline set editing) ─────────────────────────
 
 function SessionCard({
   item,
   expanded,
+  userId,
   onToggle,
+  onSetUpdated,
 }: {
   item: SessionEntry;
   expanded: boolean;
+  userId: string;
   onToggle: () => void;
+  onSetUpdated: (sessionId: string, setId: string, weight: number | null, reps: number | null) => void;
 }) {
   const { session, sets } = item;
+  const [editingSetId, setEditingSetId] = useState<string | null>(null);
+  const [editWeight, setEditWeight] = useState('');
+  const [editReps, setEditReps] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const grouped: Record<string, SetLog[]> = {};
   for (const s of sets) {
@@ -152,11 +162,29 @@ function SessionCard({
   const durationMin = Math.round(
     (session.completedAt!.getTime() - session.startedAt.getTime()) / 60000
   );
-  const sessionVolume = sets.reduce(
-    (sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0),
-    0
-  );
+  const sessionVolume = sets.reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0);
   const unit = sets[0]?.unit ?? 'lbs';
+
+  function startEdit(s: SetLog) {
+    setEditingSetId(s.id);
+    setEditWeight(s.weight != null ? String(s.weight) : '');
+    setEditReps(s.reps != null ? String(s.reps) : '');
+  }
+
+  async function confirmEdit(s: SetLog) {
+    setSaving(true);
+    const weight = editWeight ? parseFloat(editWeight) : null;
+    const reps = editReps ? parseInt(editReps, 10) : null;
+    try {
+      await updateSetLog(userId, session.id, s.id, weight, reps);
+      onSetUpdated(session.id, s.id, weight, reps);
+      setEditingSetId(null);
+    } catch {
+      Alert.alert('Error', 'Could not save changes.');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <View style={styles.sessionCard}>
@@ -164,9 +192,7 @@ function SessionCard({
         <View style={styles.sessionCardMeta}>
           <Text style={styles.sessionDate}>
             {session.completedAt!.toLocaleDateString(undefined, {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
+              weekday: 'short', month: 'short', day: 'numeric',
             })}
           </Text>
           <Text style={styles.sessionSummary}>
@@ -184,31 +210,80 @@ function SessionCard({
         <View style={styles.sessionCardBody}>
           {exerciseNames.map(name => {
             const exSets = grouped[name];
-            const exVolume = exSets.reduce(
-              (sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0),
-              0
-            );
+            const exVolume = exSets.reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0);
             return (
               <View key={name} style={styles.exGroup}>
                 <View style={styles.exGroupHeader}>
                   <Text style={styles.exGroupName}>{name}</Text>
-                  <Text style={styles.exGroupVolume}>
-                    {formatVolume(exVolume)} {exSets[0]?.unit}
-                  </Text>
+                  <Text style={styles.exGroupVolume}>{formatVolume(exVolume)} {exSets[0]?.unit}</Text>
                 </View>
-                {exSets.map(s => (
-                  <View key={s.id} style={styles.setLogRow}>
-                    <Text style={styles.setLogNum}>Set {s.setNumber}</Text>
-                    <Text style={styles.setLogVal}>
-                      {s.weight != null ? `${s.weight} ${s.unit}` : '—'}
-                      {' × '}
-                      {s.reps != null ? `${s.reps} reps` : '—'}
-                      {s.weight && s.reps
-                        ? `  =  ${formatVolume(s.weight * s.reps)} ${s.unit}`
-                        : ''}
-                    </Text>
-                  </View>
-                ))}
+                {exSets.map(s => {
+                  const isEditing = editingSetId === s.id;
+                  return (
+                    <View key={s.id} style={[styles.setLogRow, isEditing && styles.setLogRowEditing]}>
+                      <Text style={styles.setLogNum}>Set {s.setNumber}</Text>
+
+                      {isEditing ? (
+                        <View style={styles.setEditRow}>
+                          <TextInput
+                            style={styles.setEditInput}
+                            value={editWeight}
+                            onChangeText={setEditWeight}
+                            keyboardType="decimal-pad"
+                            placeholder="weight"
+                            placeholderTextColor={colors.textMuted}
+                            selectTextOnFocus
+                            autoFocus
+                          />
+                          <Text style={styles.setEditLabel}>{s.unit} ×</Text>
+                          <TextInput
+                            style={styles.setEditInput}
+                            value={editReps}
+                            onChangeText={setEditReps}
+                            keyboardType="number-pad"
+                            placeholder="reps"
+                            placeholderTextColor={colors.textMuted}
+                            selectTextOnFocus
+                          />
+                          <Text style={styles.setEditLabel}>reps</Text>
+                          <TouchableOpacity
+                            style={styles.setEditConfirm}
+                            onPress={() => confirmEdit(s)}
+                            disabled={saving}
+                          >
+                            {saving
+                              ? <ActivityIndicator size="small" color={colors.background} />
+                              : <Text style={styles.setEditConfirmText}>✓</Text>
+                            }
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.setEditCancel}
+                            onPress={() => setEditingSetId(null)}
+                            disabled={saving}
+                          >
+                            <Text style={styles.setEditCancelText}>✕</Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <Text style={styles.setLogVal}>
+                          {s.weight != null ? `${s.weight} ${s.unit}` : '—'}
+                          {' × '}
+                          {s.reps != null ? `${s.reps} reps` : '—'}
+                          {s.weight && s.reps ? `  =  ${formatVolume(s.weight * s.reps)} ${s.unit}` : ''}
+                        </Text>
+                      )}
+
+                      {!isEditing && (
+                        <TouchableOpacity
+                          style={styles.setEditBtn}
+                          onPress={() => startEdit(s)}
+                        >
+                          <Text style={styles.setEditBtnText}>✎</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  );
+                })}
               </View>
             );
           })}
@@ -275,6 +350,15 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
   }, [history]);
 
   const historyDesc = useMemo(() => [...history].reverse(), [history]);
+
+  function handleSetUpdated(sessionId: string, setId: string, weight: number | null, reps: number | null) {
+    setHistory(prev => prev.map(entry =>
+      entry.session.id !== sessionId ? entry : {
+        ...entry,
+        sets: entry.sets.map(s => s.id === setId ? { ...s, weight, reps } : s),
+      }
+    ));
+  }
 
   const totalVolume = history.reduce(
     (sum, { sets }) =>
@@ -415,7 +499,9 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
                 key={item.session.id}
                 item={item}
                 expanded={expandedIdx === i}
+                userId={user!.uid}
                 onToggle={() => setExpandedIdx(prev => (prev === i ? null : i))}
+                onSetUpdated={handleSetUpdated}
               />
             ))}
           </>
@@ -575,7 +661,56 @@ const styles = StyleSheet.create({
   },
   exGroupName: { fontFamily: fonts.display, fontSize: 14, color: colors.gold },
   exGroupVolume: { fontFamily: fonts.display, fontSize: 13, color: colors.textMuted },
-  setLogRow: { flexDirection: 'row', gap: 10, paddingVertical: 2 },
+  setLogRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 3,
+    gap: 6,
+  },
+  setLogRowEditing: {
+    backgroundColor: colors.background,
+    marginHorizontal: -12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
   setLogNum: { fontFamily: fonts.display, fontSize: 13, color: colors.textMuted, width: 48 },
-  setLogVal: { fontFamily: fonts.display, fontSize: 13, color: colors.textSecondary },
+  setLogVal: { fontFamily: fonts.display, fontSize: 13, color: colors.textSecondary, flex: 1 },
+
+  // Inline edit row
+  setEditRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  setEditInput: {
+    width: 56,
+    fontFamily: fonts.display,
+    fontSize: 14,
+    color: colors.textPrimary,
+    textAlign: 'center',
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    backgroundColor: colors.surface,
+    ...bevel.inset,
+  },
+  setEditLabel: { fontFamily: fonts.display, fontSize: 13, color: colors.textSecondary },
+  setEditConfirm: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.success,
+    ...bevel.green,
+  },
+  setEditConfirmText: { fontFamily: fonts.display, fontSize: 14, color: colors.successText },
+  setEditCancel: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: `${colors.destructive}55`,
+    ...bevel.inset,
+  },
+  setEditCancelText: { fontFamily: fonts.display, fontSize: 14, color: colors.textPrimary },
+  setEditBtn: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  setEditBtnText: { fontFamily: fonts.display, fontSize: 14, color: colors.textMuted },
 });

@@ -247,6 +247,17 @@ export async function deleteSetLog(
   await deleteDoc(doc(db, 'users', userId, 'workoutSessions', sessionId, 'sets', setLogId));
 }
 
+export async function updateSetLog(
+  userId: string,
+  sessionId: string,
+  setLogId: string,
+  weight: number | null,
+  reps: number | null
+): Promise<void> {
+  const ref = doc(db, 'users', userId, 'workoutSessions', sessionId, 'sets', setLogId);
+  await setDoc(ref, { weight, reps }, { merge: true });
+}
+
 // ─── History ──────────────────────────────────────────────────────────────────
 
 export type PrevSets = Record<string, Array<{ weight: number | null; reps: number | null }>>;
