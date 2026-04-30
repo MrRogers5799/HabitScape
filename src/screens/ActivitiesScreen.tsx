@@ -582,8 +582,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 8,
     marginBottom: 6,
-    backgroundColor: colors.background,
-    ...bevel.inset,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
   },
   completionInfo: {
     flex: 1,

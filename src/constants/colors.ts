@@ -62,4 +62,11 @@ export const bevel = {
     borderBottomColor: colors.successDark,
     borderRightColor: colors.successDark,
   },
+  greenInset: {
+    borderWidth: 2,
+    borderTopColor: colors.successDark,
+    borderLeftColor: colors.successDark,
+    borderBottomColor: colors.successLight,
+    borderRightColor: colors.successLight,
+  },
 };

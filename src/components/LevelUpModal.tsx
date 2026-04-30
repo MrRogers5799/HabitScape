@@ -5,10 +5,7 @@ import { Audio } from 'expo-av';
 import { colors } from '../constants/colors';
 import { ConfettiBurst } from './ConfettiBurst';
 
-// To enable the level-up sound:
-// 1. Drop an MP3 into assets/sounds/levelup.mp3
-// 2. Replace `null` below with: require('../../assets/sounds/levelup.mp3')
-const LEVELUP_SOUND_FILE: number | null = null;
+const LEVELUP_SOUND_FILE = require('../../assets/sounds/levelup.m4a');
 
 interface LevelUpModalProps {
   visible: boolean;
@@ -34,11 +31,9 @@ export function LevelUpModal({ visible, skillName, newLevel, onClose }: LevelUpM
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     let sound: Audio.Sound | null = null;
-    if (LEVELUP_SOUND_FILE !== null) {
-      Audio.Sound.createAsync(LEVELUP_SOUND_FILE, { shouldPlay: true })
-        .then(({ sound: s }) => { sound = s; })
-        .catch(() => {});
-    }
+    Audio.Sound.createAsync(LEVELUP_SOUND_FILE, { shouldPlay: true })
+      .then(({ sound: s }) => { sound = s; })
+      .catch(() => {});
 
     return () => {
       sound?.unloadAsync();
