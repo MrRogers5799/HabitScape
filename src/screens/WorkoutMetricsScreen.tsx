@@ -309,8 +309,9 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
     if (!user) return;
     getTemplateSessionHistory(user.uid, templateId)
       .then(h => setHistory(h))
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.uid, templateId]);
 
   // Build per-exercise progress (oldest → newest for chart)
   const exerciseProgress = useMemo<ExerciseProgress[]>(() => {

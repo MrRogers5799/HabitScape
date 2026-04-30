@@ -232,10 +232,12 @@ export function TemplateDetailScreen({ route, navigation }: Props) {
 
   useEffect(() => {
     if (!user) return;
-    const unsub = subscribeToExercises(user.uid, templateId, ex => {
-      setExercises(ex);
-      setLoadingExercises(false);
-    });
+    const unsub = subscribeToExercises(
+      user.uid,
+      templateId,
+      ex => { setExercises(ex); setLoadingExercises(false); },
+      () => setLoadingExercises(false)
+    );
     return unsub;
   }, [user?.uid, templateId]);
 

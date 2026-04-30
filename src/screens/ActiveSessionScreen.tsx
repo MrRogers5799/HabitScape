@@ -271,7 +271,7 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
 
     init();
     return () => { cancelled = true; };
-  }, []);
+  }, [user?.uid, templateId]);
 
   // ── Timer ─────────────────────────────────────────────────────────────────
 

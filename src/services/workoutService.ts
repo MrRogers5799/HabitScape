@@ -81,7 +81,8 @@ export async function deleteWorkoutTemplate(
 export function subscribeToExercises(
   userId: string,
   templateId: string,
-  callback: (exercises: TemplateExercise[]) => void
+  callback: (exercises: TemplateExercise[]) => void,
+  onError?: () => void
 ): Unsubscribe {
   const ref = collection(db, 'users', userId, 'workoutTemplates', templateId, 'exercises');
   const q = query(ref, orderBy('sortOrder', 'asc'));
@@ -99,7 +100,7 @@ export function subscribeToExercises(
       };
     });
     callback(exercises);
-  });
+  }, onError);
 }
 
 export async function addExercise(
