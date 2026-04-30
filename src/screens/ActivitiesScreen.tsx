@@ -1,16 +1,3 @@
-/**
- * Activities Screen (Phase 2)
- * 
- * Displays user's selected activities organized by cadence.
- * Features:
- * - Show only user's selected activities (from userActivities)
- * - Checkbox to complete activities
- * - Real-time XP updates when activities are checked off
- * - Completed section showing today's activity history
- * - Undo button to revoke XP for completed activities
- * - Real-time sync with Firebase
- */
-
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
@@ -49,11 +36,44 @@ interface LevelUpEvent {
   newLevel: number;
 }
 
-/**
- * Activities Screen Component (Phase 2)
- * 
- * Displays user's selected activities with completion history and undo functionality.
- */
+// ── date helpers ──────────────────────────────────────────────────────────────
+
+function startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function startOfWeekFor(d: Date): Date {
+  const daysFromMonday = d.getDay() === 0 ? 6 : d.getDay() - 1;
+  const start = new Date(d);
+  start.setDate(start.getDate() - daysFromMonday);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function startOfMonthFor(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
+}
+
+function endOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+}
+
+function isToday(d: Date): boolean {
+  const today = new Date();
+  return (
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+  );
+}
+
+function dateLabel(d: Date): string {
+  if (isToday(d)) return 'Today';
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+const MAX_BACKFILL_DAYS = 14;
+
 export function ActivitiesScreen() {
   const {
     userActivities,
@@ -61,6 +81,7 @@ export function ActivitiesScreen() {
     loading,
     error,
     completeActivity,
+    completeActivityForDate,
     refreshActivities,
     undoCompletion,
   } = useActivities();
@@ -71,11 +92,39 @@ export function ActivitiesScreen() {
   const [xpDrops, setXPDrops] = useState<XPDropEntry[]>([]);
   const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<UserActivity | null>(null);
-  const [completedCollapsed, setCompletedCollapsed] = useState(true);
+  const [completedCollapsed, setCompletedCollapsed] = useState(false);
 
-  /**
-   * Handle pull-to-refresh
-   */
+  // Selected date for browsing — defaults to today
+  const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
+
+  const viewing = isToday(selectedDate);
+
+  const canGoBack = useMemo(() => {
+    const oldest = startOfDay(new Date());
+    oldest.setDate(oldest.getDate() - MAX_BACKFILL_DAYS);
+    return selectedDate > oldest;
+  }, [selectedDate]);
+
+  const handlePrevDay = () => {
+    if (!canGoBack) return;
+    setSelectedDate(prev => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() - 1);
+      return d;
+    });
+    setCompletedCollapsed(false);
+  };
+
+  const handleNextDay = () => {
+    if (viewing) return;
+    setSelectedDate(prev => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + 1);
+      return d;
+    });
+    setCompletedCollapsed(true);
+  };
+
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
@@ -85,150 +134,130 @@ export function ActivitiesScreen() {
     }
   };
 
+  // ── completion helpers ────────────────────────────────────────────────────
+
   /**
-   * Handle activity completion
+   * Count unique days an activity was completed within [windowStart, windowEnd].
    */
+  const countCompletionDaysInWindow = useCallback(
+    (activityId: string, windowStart: Date, windowEnd: Date): number => {
+      const days = new Set<number>();
+      completions.forEach(c => {
+        if (c.activityId !== activityId) return;
+        const d = new Date(c.completedAt);
+        if (d >= windowStart && d <= windowEnd) {
+          const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+          days.add(dayKey);
+        }
+      });
+      return days.size;
+    },
+    [completions]
+  );
+
+  const getActivityProgress = useCallback(
+    (activity: UserActivity): { count: number; target: number; periodLabel: string } => {
+      const { cadence } = activity;
+      const config = CADENCE_CONFIG[cadence];
+      const end = endOfDay(selectedDate);
+
+      if (cadence === 'daily') {
+        const count = countCompletionDaysInWindow(activity.id, startOfDay(selectedDate), end);
+        return { count, target: 1, periodLabel: viewing ? 'today' : 'that day' };
+      }
+      if (cadence === 'weekly') {
+        const count = countCompletionDaysInWindow(activity.id, startOfWeekFor(selectedDate), end);
+        return { count, target: 1, periodLabel: viewing ? 'this week' : 'that week' };
+      }
+      if (cadence === 'monthly') {
+        const count = countCompletionDaysInWindow(activity.id, startOfMonthFor(selectedDate), end);
+        return { count, target: 1, periodLabel: viewing ? 'this month' : 'that month' };
+      }
+      // Nx/week
+      const count = countCompletionDaysInWindow(activity.id, startOfWeekFor(selectedDate), end);
+      return { count, target: config.timesPerWeek, periodLabel: viewing ? 'this week' : 'that week' };
+    },
+    [completions, selectedDate, viewing, countCompletionDaysInWindow]
+  );
+
+  const isActivityGated = useCallback(
+    (activity: UserActivity): boolean => {
+      const { count, target } = getActivityProgress(activity);
+      if (count >= target) return true;
+      // For Nx/week, also gate if already done on the selected date (one per day)
+      if (['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence)) {
+        return countCompletionDaysInWindow(
+          activity.id,
+          startOfDay(selectedDate),
+          endOfDay(selectedDate)
+        ) > 0;
+      }
+      return false;
+    },
+    [getActivityProgress, countCompletionDaysInWindow, selectedDate]
+  );
+
+  // ── activity completion ───────────────────────────────────────────────────
+
   const handleActivityPress = async (activity: UserActivity, rowY: number) => {
     if (completingId) return;
-    // Snapshot level before the write so we can detect a level-up after
     const skillBefore = skills.find(s => s.skillName === activity.skillId);
     const levelBefore = skillBefore ? calculateLevel(skillBefore.totalXP) : 1;
+
     try {
       setCompletingId(activity.id);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await completeActivity(activity.id);
 
-      // Show XP drop
+      if (viewing) {
+        await completeActivity(activity.id);
+      } else {
+        // Backfill: use noon of the selected date so the timestamp is unambiguous
+        const backfillDate = new Date(selectedDate);
+        backfillDate.setHours(12, 0, 0, 0);
+        await completeActivityForDate(activity.id, backfillDate);
+      }
+
       setXPDrops(prev => [
         ...prev,
         { key: `${activity.id}-${Date.now()}`, xp: activity.xpPerCompletion, skillId: activity.skillId, top: rowY },
       ]);
 
-      // Check for level-up (skills are updated in real-time by the context listener)
       const skillAfter = skills.find(s => s.skillName === activity.skillId);
       const levelAfter = skillAfter ? calculateLevel(skillAfter.totalXP + activity.xpPerCompletion) : levelBefore;
       if (levelAfter > levelBefore) {
         setLevelUpEvent({ skillName: activity.skillId, newLevel: levelAfter });
       }
-    } catch (err) {
+    } catch {
       Alert.alert('Error', 'Failed to complete activity. Please try again.');
     } finally {
       setCompletingId(null);
     }
   };
 
-  /**
-   * Handle undo completion
-   */
   const handleUndoCompletion = useCallback(
     async (completion: ActivityCompletion) => {
       try {
         await undoCompletion(completion.id);
-      } catch (err) {
+      } catch {
         Alert.alert('Error', 'Failed to undo. Please try again.');
       }
     },
     [undoCompletion]
   );
 
-  // --- Period helpers ---
+  // ── completions for selected date ─────────────────────────────────────────
 
-  const getWeekStart = (): Date => {
-    const now = new Date();
-    const daysFromMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
-    const start = new Date(now);
-    start.setDate(start.getDate() - daysFromMonday);
-    start.setHours(0, 0, 0, 0);
-    return start;
-  };
-
-  const getMonthStart = (): Date => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-  };
-
-  const getTodayStart = (): Date => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today;
-  };
-
-  /**
-   * Count unique days an activity was completed within a given window.
-   * Deduplicates multiple completions on the same day.
-   */
-  const countCompletionDaysInWindow = (activityId: string, windowStart: Date): number => {
-    const days = new Set<number>();
-    completions.forEach(c => {
-      if (c.activityId !== activityId) return;
+  const dateCompletions = useMemo(() => {
+    const start = startOfDay(selectedDate);
+    const end = endOfDay(selectedDate);
+    return completions.filter(c => {
       const d = new Date(c.completedAt);
-      if (d >= windowStart) {
-        const dayKey = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-        days.add(dayKey);
-      }
+      return d >= start && d <= end;
     });
-    return days.size;
-  };
+  }, [completions, selectedDate]);
 
-  /**
-   * Returns the completion progress for an activity within its tracking period.
-   * { count, target, periodLabel }
-   */
-  const getActivityProgress = useCallback(
-    (activity: UserActivity): { count: number; target: number; periodLabel: string } => {
-      const { cadence } = activity;
-      const config = CADENCE_CONFIG[cadence];
+  // ── sections ──────────────────────────────────────────────────────────────
 
-      if (cadence === 'daily') {
-        const count = countCompletionDaysInWindow(activity.id, getTodayStart());
-        return { count, target: 1, periodLabel: 'today' };
-      }
-
-      if (cadence === 'weekly') {
-        const count = countCompletionDaysInWindow(activity.id, getWeekStart());
-        return { count, target: 1, periodLabel: 'this week' };
-      }
-
-      if (cadence === 'monthly') {
-        const count = countCompletionDaysInWindow(activity.id, getMonthStart());
-        return { count, target: 1, periodLabel: 'this month' };
-      }
-
-      // Nx/week cadences — target is timesPerWeek
-      const count = countCompletionDaysInWindow(activity.id, getWeekStart());
-      return { count, target: config.timesPerWeek, periodLabel: 'this week' };
-    },
-    [completions]
-  );
-
-  /**
-   * Whether the activity is gated (checkbox should be disabled).
-   * Gated if: done today already, OR weekly/monthly quota is fully met.
-   */
-  const isActivityGated = useCallback(
-    (activity: UserActivity): boolean => {
-      const { count, target } = getActivityProgress(activity);
-      if (count >= target) return true;
-      // For Nx/week, also gate if already done today (can't log same day twice)
-      if (['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence)) {
-        return countCompletionDaysInWindow(activity.id, getTodayStart()) > 0;
-      }
-      return false;
-    },
-    [getActivityProgress]
-  );
-
-  /**
-   * Completions from today, for the "Completed Today" history panel.
-   */
-  const todayCompletions = useMemo(() => {
-    const today = getTodayStart();
-    return completions.filter(c => new Date(c.completedAt) >= today);
-  }, [completions]);
-
-  /**
-   * Organize activities by cadence. Section subtitle reflects the correct period.
-   */
   const sections = useMemo(() => {
     const cadences: Cadence[] = ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly', 'monthly'];
     const allSections = [];
@@ -237,17 +266,15 @@ export function ActivitiesScreen() {
       const cadenceActivities = userActivities.filter(a => a.cadence === cadence);
       if (cadenceActivities.length === 0) continue;
 
-      // Count activities that have fully met their quota for this period
       const metQuotaCount = cadenceActivities.filter(a => {
         const { count, target } = getActivityProgress(a);
         return count >= target;
       }).length;
 
-      const config = CADENCE_CONFIG[cadence];
       const periodLabel =
-        cadence === 'daily' ? 'today'
-        : cadence === 'monthly' ? 'this month'
-        : 'this week';
+        cadence === 'daily' ? (viewing ? 'today' : 'that day')
+        : cadence === 'monthly' ? (viewing ? 'this month' : 'that month')
+        : (viewing ? 'this week' : 'that week');
 
       allSections.push({
         title: getCadenceLabel(cadence),
@@ -258,20 +285,18 @@ export function ActivitiesScreen() {
     }
 
     return allSections;
-  }, [userActivities, completions]);
+  }, [userActivities, completions, selectedDate, viewing]);
 
-  /**
-   * Render a single activity item
-   */
+  // ── render ────────────────────────────────────────────────────────────────
+
   const renderActivityItem = ({ item: activity }: { item: UserActivity }) => {
     const gated = isActivityGated(activity);
     const isLoading = completingId === activity.id;
     const template = ACTIVITY_TEMPLATES.find(t => t.id === activity.id);
     const activityName = template?.activityName || activity.id;
-    const { count, target, periodLabel } = getActivityProgress(activity);
+    const { count, target } = getActivityProgress(activity);
     const quotaMet = count >= target;
     const isNxWeek = ['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence);
-    // For Nx/week: gated-today means done today but quota not yet met
     const doneToday = isNxWeek && !quotaMet && gated;
 
     return (
@@ -280,7 +305,6 @@ export function ActivitiesScreen() {
         onPress={() => setSelectedActivity(activity)}
         activeOpacity={0.7}
       >
-        {/* Checkbox — separate tap target for completion */}
         <TouchableOpacity
           style={[styles.checkbox, gated && styles.checkboxCompleted]}
           onPress={(e) => {
@@ -298,12 +322,8 @@ export function ActivitiesScreen() {
           }
         </TouchableOpacity>
 
-        {/* Activity Info */}
         <View style={styles.activityInfo}>
-          <Text style={[
-            styles.activityName,
-            gated && styles.activityNameCompleted,
-          ]}>
+          <Text style={[styles.activityName, gated && styles.activityNameCompleted]}>
             {activityName}
           </Text>
           <View style={styles.activityMeta}>
@@ -316,7 +336,7 @@ export function ActivitiesScreen() {
               );
             })()}
             <Text style={styles.skillMetaText}>+{activity.xpPerCompletion} XP</Text>
-            {(activity.currentStreak ?? 0) > 0 && (
+            {viewing && (activity.currentStreak ?? 0) > 0 && (
               <Text style={styles.streakText}>
                 {'🔥 '}<Text style={styles.streakValue}>{activity.currentStreak}</Text>
               </Text>
@@ -324,11 +344,10 @@ export function ActivitiesScreen() {
           </View>
         </View>
 
-        {/* Status badge — shows quota progress for Nx/week, "Done" for single-target */}
         {isNxWeek ? (
           <View style={[styles.completedBadge, quotaMet ? styles.quotaMetBadge : styles.progressBadge]}>
             <Text style={styles.completedText}>
-              {doneToday ? `${count}/${target} ✓ today` : `${count}/${target}`}
+              {doneToday ? `${count}/${target} ✓` : `${count}/${target}`}
             </Text>
           </View>
         ) : quotaMet ? (
@@ -342,9 +361,6 @@ export function ActivitiesScreen() {
     );
   };
 
-  /**
-   * Render section header
-   */
   const renderSectionHeader = ({ section }: { section: any }) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -352,11 +368,12 @@ export function ActivitiesScreen() {
     </View>
   );
 
-  /**
-   * Render completed activities section (collapsible)
-   */
   const renderCompletedSection = () => {
-    if (todayCompletions.length === 0) return null;
+    if (dateCompletions.length === 0) return null;
+
+    const panelLabel = viewing
+      ? `Completed Today (${dateCompletions.length})`
+      : `Completed (${dateCompletions.length})`;
 
     return (
       <View style={styles.completedSection}>
@@ -364,15 +381,13 @@ export function ActivitiesScreen() {
           style={styles.completedSectionHeader}
           onPress={() => setCompletedCollapsed(prev => !prev)}
         >
-          <Text style={styles.completedSectionTitle}>
-            Completed Today ({todayCompletions.length})
-          </Text>
+          <Text style={styles.completedSectionTitle}>{panelLabel}</Text>
           <Text style={styles.completedChevron}>
             {completedCollapsed ? '›' : '⌄'}
           </Text>
         </Pressable>
 
-        {!completedCollapsed && todayCompletions.map(completion => {
+        {!completedCollapsed && dateCompletions.map(completion => {
           const activity = userActivities.find(a => a.id === completion.activityId);
           const template = ACTIVITY_TEMPLATES.find(t => t.id === completion.activityId);
           const activityName = template?.activityName || completion.activityId;
@@ -401,10 +416,7 @@ export function ActivitiesScreen() {
               </View>
               <Pressable
                 onPress={() => handleUndoCompletion(completion)}
-                style={({ pressed }) => [
-                  styles.undoButton,
-                  pressed && styles.undoButtonPressed,
-                ]}
+                style={({ pressed }) => [styles.undoButton, pressed && styles.undoButtonPressed]}
               >
                 <Text style={styles.undoButtonText}>↶ Undo</Text>
               </Pressable>
@@ -415,17 +427,17 @@ export function ActivitiesScreen() {
     );
   };
 
-  // Loading state
+  // ── states ────────────────────────────────────────────────────────────────
+
   if (loading && !userActivities.length) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#D4AF37" />
+        <ActivityIndicator size="large" color={colors.gold} />
         <Text style={styles.loadingText}>Loading activities...</Text>
       </View>
     );
   }
 
-  // Error state
   if (error) {
     return (
       <View style={styles.centerContainer}>
@@ -438,7 +450,6 @@ export function ActivitiesScreen() {
     );
   }
 
-  // Empty state
   if (!userActivities.length) {
     return (
       <View style={styles.centerContainer}>
@@ -453,16 +464,30 @@ export function ActivitiesScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* ── Header ── */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Activities</Text>
-        <Text style={styles.headerSubtitle}>
-          {new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'short',
-            day: 'numeric',
-          })}
-        </Text>
+        <View style={styles.dateNav}>
+          <TouchableOpacity
+            onPress={handlePrevDay}
+            disabled={!canGoBack}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={styles.dateNavArrow}
+          >
+            <Text style={[styles.dateNavArrowText, !canGoBack && styles.dateNavArrowDisabled]}>‹</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.dateNavLabel}>{dateLabel(selectedDate)}</Text>
+
+          <TouchableOpacity
+            onPress={handleNextDay}
+            disabled={viewing}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={styles.dateNavArrow}
+          >
+            <Text style={[styles.dateNavArrowText, viewing && styles.dateNavArrowDisabled]}>›</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <SectionList
@@ -471,7 +496,7 @@ export function ActivitiesScreen() {
         renderItem={renderActivityItem}
         renderSectionHeader={renderSectionHeader}
         ListHeaderComponent={renderCompletedSection()}
-        ListEmptyComponent={<Text style={styles.noActivitiesText}>No activities for today</Text>}
+        ListEmptyComponent={<Text style={styles.noActivitiesText}>No activities</Text>}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl
@@ -482,22 +507,19 @@ export function ActivitiesScreen() {
         }
       />
 
-      {/* XP drop animations — rendered above everything, no touch interception */}
+      {/* XP drop animations */}
       <View style={styles.xpDropLayer} pointerEvents="none">
         {xpDrops.map(drop => (
           <View key={drop.key} style={[styles.xpDropAnchor, { top: drop.top - 40 }]}>
             <XPDrop
               xp={drop.xp}
               skillId={drop.skillId}
-              onComplete={() =>
-                setXPDrops(prev => prev.filter(d => d.key !== drop.key))
-              }
+              onComplete={() => setXPDrops(prev => prev.filter(d => d.key !== drop.key))}
             />
           </View>
         ))}
       </View>
 
-      {/* Level-up celebration modal */}
       {levelUpEvent && (
         <LevelUpModal
           visible={!!levelUpEvent}
@@ -507,7 +529,6 @@ export function ActivitiesScreen() {
         />
       )}
 
-      {/* Habit detail modal */}
       <HabitDetailModal
         activity={selectedActivity}
         completions={completions}
@@ -518,10 +539,7 @@ export function ActivitiesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -529,6 +547,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingHorizontal: 20,
   },
+
+  // Header
   header: {
     backgroundColor: colors.surface,
     paddingVertical: 14,
@@ -539,17 +559,36 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 16,
     color: colors.gold,
-    marginBottom: 6,
+    marginBottom: 10,
   },
-  headerSubtitle: {
+  dateNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateNavArrow: {
+    paddingHorizontal: 4,
+  },
+  dateNavArrowText: {
     fontFamily: fonts.display,
-    fontSize: 16,
+    fontSize: 28,
+    color: colors.textPrimary,
+    lineHeight: 28,
+  },
+  dateNavArrowDisabled: {
+    color: colors.bevelDark,
+  },
+  dateNavLabel: {
+    fontFamily: fonts.display,
+    fontSize: 18,
     color: colors.textSecondary,
+    flex: 1,
+    textAlign: 'center',
   },
-  listContent: {
-    paddingVertical: 8,
-  },
-  // Completed Today — green OSRS quest-panel style
+
+  listContent: { paddingVertical: 8 },
+
+  // Completed section
   completedSection: {
     backgroundColor: colors.successSurface,
     marginVertical: 8,
@@ -585,10 +624,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...bevel.raised,
   },
-  completionInfo: {
-    flex: 1,
-    marginRight: 8,
-  },
+  completionInfo: { flex: 1, marginRight: 8 },
   completionName: {
     fontFamily: fonts.display,
     fontSize: 18,
@@ -601,14 +637,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     ...bevel.raised,
   },
-  undoButtonPressed: {
-    opacity: 0.7,
-  },
+  undoButtonPressed: { opacity: 0.7 },
   undoButtonText: {
     fontFamily: fonts.display,
     fontSize: 16,
     color: colors.successText,
   },
+
+  // Section headers
   sectionHeader: {
     backgroundColor: colors.background,
     paddingTop: 14,
@@ -618,16 +654,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  sectionTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 9,
-    color: colors.textPrimary,
-  },
-  sectionSubtitle: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
+  sectionTitle: { fontFamily: fonts.heading, fontSize: 9, color: colors.textPrimary },
+  sectionSubtitle: { fontFamily: fonts.display, fontSize: 16, color: colors.textSecondary },
+
   // Activity rows
   activityItem: {
     flexDirection: 'row',
@@ -639,10 +668,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...bevel.raised,
   },
-  activityItemCompleted: {
-    backgroundColor: colors.successSurface,
-    opacity: 0.85,
-  },
+  activityItemCompleted: { backgroundColor: colors.successSurface, opacity: 0.85 },
   checkbox: {
     width: 22,
     height: 22,
@@ -652,58 +678,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     ...bevel.inset,
   },
-  checkboxCompleted: {
-    backgroundColor: colors.success,
-    ...bevel.inset,
-  },
-  checkmark: {
-    color: colors.successText,
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  activityInfo: {
-    flex: 1,
-  },
-  activityName: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  activityNameCompleted: {
-    color: colors.textSecondary,
-    textDecorationLine: 'line-through',
-  },
-  activityMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  skillBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderWidth: 1,
-  },
-  skillBadgeText: {
-    fontFamily: fonts.display,
-    fontSize: 14,
-  },
-  skillMetaText: {
-    fontFamily: fonts.display,
-    fontSize: 15,
-    color: colors.textSecondary,
-  },
-  streakText: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.textSecondary,
-  },
-  streakValue: {
-    fontFamily: fonts.display,
-    fontSize: 26,
-    color: colors.gold,
-  },
+  checkboxCompleted: { backgroundColor: colors.success, ...bevel.inset },
+  checkmark: { color: colors.successText, fontWeight: 'bold', fontSize: 13 },
+  activityInfo: { flex: 1 },
+  activityName: { fontFamily: fonts.display, fontSize: 20, color: colors.textPrimary, marginBottom: 2 },
+  activityNameCompleted: { color: colors.textSecondary, textDecorationLine: 'line-through' },
+  activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  skillBadge: { paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1 },
+  skillBadgeText: { fontFamily: fonts.display, fontSize: 14 },
+  skillMetaText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
+  streakText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
+  streakValue: { fontFamily: fonts.display, fontSize: 26, color: colors.gold },
   rowChevron: {
     fontFamily: fonts.display,
     fontSize: 22,
@@ -718,84 +703,22 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     ...bevel.raised,
   },
-  quotaMetBadge: {
-    backgroundColor: colors.success,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginLeft: 8,
-    ...bevel.raised,
-  },
-  progressBadge: {
-    backgroundColor: colors.surfaceSunken,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginLeft: 8,
-    ...bevel.inset,
-  },
-  completedText: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.successText,
-  },
-  loadingText: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.textPrimary,
-    marginTop: 12,
-  },
-  errorText: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    color: colors.error,
-    marginBottom: 8,
-  },
-  errorDetail: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.errorText,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  retryButton: {
-    backgroundColor: colors.gold,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    ...bevel.raised,
-  },
-  retryText: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.background,
-  },
-  noActivitiesText: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginVertical: 16,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontFamily: fonts.display,
-    fontSize: 24,
-    color: colors.textPrimary,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  xpDropLayer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  xpDropAnchor: {
-    position: 'absolute',
-    right: 0,
-    left: 0,
-  },
+  quotaMetBadge: { backgroundColor: colors.success, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 8, ...bevel.raised },
+  progressBadge: { backgroundColor: colors.surfaceSunken, paddingHorizontal: 8, paddingVertical: 3, marginLeft: 8, ...bevel.inset },
+  completedText: { fontFamily: fonts.display, fontSize: 16, color: colors.successText },
+
+  // States
+  loadingText: { fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, marginTop: 12 },
+  errorText: { fontFamily: fonts.display, fontSize: 20, color: colors.error, marginBottom: 8 },
+  errorDetail: { fontFamily: fonts.display, fontSize: 16, color: colors.errorText, textAlign: 'center', marginBottom: 16 },
+  retryButton: { backgroundColor: colors.gold, paddingHorizontal: 24, paddingVertical: 10, ...bevel.raised },
+  retryText: { fontFamily: fonts.display, fontSize: 18, color: colors.background },
+  noActivitiesText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary, textAlign: 'center', marginVertical: 16 },
+  emptyIcon: { fontSize: 48, marginBottom: 16 },
+  emptyTitle: { fontFamily: fonts.display, fontSize: 24, color: colors.textPrimary, marginBottom: 8 },
+  emptyText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary, textAlign: 'center' },
+
+  // XP drops
+  xpDropLayer: { ...StyleSheet.absoluteFillObject },
+  xpDropAnchor: { position: 'absolute', right: 0, left: 0 },
 });

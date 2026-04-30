@@ -277,6 +277,8 @@ export interface ActivitiesContextType {
   error: string | null;
   /** Function to complete an activity and add XP to skill */
   completeActivity: (activityId: string) => Promise<void>;
+  /** Function to backfill an activity completion for a specific past date */
+  completeActivityForDate: (activityId: string, date: Date) => Promise<void>;
   /** Function to add a new activity to user's selection */
   addActivity: (activityTemplateId: string, cadence: Cadence) => Promise<void>;
   /** Function to update activity cadence */

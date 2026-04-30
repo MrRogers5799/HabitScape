@@ -20,13 +20,14 @@ import {
   getUserActivities,
   getActivityCompletions,
   completeActivity,
+  completeActivityForDate as completeActivityForDateService,
   subscribeToActivityCompletions,
   addUserActivity,
   removeUserActivity,
   undoActivityCompletion,
   updateActivityStreaks,
 } from '../services/firestoreService';
-import { computeCompletionStreakUpdate, computeStreakResets, computeUndoStreakUpdate } from '../utils/streakUtils';
+import { computeCompletionStreakUpdate, computeStreakResets, computeUndoStreakUpdate, recomputeStreakFromHistory } from '../utils/streakUtils';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
@@ -163,6 +164,45 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to complete activity';
+        setError(message);
+        throw err;
+      }
+    },
+    [user, userActivities, completions]
+  );
+
+  /**
+   * Backfill a completion for a specific past date, then recompute the streak from
+   * the full completion history (optimistically including the new entry).
+   */
+  const handleCompleteActivityForDate = useCallback(
+    async (activityId: string, date: Date) => {
+      if (!user) return;
+      try {
+        setError(null);
+        await completeActivityForDateService(user.uid, activityId, date);
+
+        const activity = userActivities.find(a => a.id === activityId);
+        if (activity) {
+          // Optimistically include the new backfill entry — the real-time listener
+          // won't have it yet, so we build it ourselves before calling the recompute.
+          const optimisticCompletion = {
+            id: '__optimistic__',
+            activityId,
+            skillId: activity.skillId,
+            completedAt: date,
+            xpEarned: activity.xpPerCompletion,
+          };
+          const streakUpdate = recomputeStreakFromHistory(
+            activity,
+            [...completions, optimisticCompletion]
+          );
+          if (streakUpdate) {
+            await updateActivityStreaks(user.uid, [streakUpdate]);
+          }
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to backfill activity';
         setError(message);
         throw err;
       }
@@ -318,6 +358,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
     loading,
     error,
     completeActivity: handleCompleteActivity,
+    completeActivityForDate: handleCompleteActivityForDate,
     addActivity: handleAddActivity,
     updateActivityCadence: handleUpdateActivityCadence,
     removeActivity: handleRemoveActivity,

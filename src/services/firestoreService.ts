@@ -310,8 +310,59 @@ export async function completeActivity(
 }
 
 /**
+ * COMPLETE ACTIVITY FOR DATE - Records a backfill completion for a specific past date.
+ * Awards XP identically to completeActivity but stamps completedAt with the given date.
+ */
+export async function completeActivityForDate(
+  userId: string,
+  activityId: string,
+  date: Date
+): Promise<void> {
+  try {
+    const userActivityRef = doc(db, 'users', userId, 'userActivities', activityId);
+    const userActivitySnap = await getDoc(userActivityRef);
+
+    if (!userActivitySnap.exists()) {
+      throw new Error(`Activity ${activityId} not found`);
+    }
+
+    const { skillId, xpPerCompletion } = userActivitySnap.data() as any;
+    const skillRef = doc(db, 'users', userId, 'skills', skillId);
+    const completionRef = doc(collection(db, 'users', userId, 'activity_completions'));
+
+    await runTransaction(db, async (transaction) => {
+      const skillSnap = await transaction.get(skillRef);
+      if (!skillSnap.exists()) throw new Error(`Skill ${skillId} not found`);
+
+      const currentXP = (skillSnap.data().totalXP as number) || 0;
+      const newTotalXP = currentXP + xpPerCompletion;
+      const newLevel = calculateLevel(newTotalXP);
+
+      transaction.set(completionRef, {
+        activityId,
+        skillId,
+        completedAt: Timestamp.fromDate(date),
+        xpEarned: xpPerCompletion,
+        metadata: { backfilled: true },
+      });
+
+      transaction.update(skillRef, {
+        totalXP: newTotalXP,
+        level: newLevel,
+        updatedAt: Timestamp.now(),
+      });
+    });
+
+    console.log(`✅ Backfill: "${activityId}" for ${date.toDateString()} +${xpPerCompletion} XP to ${skillId}`);
+  } catch (error) {
+    console.error('❌ Error backfilling activity:', error);
+    throw error;
+  }
+}
+
+/**
  * GET ACTIVITY COMPLETIONS - Fetch completed activities for a user
- * 
+ *
  * Useful for building activity history or checking today's completions.
  * 
  * @param userId - The user's Firebase UID

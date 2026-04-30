@@ -24,6 +24,75 @@ function getYesterdayStr(): string {
 
 const STREAK_VERSION = 2;
 
+// ── longest-streak helpers ────────────────────────────────────────────────────
+
+function longestDailyStreak(activityId: string, allCompletions: ActivityCompletion[]): number {
+  const uniqueDays = [...new Set(
+    allCompletions
+      .filter(c => c.activityId === activityId)
+      .map(c => toDateStr(new Date(c.completedAt)))
+  )].sort(); // ascending
+
+  if (uniqueDays.length === 0) return 0;
+
+  let longest = 1;
+  let current = 1;
+
+  for (let i = 1; i < uniqueDays.length; i++) {
+    const prev = new Date(uniqueDays[i - 1] + 'T00:00:00');
+    const curr = new Date(uniqueDays[i] + 'T00:00:00');
+    const diffDays = Math.round((curr.getTime() - prev.getTime()) / 86_400_000);
+    if (diffDays === 1) {
+      longest = Math.max(longest, ++current);
+    } else {
+      current = 1;
+    }
+  }
+
+  return longest;
+}
+
+function longestNxWeekStreak(activity: UserActivity, allCompletions: ActivityCompletion[]): number {
+  const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const activityCompletions = allCompletions.filter(c => c.activityId === activity.id);
+  if (activityCompletions.length === 0) return 0;
+
+  const earliestDate = activityCompletions.reduce<Date>(
+    (min, c) => { const d = new Date(c.completedAt); return d < min ? d : min; },
+    new Date(activityCompletions[0].completedAt)
+  );
+  const thisWeekMonday = getWeekMonday(new Date());
+
+  let longest = 0;
+  let current = 0;
+  let weekStart = getWeekMonday(earliestDate);
+
+  while (weekStart <= thisWeekMonday) {
+    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
+    const count = activityCompletions.filter(c => {
+      const d = new Date(c.completedAt);
+      return d >= weekStart && d < weekEnd;
+    }).length;
+
+    const isCurrentWeek = weekStart.getTime() === thisWeekMonday.getTime();
+
+    if (isCurrentWeek) {
+      current += count;
+      longest = Math.max(longest, current);
+    } else if (count >= target) {
+      current += count;
+      longest = Math.max(longest, current);
+    } else {
+      current = 0;
+    }
+
+    weekStart = new Date(weekStart.getTime() + msPerWeek);
+  }
+
+  return longest;
+}
+
 export interface StreakUpdate {
   activityId: string;
   currentStreak: number;
@@ -113,18 +182,18 @@ export function computeCompletionStreakUpdate(
 }
 
 /**
- * Called immediately after an undo. Recomputes the streak from the remaining completions.
+ * Called immediately after an undo. Recomputes both currentStreak and longestStreak
+ * from the remaining completions so that undoing a completion that was the structural
+ * basis of a streak correctly lowers the displayed best.
  *
  * Daily: walks back consecutive days from the most recent remaining completion.
- * Non-daily: decrements by 1 (week-boundary validation handles target misses at end of week).
+ * Non-daily: walks back week by week from this week, then recomputes longest from history.
  */
 export function computeUndoStreakUpdate(
   activity: UserActivity,
   remainingCompletions: ActivityCompletion[]
 ): StreakUpdate | null {
   if (activity.cadence === 'monthly') return null;
-
-  const longestStreak = activity.longestStreak ?? 0;
 
   if (activity.cadence === 'daily') {
     const yesterday = getYesterdayStr();
@@ -137,47 +206,138 @@ export function computeUndoStreakUpdate(
       return {
         activityId: activity.id,
         currentStreak: 0,
-        longestStreak,
+        longestStreak: 0,
         lastStreakCheckDate: undefined,
       };
     }
 
     const mostRecent = uniqueDays[0];
-
-    if (mostRecent < yesterday) {
-      return {
-        activityId: activity.id,
-        currentStreak: 0,
-        longestStreak,
-        lastStreakCheckDate: mostRecent,
-      };
-    }
-
     let streak = 0;
-    const d = new Date(mostRecent + 'T00:00:00');
-    for (const day of uniqueDays) {
-      if (day === toDateStr(d)) {
-        streak++;
-        d.setDate(d.getDate() - 1);
-      } else {
-        break;
+
+    if (mostRecent >= yesterday) {
+      const d = new Date(mostRecent + 'T00:00:00');
+      for (const day of uniqueDays) {
+        if (day === toDateStr(d)) { streak++; d.setDate(d.getDate() - 1); }
+        else break;
       }
     }
 
     return {
       activityId: activity.id,
       currentStreak: streak,
-      longestStreak,
+      longestStreak: longestDailyStreak(activity.id, remainingCompletions),
       lastStreakCheckDate: mostRecent,
     };
   }
 
-  // Non-daily: each completion = +1, so undo = -1
-  const newStreak = Math.max(0, (activity.currentStreak ?? 0) - 1);
+  // Non-daily: recompute current streak from remaining completions' week walk.
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
+  const thisWeekMonday = getWeekMonday(new Date());
+  let currentStreak = 0;
+  let weekStart = new Date(thisWeekMonday);
+
+  for (let i = 0; i < 104; i++) {
+    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
+    const count = remainingCompletions.filter(c => {
+      if (c.activityId !== activity.id) return false;
+      const d = new Date(c.completedAt);
+      return d >= weekStart && d < weekEnd;
+    }).length;
+
+    if (i === 0) { currentStreak += count; }
+    else { if (count < target) break; currentStreak += count; }
+
+    weekStart = new Date(weekStart.getTime() - msPerWeek);
+  }
+
   return {
     activityId: activity.id,
-    currentStreak: newStreak,
-    longestStreak,
+    currentStreak,
+    longestStreak: longestNxWeekStreak(activity, remainingCompletions),
+    lastStreakCheckWeek: toDateStr(thisWeekMonday),
+  };
+}
+
+/**
+ * Recomputes both currentStreak and longestStreak for one activity from its full
+ * completion history. Used after a backfill write so the streak reflects the newly
+ * inserted past completion without waiting for the next app-load computeStreakResets.
+ *
+ * Pass `allCompletions` with the backfilled entry already included (optimistic).
+ * Returns null for monthly (no streak tracking).
+ */
+export function recomputeStreakFromHistory(
+  activity: UserActivity,
+  allCompletions: ActivityCompletion[]
+): StreakUpdate | null {
+  if (activity.cadence === 'monthly') return null;
+
+  const yesterday = getYesterdayStr();
+  const thisWeekMonday = getWeekMonday(new Date());
+  const thisWeekStr = toDateStr(thisWeekMonday);
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+
+  if (activity.cadence === 'daily') {
+    const uniqueDays = [...new Set(
+      allCompletions
+        .filter(c => c.activityId === activity.id)
+        .map(c => toDateStr(new Date(c.completedAt)))
+    )].sort().reverse(); // descending for current-streak walk
+
+    if (uniqueDays.length === 0) {
+      return { activityId: activity.id, currentStreak: 0, longestStreak: 0, lastStreakCheckDate: undefined };
+    }
+
+    const mostRecent = uniqueDays[0];
+    let currentStreak = 0;
+
+    if (mostRecent >= yesterday) {
+      const d = new Date(mostRecent + 'T00:00:00');
+      for (const day of uniqueDays) {
+        if (day === toDateStr(d)) { currentStreak++; d.setDate(d.getDate() - 1); }
+        else break;
+      }
+    }
+
+    return {
+      activityId: activity.id,
+      currentStreak,
+      longestStreak: longestDailyStreak(activity.id, allCompletions),
+      lastStreakCheckDate: mostRecent,
+      streakVersion: STREAK_VERSION,
+    };
+  }
+
+  // Nx/week: walk back from this week to compute currentStreak.
+  const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
+  let currentStreak = 0;
+  let weekStart = new Date(thisWeekMonday);
+
+  for (let i = 0; i < 104; i++) {
+    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
+    const count = allCompletions.filter(c => {
+      if (c.activityId !== activity.id) return false;
+      const d = new Date(c.completedAt);
+      return d >= weekStart && d < weekEnd;
+    }).length;
+
+    if (i === 0) {
+      currentStreak += count;
+    } else {
+      if (count < target) break;
+      currentStreak += count;
+    }
+
+    weekStart = new Date(weekStart.getTime() - msPerWeek);
+  }
+
+  return {
+    activityId: activity.id,
+    currentStreak,
+    longestStreak: longestNxWeekStreak(activity, allCompletions),
+    lastStreakCheckWeek: thisWeekStr,
+    streakVersion: STREAK_VERSION,
   };
 }
 
