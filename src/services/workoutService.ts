@@ -247,6 +247,123 @@ export async function deleteSetLog(
   await deleteDoc(doc(db, 'users', userId, 'workoutSessions', sessionId, 'sets', setLogId));
 }
 
+// ─── History ──────────────────────────────────────────────────────────────────
+
+export type PrevSets = Record<string, Array<{ weight: number | null; reps: number | null }>>;
+
+/**
+ * Returns a map of exerciseName → [{weight, reps}] (0-based by set index)
+ * from the most recently completed session for the given template.
+ * Returns {} if no prior session exists.
+ */
+export async function getLastCompletedSessionSets(
+  userId: string,
+  templateId: string
+): Promise<PrevSets> {
+  const snap = await getDocs(collection(db, 'users', userId, 'workoutSessions'));
+  const completed = snap.docs
+    .filter(d => d.data().templateId === templateId && d.data().completedAt != null)
+    .sort((a, b) => b.data().completedAt.toMillis() - a.data().completedAt.toMillis());
+
+  if (completed.length === 0) return {};
+
+  const setsSnap = await getDocs(
+    collection(db, 'users', userId, 'workoutSessions', completed[0].id, 'sets')
+  );
+
+  const result: PrevSets = {};
+  setsSnap.docs.forEach(d => {
+    const data = d.data();
+    const name = data.exerciseName as string;
+    if (!result[name]) result[name] = [];
+    result[name][data.setNumber - 1] = { weight: data.weight ?? null, reps: data.reps ?? null };
+  });
+  return result;
+}
+
+/** All completed sessions for a user, newest first. */
+export async function getCompletedSessions(userId: string): Promise<WorkoutSession[]> {
+  const snap = await getDocs(collection(db, 'users', userId, 'workoutSessions'));
+  return snap.docs
+    .map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        templateId: data.templateId,
+        templateName: data.templateName,
+        startedAt: data.startedAt?.toDate?.() ?? new Date(),
+        completedAt: data.completedAt?.toDate?.() ?? null,
+      } as WorkoutSession;
+    })
+    .filter(s => s.completedAt != null)
+    .sort((a, b) => b.completedAt!.getTime() - a.completedAt!.getTime());
+}
+
+/** All set logs for a given session. */
+export async function getSessionSetLogs(userId: string, sessionId: string): Promise<import('../types').SetLog[]> {
+  const snap = await getDocs(
+    collection(db, 'users', userId, 'workoutSessions', sessionId, 'sets')
+  );
+  return snap.docs.map(d => {
+    const data = d.data();
+    return {
+      id: d.id,
+      sessionId,
+      exerciseId: data.exerciseId,
+      exerciseName: data.exerciseName,
+      setNumber: data.setNumber,
+      reps: data.reps ?? null,
+      weight: data.weight ?? null,
+      unit: data.unit,
+      completedAt: data.completedAt?.toDate?.() ?? new Date(),
+    };
+  }).sort((a, b) => a.setNumber - b.setNumber);
+}
+
+/**
+ * Full session history for a specific template, oldest-first (for charts).
+ * Each entry contains the session + all its set logs.
+ */
+export async function getTemplateSessionHistory(
+  userId: string,
+  templateId: string
+): Promise<Array<{ session: WorkoutSession; sets: import('../types').SetLog[] }>> {
+  const snap = await getDocs(collection(db, 'users', userId, 'workoutSessions'));
+  const sessions = snap.docs
+    .filter(d => d.data().templateId === templateId && d.data().completedAt != null)
+    .map(d => ({
+      id: d.id,
+      templateId: d.data().templateId,
+      templateName: d.data().templateName,
+      startedAt: d.data().startedAt?.toDate?.() ?? new Date(),
+      completedAt: d.data().completedAt?.toDate?.() ?? null,
+    } as WorkoutSession))
+    .sort((a, b) => a.completedAt!.getTime() - b.completedAt!.getTime());
+
+  return Promise.all(
+    sessions.map(async session => {
+      const setsSnap = await getDocs(
+        collection(db, 'users', userId, 'workoutSessions', session.id, 'sets')
+      );
+      const sets = setsSnap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          sessionId: session.id,
+          exerciseId: data.exerciseId,
+          exerciseName: data.exerciseName,
+          setNumber: data.setNumber,
+          reps: data.reps ?? null,
+          weight: data.weight ?? null,
+          unit: data.unit,
+          completedAt: data.completedAt?.toDate?.() ?? new Date(),
+        };
+      }).sort((a, b) => a.setNumber - b.setNumber);
+      return { session, sets };
+    })
+  );
+}
+
 // ─── Share / Import ───────────────────────────────────────────────────────────
 
 function generateShareCode(): string {

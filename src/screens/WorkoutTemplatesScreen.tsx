@@ -327,7 +327,7 @@ export function WorkoutTemplatesScreen({ navigation }: Props) {
             selected={selectedIds.has(item.id)}
             onPress={() => shareMode
               ? toggleSelect(item.id)
-              : navigation.push('TemplateDetail', { templateId: item.id, templateName: item.name })
+              : navigation.push('WorkoutMetrics', { templateId: item.id, templateName: item.name })
             }
             onEdit={() => setEditTarget(item)}
             onDelete={() => handleDelete(item)}
