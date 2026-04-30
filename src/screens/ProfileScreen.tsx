@@ -5,8 +5,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Pressable,
   TextInput,
-  Alert,
   Modal,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
@@ -32,6 +32,7 @@ export function ProfileScreen() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -107,11 +108,10 @@ export function ProfileScreen() {
     }
   };
 
-  const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => logOut() },
-    ]);
+  const closeSettings = () => {
+    setSettingsOpen(false);
+    setChangingPassword(false);
+    setConfirmingSignOut(false);
   };
 
   return (
@@ -193,23 +193,19 @@ export function ProfileScreen() {
         visible={settingsOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => {
-          setSettingsOpen(false);
-          setChangingPassword(false);
-        }}
+        onRequestClose={closeSettings}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => {
-            setSettingsOpen(false);
-            setChangingPassword(false);
-          }}
-        >
-          <TouchableOpacity activeOpacity={1} style={styles.settingsPanel}>
+        {/* Backdrop — fills screen, dismisses on tap */}
+        <Pressable
+          style={[StyleSheet.absoluteFillObject, styles.modalBackdrop]}
+          onPress={closeSettings}
+        />
+        {/* Panel — rendered after backdrop so it sits on top */}
+        <View style={styles.modalOverlay} pointerEvents="box-none">
+          <View style={styles.settingsPanel}>
             <Text style={styles.settingsPanelTitle}>Settings</Text>
 
-            {!changingPassword ? (
+            {!changingPassword && !confirmingSignOut ? (
               <>
                 <TouchableOpacity
                   style={styles.settingsRow}
@@ -221,11 +217,11 @@ export function ProfileScreen() {
 
                 <View style={styles.settingsDivider} />
 
-                <TouchableOpacity style={styles.settingsRow} onPress={handleSignOut}>
+                <TouchableOpacity style={styles.settingsRow} onPress={() => setConfirmingSignOut(true)}>
                   <Text style={[styles.settingsRowText, styles.signOutText]}>Sign Out</Text>
                 </TouchableOpacity>
               </>
-            ) : (
+            ) : changingPassword ? (
               <>
                 <Text style={styles.settingsSubtitle}>Change Password</Text>
 
@@ -280,10 +276,29 @@ export function ProfileScreen() {
                   </TouchableOpacity>
                 </View>
               </>
-            )}
-          </TouchableOpacity>
-        </TouchableOpacity>
+            ) : confirmingSignOut ? (
+              <>
+                <Text style={styles.settingsSubtitle}>Sign out?</Text>
+                <View style={styles.settingsActions}>
+                  <TouchableOpacity
+                    style={styles.settingsCancelBtn}
+                    onPress={() => setConfirmingSignOut(false)}
+                  >
+                    <Text style={styles.settingsCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.settingsSaveBtn, { backgroundColor: colors.destructive }]}
+                    onPress={() => logOut()}
+                  >
+                    <Text style={styles.settingsSaveText}>Sign Out</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : null}
+          </View>
+        </View>
       </Modal>
+
     </View>
   );
 }
@@ -377,9 +392,11 @@ const styles = StyleSheet.create({
   },
 
   // Settings modal
+  modalBackdrop: {
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
     justifyContent: 'flex-start',
     alignItems: 'flex-end',
     paddingTop: 60,

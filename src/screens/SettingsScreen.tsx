@@ -14,7 +14,6 @@ import {
   Text,
   Pressable,
   Alert,
-  TextInput,
   Modal,
   TouchableOpacity,
 } from 'react-native';
@@ -31,10 +30,8 @@ import { COMMON_TIMEZONES } from '../constants/timezones';
  * Settings Screen Component
  */
 export function SettingsScreen() {
-  const { user, logOut, updateTimezone, changePassword } = useAuth();
+  const { user, updateTimezone } = useAuth();
   const { userActivities, addActivity, removeActivity } = useActivities();
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [confirmLogout, setConfirmLogout] = useState(false);
   const [wizardVisible, setWizardVisible] = useState(false);
   const [addingActivity, setAddingActivity] = useState(false);
 
@@ -42,29 +39,6 @@ export function SettingsScreen() {
   const [timezonePickerVisible, setTimezonePickerVisible] = useState(false);
   const [savingTimezone, setSavingTimezone] = useState(false);
   const [privacyPolicyVisible, setPrivacyPolicyVisible] = useState(false);
-
-  // Password change state
-  const [passwordFormOpen, setPasswordFormOpen] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [savingPassword, setSavingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-
-  const handleLogOut = async () => {
-    if (!confirmLogout) {
-      setConfirmLogout(true);
-      return;
-    }
-    try {
-      setLoggingOut(true);
-      setConfirmLogout(false);
-      await logOut();
-    } catch (err) {
-      setLoggingOut(false);
-      Alert.alert('Error', 'Failed to log out. Please try again.');
-    }
-  };
 
   /**
    * Handle activity added from wizard
@@ -111,45 +85,6 @@ export function SettingsScreen() {
     } finally {
       setSavingTimezone(false);
     }
-  };
-
-  const handleChangePassword = async () => {
-    setPasswordError(null);
-    if (!currentPassword) {
-      setPasswordError('Please enter your current password.');
-      return;
-    }
-    if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match.');
-      return;
-    }
-    try {
-      setSavingPassword(true);
-      await changePassword(currentPassword, newPassword);
-      setPasswordFormOpen(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      Alert.alert('Success', 'Password updated successfully.');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to update password.';
-      const isWrongPassword = msg.includes('invalid-credential') || msg.includes('wrong-password');
-      setPasswordError(isWrongPassword ? 'Current password is incorrect.' : msg);
-    } finally {
-      setSavingPassword(false);
-    }
-  };
-
-  const cancelPasswordChange = () => {
-    setPasswordFormOpen(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setPasswordError(null);
   };
 
   return (
@@ -216,65 +151,6 @@ export function SettingsScreen() {
             </View>
           </View>
 
-          {/* Password */}
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Password</Text>
-            {!passwordFormOpen ? (
-              <Pressable
-                onPress={() => setPasswordFormOpen(true)}
-                style={({ pressed }) => [styles.inlineButton, pressed && styles.inlineButtonPressed]}
-              >
-                <Text style={styles.inlineButtonText}>Change Password</Text>
-              </Pressable>
-            ) : (
-              <View style={styles.passwordForm}>
-                {passwordError && (
-                  <Text style={styles.fieldError}>{passwordError}</Text>
-                )}
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Current password"
-                  placeholderTextColor={colors.textSecondary}
-                  secureTextEntry
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  autoCapitalize="none"
-                />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="New password"
-                  placeholderTextColor={colors.textSecondary}
-                  secureTextEntry
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  autoCapitalize="none"
-                />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Confirm new password"
-                  placeholderTextColor={colors.textSecondary}
-                  secureTextEntry
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  autoCapitalize="none"
-                />
-                <View style={styles.formButtons}>
-                  <Pressable
-                    onPress={handleChangePassword}
-                    disabled={savingPassword}
-                    style={({ pressed }) => [styles.saveButton, pressed && styles.saveButtonPressed]}
-                  >
-                    <Text style={styles.saveButtonText}>
-                      {savingPassword ? 'Saving…' : 'Save'}
-                    </Text>
-                  </Pressable>
-                  <Pressable onPress={cancelPasswordChange} style={styles.cancelInlineButton}>
-                    <Text style={styles.cancelInlineText}>Cancel</Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
-          </View>
         </View>
 
         {/* Timezone Picker Modal */}
@@ -337,32 +213,6 @@ export function SettingsScreen() {
             <Text style={styles.settingLabel}>Legal</Text>
             <Text style={styles.settingValue}>Privacy Policy</Text>
           </Pressable>
-        </View>
-
-        {/* Logout */}
-        <View style={styles.logoutContainer}>
-          {confirmLogout && (
-            <Text style={styles.logoutConfirmText}>Tap again to confirm log out</Text>
-          )}
-          <Pressable
-            style={({ pressed }) => [
-              styles.logoutButton,
-              confirmLogout && styles.logoutButtonConfirm,
-              pressed && styles.logoutButtonPressed,
-              loggingOut && styles.logoutButtonDisabled,
-            ]}
-            onPress={handleLogOut}
-            disabled={loggingOut}
-          >
-            <Text style={styles.logoutButtonText}>
-              {loggingOut ? 'LOGGING OUT...' : confirmLogout ? 'CONFIRM LOG OUT' : 'LOG OUT'}
-            </Text>
-          </Pressable>
-          {confirmLogout && (
-            <Pressable style={styles.cancelButton} onPress={() => setConfirmLogout(false)}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </Pressable>
-          )}
         </View>
 
       </ScrollView>
@@ -465,16 +315,6 @@ const styles = StyleSheet.create({
   inlineButton: { paddingHorizontal: 12, paddingVertical: 6, ...bevel.raised },
   inlineButtonPressed: { opacity: 0.7 },
   inlineButtonText: { fontFamily: fonts.heading, fontSize: 8, color: colors.gold },
-  passwordForm: { marginTop: 8, gap: 8 },
-  textInput: { backgroundColor: colors.surfaceSunken, paddingHorizontal: 12, paddingVertical: 10, fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, ...bevel.inset },
-  fieldError: { fontFamily: fonts.display, fontSize: 16, color: colors.error, marginBottom: 4 },
-  formButtons: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  saveButton: { flex: 1, backgroundColor: colors.gold, paddingVertical: 10, alignItems: 'center', ...bevel.raised },
-  saveButtonPressed: { opacity: 0.8 },
-  saveButtonText: { fontFamily: fonts.heading, fontSize: 9, color: colors.background },
-  cancelInlineButton: { flex: 1, paddingVertical: 10, alignItems: 'center', ...bevel.inset },
-  cancelInlineText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
-
   // Timezone modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: colors.surface, maxHeight: '70%', ...bevel.raised },
@@ -493,15 +333,5 @@ const styles = StyleSheet.create({
   policyHeading: { fontFamily: fonts.heading, fontSize: 8, color: colors.gold, marginTop: 16, marginBottom: 6 },
   policyBody: { fontFamily: fonts.display, fontSize: 17, color: colors.textSecondary, lineHeight: 24 },
 
-  // Logout
   scrollContent: { paddingBottom: 32 },
-  logoutContainer: { paddingHorizontal: 12, paddingTop: 24, paddingBottom: 8, gap: 8 },
-  logoutConfirmText: { fontFamily: fonts.display, fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: 4 },
-  logoutButton: { backgroundColor: colors.destructive, paddingVertical: 12, alignItems: 'center', borderWidth: 2, borderTopColor: '#ff8888', borderLeftColor: '#ff8888', borderBottomColor: colors.bevelDark, borderRightColor: colors.bevelDark },
-  logoutButtonConfirm: { backgroundColor: colors.destructiveDark },
-  logoutButtonPressed: { opacity: 0.85 },
-  logoutButtonDisabled: { opacity: 0.5 },
-  logoutButtonText: { fontFamily: fonts.display, fontSize: 24, color: '#ffffff', letterSpacing: 1 },
-  cancelButton: { alignItems: 'center', paddingVertical: 10 },
-  cancelButtonText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
 });
