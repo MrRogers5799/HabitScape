@@ -41,6 +41,7 @@ export function SettingsScreen() {
   // Timezone picker state
   const [timezonePickerVisible, setTimezonePickerVisible] = useState(false);
   const [savingTimezone, setSavingTimezone] = useState(false);
+  const [privacyPolicyVisible, setPrivacyPolicyVisible] = useState(false);
 
   // Password change state
   const [passwordFormOpen, setPasswordFormOpen] = useState(false);
@@ -328,6 +329,14 @@ export function SettingsScreen() {
             <Text style={styles.settingLabel}>App</Text>
             <Text style={styles.settingValue}>HabitScape — Train your real-life skills</Text>
           </View>
+
+          <Pressable
+            style={({ pressed }) => [styles.settingItem, { marginTop: 4 }, pressed && { opacity: 0.7 }]}
+            onPress={() => setPrivacyPolicyVisible(true)}
+          >
+            <Text style={styles.settingLabel}>Legal</Text>
+            <Text style={styles.settingValue}>Privacy Policy</Text>
+          </Pressable>
         </View>
 
         {/* Logout */}
@@ -357,6 +366,66 @@ export function SettingsScreen() {
         </View>
 
       </ScrollView>
+
+      {/* Privacy Policy Modal */}
+      <Modal
+        visible={privacyPolicyVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setPrivacyPolicyVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalSheet, { maxHeight: '90%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Privacy Policy</Text>
+              <Pressable onPress={() => setPrivacyPolicyVisible(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </Pressable>
+            </View>
+            <ScrollView style={{ padding: 16 }} contentContainerStyle={{ paddingBottom: 24 }}>
+              <Text style={styles.policyUpdated}>Last updated: April 30, 2026</Text>
+
+              <Text style={styles.policyHeading}>Information We Collect</Text>
+              <Text style={styles.policyBody}>
+                We collect the email address and display name you provide when creating an account. We also store the habit activities, completion records, streaks, XP, levels, workout templates, workout session logs, and timezone you create or set within the app.
+              </Text>
+
+              <Text style={styles.policyHeading}>How We Use Your Information</Text>
+              <Text style={styles.policyBody}>
+                Your data is used solely to provide the HabitScape experience — syncing your progress, calculating XP and levels, and displaying your history. We do not use your data for advertising or profiling.
+              </Text>
+
+              <Text style={styles.policyHeading}>Data Storage</Text>
+              <Text style={styles.policyBody}>
+                All data is stored securely using Google Firebase (Firestore and Authentication). Firebase's privacy policy is available at firebase.google.com/support/privacy.
+              </Text>
+
+              <Text style={styles.policyHeading}>Data Sharing</Text>
+              <Text style={styles.policyBody}>
+                We do not sell, trade, or share your personal information with third parties. Data is only shared with Firebase as necessary to operate the app, and as required by law.
+              </Text>
+
+              <Text style={styles.policyHeading}>Data Deletion</Text>
+              <Text style={styles.policyBody}>
+                You may request deletion of your account and all associated data at any time by contacting us at the email below. Data will be permanently deleted within 30 days.
+              </Text>
+
+              <Text style={styles.policyHeading}>Children's Privacy</Text>
+              <Text style={styles.policyBody}>
+                HabitScape is not intended for children under 13. We do not knowingly collect data from children under 13.
+              </Text>
+
+              <Text style={styles.policyHeading}>Changes to This Policy</Text>
+              <Text style={styles.policyBody}>
+                We may update this policy from time to time. Continued use of the app after changes are posted constitutes acceptance of the updated policy.
+              </Text>
+
+              <Text style={styles.policyHeading}>Contact</Text>
+              <Text style={styles.policyBody}>rogersalec99@gmail.com</Text>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {/* Activity Selection Wizard Modal */}
       <ActivitySelectionWizard
@@ -418,6 +487,11 @@ const styles = StyleSheet.create({
   timezoneLabel: { fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, marginBottom: 2 },
   timezoneLabelSelected: { color: colors.gold },
   timezoneValue: { fontFamily: fonts.display, fontSize: 14, color: colors.textSecondary },
+
+  // Privacy policy
+  policyUpdated: { fontFamily: fonts.display, fontSize: 14, color: colors.textMuted, marginBottom: 16 },
+  policyHeading: { fontFamily: fonts.heading, fontSize: 8, color: colors.gold, marginTop: 16, marginBottom: 6 },
+  policyBody: { fontFamily: fonts.display, fontSize: 17, color: colors.textSecondary, lineHeight: 24 },
 
   // Logout
   scrollContent: { paddingBottom: 32 },
