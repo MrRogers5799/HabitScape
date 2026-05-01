@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1011856492807:android:987b0ea4b212ae5ca81da2",
+        "android_client_info": {
+          "package_name": "com.buckorogers.habitscape"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd8f8T1y6gmGt0_PYPhFVn-uWvm7z-U4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1011856492807:android:d345b72648b04eaba81da2",
         "android_client_info": {
           "package_name": "com.habitscape.app"
