@@ -12,7 +12,28 @@
           "package_name": "com.buckorogers.habitscape"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1011856492807-jjl5dcqptjecnicthpcdntavudo3q5t4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.buckorogers.habitscape",
+            "certificate_hash": "66d72eded778ea81c04153061a2a5da07124b493"
+          }
+        },
+        {
+          "client_id": "1011856492807-op9qsd5bdn9foppjuojk2g9gdqe3pqdf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.buckorogers.habitscape",
+            "certificate_hash": "b3bb80f32907fd303db5de8888adcc1991858122"
+          }
+        },
+        {
+          "client_id": "1011856492807-5l398ietp2qs8kia0so3u00qhjg8p9qp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBd8f8T1y6gmGt0_PYPhFVn-uWvm7z-U4M"
@@ -20,7 +41,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1011856492807-5l398ietp2qs8kia0so3u00qhjg8p9qp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
