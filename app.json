@@ -35,12 +35,20 @@
           "resizeMode": "cover",
           "backgroundColor": "#0f1623"
         }
-      ]
+      ],
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true,
       "baseUrl": "/HabitScape"
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "eb7869be-2040-4f5a-b9c2-5c3077eb55f5"
+      }
+    },
+    "owner": "mrrogers"
   }
 }

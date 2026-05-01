@@ -15,7 +15,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.test.ts"]
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ]
   },
   "dependencies": {
     "@expo-google-fonts/press-start-2p": "^0.4.1",
@@ -24,6 +26,7 @@
     "@react-navigation/bottom-tabs": "^7.15.9",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.2.2",
+    "@sentry/react-native": "~7.2.0",
     "expo": "~54.0.33",
     "expo-av": "~16.0.8",
     "expo-constants": "~18.0.13",

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1011856492807",
+    "project_id": "habitscape-bc1ff",
+    "storage_bucket": "habitscape-bc1ff.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011856492807:android:d345b72648b04eaba81da2",
+        "android_client_info": {
+          "package_name": "com.habitscape.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd8f8T1y6gmGt0_PYPhFVn-uWvm7z-U4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
