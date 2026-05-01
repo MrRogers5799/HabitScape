@@ -41,7 +41,7 @@
         {
           "url": "https://sentry.io/",
           "organization": "habitscape",
-          "project": "react-native"
+          "project": "habitscape"
         }
       ]
     ],
