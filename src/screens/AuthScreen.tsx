@@ -38,7 +38,10 @@ import Svg, {
   Defs,
   Filter,
   FeGaussianBlur,
+  LinearGradient as SvgLinearGradient,
+  Stop,
 } from 'react-native-svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { fonts } from '../constants/typography';
 import { isValidEmail, validatePassword } from '../services/authService';
@@ -133,7 +136,18 @@ function Torch({ delayMs = 0 }: { delayMs?: number }) {
 
   return (
     <View style={tStyles.torch}>
-      <Animated.View style={[tStyles.flame, { transform: [{ scaleX }, { scaleY }], opacity }]} />
+      <Animated.View style={{ transform: [{ scaleX }, { scaleY }], opacity }}>
+        <Svg width={12} height={26} viewBox="0 0 12 26">
+          <Defs>
+            <SvgLinearGradient id="flameGrad" x1="6" y1="0" x2="6" y2="26" gradientUnits="userSpaceOnUse">
+              <Stop offset="0" stopColor="#ff4400" stopOpacity="0" />
+              <Stop offset="0.45" stopColor="#ff8800" stopOpacity="0.9" />
+              <Stop offset="1" stopColor="#ffe066" stopOpacity="1" />
+            </SvgLinearGradient>
+          </Defs>
+          <Path d="M6 0 C11 8 12 18 10 26 L2 26 C0 18 1 8 6 0 Z" fill="url(#flameGrad)" />
+        </Svg>
+      </Animated.View>
       <Animated.View style={[tStyles.glow, { opacity }]} />
       <View style={tStyles.stem}>
         <LinearGradient
@@ -150,25 +164,13 @@ function Torch({ delayMs = 0 }: { delayMs?: number }) {
 
 const tStyles = StyleSheet.create({
   torch: { alignItems: 'center', paddingBottom: 4 },
-  flame: {
-    width: 13, height: 20,
-    borderTopLeftRadius: 7, borderTopRightRadius: 7,
-    borderBottomLeftRadius: 4, borderBottomRightRadius: 4,
-    backgroundImage: 'radial-gradient(ellipse at 50% 85%, #ff6600 0%, #ffcc00 50%, rgba(255,102,0,0) 100%)',
-    filter: 'blur(0.4px)',
-    shadowColor: '#ffcc00',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.45,
-    shadowRadius: 3,
-  } as any,
   glow: {
-    width: 20, height: 10,
-    backgroundColor: 'rgba(255,130,0,0.22)',
-    borderRadius: 10,
-    filter: 'blur(5px)',
-    marginTop: -5,
-  } as any,
-  stem: { width: 7, height: 18, borderRadius: 2, overflow: 'hidden' },
+    width: 18, height: 8,
+    backgroundColor: 'rgba(255,130,0,0.3)',
+    borderRadius: 9,
+    marginTop: -4,
+  },
+  stem: { width: 7, height: 18, borderRadius: 2, overflow: 'hidden', backgroundColor: '#3a2208' },
   foot: { width: 13, height: 4, backgroundColor: '#2a1806', borderRadius: 1 },
 });
 
@@ -236,7 +238,6 @@ function Moon() {
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.4,
         shadowRadius: 8 * scale,
-        elevation: 4,
       }}
     />
   );
@@ -473,6 +474,7 @@ interface AuthScreenProps {
 export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   const { logIn, signUp, loading, error: contextError } = useAuth();
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   const isLandscape = width > height;
   // Scale factor relative to design reference width, capped at 1.5× for tablets
@@ -480,8 +482,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
 
   // Panel width: percentage-based with a higher cap for tablets
   const panelWidth = Math.min(width * 0.88, 460);
-  // Vertical padding shrinks in landscape to avoid crowding
-  const overlayPaddingTop = isLandscape ? 16 : Math.max(Math.round(height * 0.07), 36);
+  // Vertical padding accounts for the device's status bar safe area
+  const overlayPaddingTop = isLandscape ? 16 : insets.top + 12;
   const overlayPaddingBottom = isLandscape ? 12 : 24;
 
   // Form state
@@ -777,11 +779,11 @@ const s = StyleSheet.create({
   title: {
     fontFamily: fonts.heading,
     fontSize: 21,
-    color: '#c8a857',
+    color: '#D4AF37',
     lineHeight: 24,
-    textShadowColor: 'rgba(200,168,87,0.65)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 24,
+    textShadowColor: 'rgba(212,175,55,0.9)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
   tagline: {
     fontFamily: fonts.display,

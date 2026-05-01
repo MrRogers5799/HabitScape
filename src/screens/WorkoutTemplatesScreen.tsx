@@ -277,9 +277,9 @@ export function WorkoutTemplatesScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 14 }]}>
+      <View style={styles.header}>
         {shareMode ? (
           <View style={styles.headerRow}>
             <TouchableOpacity onPress={toggleShareMode}>
@@ -439,6 +439,7 @@ const styles = StyleSheet.create({
 
   header: {
     backgroundColor: colors.surface,
+    paddingTop: 14,
     paddingBottom: 14,
     paddingHorizontal: 16,
     ...bevel.raised,

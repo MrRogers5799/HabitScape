@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Pressable,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActivities } from '../context/ActivitiesContext';
 import { useSkills } from '../context/SkillsContext';
 import { Cadence, UserActivity, ActivityCompletion } from '../types';
@@ -75,6 +76,7 @@ function dateLabel(d: Date): string {
 const MAX_BACKFILL_DAYS = 14;
 
 export function ActivitiesScreen() {
+  const insets = useSafeAreaInsets();
   const {
     userActivities,
     completions,
@@ -463,7 +465,7 @@ export function ActivitiesScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* ── Header ── */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Activities</Text>

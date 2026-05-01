@@ -9,6 +9,7 @@ import {
   TextInput,
   Modal,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { useSkills } from '../context/SkillsContext';
@@ -22,6 +23,7 @@ function derivedUsername(email: string): string {
 }
 
 export function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user, updateDisplayName, changePassword, logOut } = useAuth();
   const { completions, userActivities } = useActivities();
   const { skills } = useSkills();
@@ -115,7 +117,7 @@ export function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* ── Header ── */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>

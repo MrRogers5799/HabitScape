@@ -17,6 +17,7 @@ import {
   Modal,
   TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { ActivitySelectionWizard } from '../components/ActivitySelectionWizard';
@@ -30,6 +31,7 @@ import { COMMON_TIMEZONES } from '../constants/timezones';
  * Settings Screen Component
  */
 export function SettingsScreen() {
+  const insets = useSafeAreaInsets();
   const { user, updateTimezone } = useAuth();
   const { userActivities, addActivity, removeActivity } = useActivities();
   const [wizardVisible, setWizardVisible] = useState(false);
@@ -88,7 +90,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Fixed header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Settings</Text>

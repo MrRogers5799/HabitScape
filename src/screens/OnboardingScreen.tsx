@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
   Alert,
@@ -51,10 +52,12 @@ function Step1({
   displayName,
   onChange,
   onNext,
+  onSignOut,
 }: {
   displayName: string;
   onChange: (v: string) => void;
   onNext: () => void;
+  onSignOut: () => void;
 }) {
   return (
     <KeyboardAvoidingView
@@ -86,10 +89,15 @@ function Step1({
       </View>
 
       <View style={styles.footer}>
+        <View style={styles.footerRow}>
+          <TouchableOpacity style={styles.signOutButton} onPress={onSignOut}>
+            <Text style={styles.signOutButtonText}>Sign Out</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.primaryButton, styles.primaryButtonGrow]} onPress={onNext}>
+            <Text style={styles.primaryButtonText}>Next  →</Text>
+          </TouchableOpacity>
+        </View>
         <StepDots step={1} />
-        <TouchableOpacity style={styles.primaryButton} onPress={onNext}>
-          <Text style={styles.primaryButtonText}>Next  →</Text>
-        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -109,15 +117,20 @@ function Step2({
   onBack: () => void;
 }) {
   const [search, setSearch] = useState('');
+  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
+
+  const allSkills = useMemo(
+    () => [...new Set(ACTIVITY_TEMPLATES.map(t => t.skillId))].sort(),
+    []
+  );
 
   const sections = useMemo(() => {
     const q = search.toLowerCase();
     const bySkill: Record<string, ActivityTemplate[]> = {};
 
     for (const t of ACTIVITY_TEMPLATES) {
-      if (q && !t.activityName.toLowerCase().includes(q) && !t.skillId.toLowerCase().includes(q)) {
-        continue;
-      }
+      if (selectedSkill && t.skillId !== selectedSkill) continue;
+      if (q && !t.activityName.toLowerCase().includes(q) && !t.skillId.toLowerCase().includes(q)) continue;
       if (!bySkill[t.skillId]) bySkill[t.skillId] = [];
       bySkill[t.skillId].push(t);
     }
@@ -125,7 +138,7 @@ function Step2({
     return Object.entries(bySkill)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([skillId, data]) => ({ title: skillId, data }));
-  }, [search]);
+  }, [search, selectedSkill]);
 
   const count = selected.size;
 
@@ -147,8 +160,37 @@ function Step2({
       </View>
 
       <SectionList
+        style={{ flex: 1 }}
         sections={sections}
         keyExtractor={item => item.id}
+        ListHeaderComponent={
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.skillFilterRow}
+            contentContainerStyle={styles.skillFilterContent}
+          >
+            <Pressable
+              style={[styles.filterPill, !selectedSkill && styles.filterPillActive]}
+              onPress={() => setSelectedSkill(null)}
+            >
+              <Text style={[styles.filterPillText, !selectedSkill ? { color: colors.gold } : null]}>All</Text>
+            </Pressable>
+            {allSkills.map(skill => {
+              const c = SKILL_COLORS[skill] ?? colors.gold;
+              const active = selectedSkill === skill;
+              return (
+                <Pressable
+                  key={skill}
+                  style={[styles.filterPill, active ? styles.filterPillActive : null]}
+                  onPress={() => setSelectedSkill(active ? null : skill)}
+                >
+                  <Text style={[styles.filterPillText, active ? { color: c } : null]}>{skill}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        }
         stickySectionHeadersEnabled
         renderSectionHeader={({ section }) => {
           const c = SKILL_COLORS[section.title] ?? colors.gold;
@@ -185,7 +227,6 @@ function Step2({
       />
 
       <View style={styles.footer}>
-        <StepDots step={2} />
         <View style={styles.footerRow}>
           <TouchableOpacity style={styles.backButton} onPress={onBack}>
             <Text style={styles.backButtonText}>← Back</Text>
@@ -200,6 +241,7 @@ function Step2({
             </Text>
           </TouchableOpacity>
         </View>
+        <StepDots step={2} />
       </View>
     </View>
   );
@@ -268,7 +310,6 @@ function Step3({
       </ScrollView>
 
       <View style={styles.footer}>
-        <StepDots step={3} />
         <View style={styles.footerRow}>
           <TouchableOpacity style={styles.backButton} onPress={onBack} disabled={saving}>
             <Text style={styles.backButtonText}>← Back</Text>
@@ -284,6 +325,7 @@ function Step3({
             }
           </TouchableOpacity>
         </View>
+        <StepDots step={3} />
       </View>
     </View>
   );
@@ -292,7 +334,8 @@ function Step3({
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export function OnboardingScreen() {
-  const { user, completeOnboarding } = useAuth();
+  const { user, completeOnboarding, logOut } = useAuth();
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState(1);
   const [displayName, setDisplayName] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -344,12 +387,13 @@ export function OnboardingScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {step === 1 && (
         <Step1
           displayName={displayName}
           onChange={setDisplayName}
           onNext={() => setStep(2)}
+          onSignOut={logOut}
         />
       )}
       {step === 2 && (
@@ -382,13 +426,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
+  signOutBtn: {
+    alignSelf: 'center',
+    marginTop: 12,
+  },
+  signOutText: {
+    fontFamily: fonts.display,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+
   // Step shell
   stepContainer: {
     flex: 1,
   },
   stepHeader: {
     paddingHorizontal: 20,
-    paddingTop: 56,
+    paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: colors.surface,
     ...bevel.raised,
@@ -409,7 +463,7 @@ const styles = StyleSheet.create({
   // Step 1 layout
   welcomeTop: {
     alignItems: 'center',
-    paddingTop: 72,
+    paddingTop: 24,
     paddingBottom: 24,
     backgroundColor: colors.surface,
     ...bevel.raised,
@@ -424,7 +478,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: 16,
     color: colors.textSecondary,
-    marginTop: 4,
   },
   welcomeMid: {
     flex: 1,
@@ -467,9 +520,10 @@ const styles = StyleSheet.create({
   sectionHeader: {
     backgroundColor: colors.background,
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingTop: 10,
+    paddingBottom: 6,
     borderLeftWidth: 3,
-    marginTop: 4,
+    elevation: 2,
   },
   sectionHeaderText: {
     fontFamily: fonts.heading,
@@ -590,12 +644,12 @@ const styles = StyleSheet.create({
   footerRow: {
     flexDirection: 'row',
     gap: 10,
-    marginTop: 10,
   },
   dots: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
+    marginTop: 12,
     marginBottom: 4,
   },
   dot: {
@@ -631,14 +685,42 @@ const styles = StyleSheet.create({
   backButton: {
     paddingVertical: 13,
     paddingHorizontal: 16,
-    backgroundColor: colors.surfaceSunken,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    ...bevel.inset,
+    ...bevel.raised,
   },
   backButtonText: {
     fontFamily: fonts.display,
     fontSize: 17,
     color: colors.textSecondary,
   },
+  signOutButton: {
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    backgroundColor: '#7a1a1a',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderTopColor: '#c04040',
+    borderLeftColor: '#c04040',
+    borderBottomColor: '#3a0a0a',
+    borderRightColor: '#3a0a0a',
+  },
+  signOutButtonText: {
+    fontFamily: fonts.display,
+    fontSize: 17,
+    color: '#ff9999',
+  },
+
+  skillFilterRow: { backgroundColor: colors.background },
+  skillFilterContent: { paddingHorizontal: 12, paddingVertical: 8, gap: 6, flexDirection: 'row', alignItems: 'center' },
+  filterPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+  },
+  filterPillActive: { backgroundColor: colors.surfaceSunken, ...bevel.inset },
+  filterPillText: { fontFamily: fonts.display, fontSize: 14, color: colors.textSecondary },
 });

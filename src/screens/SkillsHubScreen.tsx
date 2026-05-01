@@ -23,6 +23,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSkills } from '../context/SkillsContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { Skill } from '../types';
@@ -40,6 +41,7 @@ import { fonts } from '../constants/typography';
  * Bottom displays total level (sum of all skill levels).
  */
 export function SkillsHubScreen() {
+  const insets = useSafeAreaInsets();
   const { skills, loading, error } = useSkills();
   const { userActivities } = useActivities();
 
@@ -127,7 +129,7 @@ export function SkillsHubScreen() {
 
   // Main skills grid
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Skills</Text>

@@ -461,9 +461,9 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 14 }]}>
+      <View style={styles.header}>
         <TouchableOpacity style={styles.abandonBtn} onPress={handleAbandon}>
           <Text style={styles.abandonBtnText}>✕ End</Text>
         </TouchableOpacity>
@@ -514,7 +514,7 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
       />
 
       {/* Footer */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 12 }]}>
+      <View style={[styles.footer, { paddingBottom: 12 }]}>
         <View style={styles.footerRow}>
           <View style={styles.timerChip}>
             <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
@@ -552,6 +552,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.surface,
     paddingHorizontal: 16,
+    paddingTop: 14,
     paddingBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',

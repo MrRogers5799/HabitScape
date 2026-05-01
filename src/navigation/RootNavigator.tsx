@@ -12,6 +12,7 @@ import { Image } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
@@ -42,6 +43,7 @@ const Tab = createBottomTabNavigator();
  * Only shown when user is logged in
  */
 function TabNavigator() {
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -50,7 +52,8 @@ function TabNavigator() {
           backgroundColor: colors.surface,
           borderTopColor: colors.bevelLight,
           borderTopWidth: 2,
-          height: 58,
+          height: 58 + insets.bottom,
+          paddingBottom: insets.bottom,
         },
         tabBarActiveTintColor: colors.gold,
         tabBarInactiveTintColor: colors.textSecondary,
