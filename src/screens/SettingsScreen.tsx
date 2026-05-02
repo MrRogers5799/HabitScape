@@ -16,6 +16,7 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +27,7 @@ import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { Cadence } from '../types';
 import { COMMON_TIMEZONES } from '../constants/timezones';
+import Constants from 'expo-constants';
 
 /**
  * Settings Screen Component
@@ -74,6 +76,19 @@ export function SettingsScreen() {
     } finally {
       setAddingActivity(false);
     }
+  };
+
+  const handleRateApp = async () => {
+    const marketUrl = 'market://details?id=com.buckorogers.habitscape';
+    const webUrl = 'https://play.google.com/store/apps/details?id=com.buckorogers.habitscape';
+    const canOpen = await Linking.canOpenURL(marketUrl);
+    await Linking.openURL(canOpen ? marketUrl : webUrl);
+  };
+
+  const handleSendFeedback = () => {
+    Linking.openURL(
+      'mailto:rogersalec99@gmail.com?subject=HabitScape%20Feedback&body=App%20version%3A%201.0.0%0A%0A'
+    );
   };
 
   const handleSelectTimezone = async (timezone: string) => {
@@ -137,20 +152,18 @@ export function SettingsScreen() {
           </View>
 
           {/* Timezone */}
-          <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Timezone</Text>
-            <View style={styles.settingRow}>
+          <View style={[styles.settingItem, styles.settingItemRow]}>
+            <View style={styles.settingItemBody}>
+              <Text style={styles.settingLabel}>Timezone</Text>
               <Text style={styles.settingValue}>{user?.timezone}</Text>
-              <Pressable
-                onPress={() => setTimezonePickerVisible(true)}
-                disabled={savingTimezone}
-                style={({ pressed }) => [styles.inlineButton, pressed && styles.inlineButtonPressed]}
-              >
-                <Text style={styles.inlineButtonText}>
-                  {savingTimezone ? 'Saving…' : 'Change'}
-                </Text>
-              </Pressable>
             </View>
+            <Pressable
+              onPress={() => setTimezonePickerVisible(true)}
+              disabled={savingTimezone}
+              style={({ pressed }) => [styles.editIconButton, pressed && { opacity: 0.7 }]}
+            >
+              <Text style={styles.editIconText}>{savingTimezone ? '…' : '✎'}</Text>
+            </Pressable>
           </View>
 
         </View>
@@ -200,13 +213,29 @@ export function SettingsScreen() {
 
           <View style={styles.settingItem}>
             <Text style={styles.settingLabel}>Version</Text>
-            <Text style={styles.settingValue}>1.0.0 (MVP)</Text>
+            <Text style={styles.settingValue}>{Constants.expoConfig?.version ?? '—'}</Text>
           </View>
 
           <View style={styles.settingItem}>
             <Text style={styles.settingLabel}>App</Text>
             <Text style={styles.settingValue}>HabitScape — Train your real-life skills</Text>
           </View>
+
+          <Pressable
+            style={({ pressed }) => [styles.settingItem, { marginTop: 4 }, pressed && { opacity: 0.7 }]}
+            onPress={handleRateApp}
+          >
+            <Text style={styles.settingLabel}>Enjoying HabitScape?</Text>
+            <Text style={[styles.settingValue, { color: colors.gold }]}>Rate us on Google Play ★</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.settingItem, { marginTop: 4 }, pressed && { opacity: 0.7 }]}
+            onPress={handleSendFeedback}
+          >
+            <Text style={styles.settingLabel}>Feedback & Support</Text>
+            <Text style={styles.settingValue}>Send us a message</Text>
+          </Pressable>
 
           <Pressable
             style={({ pressed }) => [styles.settingItem, { marginTop: 4 }, pressed && { opacity: 0.7 }]}
@@ -314,9 +343,10 @@ const styles = StyleSheet.create({
   settingLabel: { fontFamily: fonts.heading, fontSize: 8, color: colors.textSecondary, marginBottom: 6, textTransform: 'uppercase' },
   settingValue: { fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, flex: 1 },
   settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  inlineButton: { paddingHorizontal: 12, paddingVertical: 6, ...bevel.raised },
-  inlineButtonPressed: { opacity: 0.7 },
-  inlineButtonText: { fontFamily: fonts.heading, fontSize: 8, color: colors.gold },
+  settingItemRow: { flexDirection: 'row', alignItems: 'center' },
+  settingItemBody: { flex: 1 },
+  editIconButton: { width: 34, height: 34, justifyContent: 'center', alignItems: 'center', marginLeft: 8, backgroundColor: colors.surface, ...bevel.raised },
+  editIconText: { fontSize: 16, color: colors.gold },
   // Timezone modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: colors.surface, maxHeight: '70%', ...bevel.raised },

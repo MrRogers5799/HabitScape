@@ -8,19 +8,19 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image } from 'react-native';
+import { Image, View } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
 const TAB_ICONS = {
-  activities: require('../../assets/icons/tabs/activities.png'),
+  activities: require('../../assets/icons/tabs/Hardcore_ironman_chat_badge.png'),
   skills:     require('../../assets/icons/tabs/skills.png'),
   profile:    require('../../assets/icons/tabs/profile.png'),
   settings:   require('../../assets/icons/tabs/settings.png'),
+  workout:    require('../../assets/icons/tabs/Jog emote icon.png'),
 };
 
 // Screens
@@ -31,6 +31,19 @@ import { SkillsHubScreen } from '../screens/SkillsHubScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { WorkoutNavigator } from './WorkoutNavigator';
+
+const OUTLINE_OFFSETS = [-1, 0, 1].flatMap(x => [-1, 0, 1].map(y => [x, y])).filter(([x, y]) => x !== 0 || y !== 0);
+
+function OutlinedTabIcon({ source, size }: { source: any; size: number }) {
+  return (
+    <View style={{ width: size, height: size }}>
+      {OUTLINE_OFFSETS.map(([x, y], i) => (
+        <Image key={i} source={source} style={{ position: 'absolute', width: size, height: size, tintColor: 'black', left: x, top: y }} resizeMode="contain" />
+      ))}
+      <Image source={source} style={{ position: 'absolute', width: size, height: size, opacity: 1 }} resizeMode="contain" />
+    </View>
+  );
+}
 
 // Navigation instances
 const Stack = createNativeStackNavigator();
@@ -86,8 +99,8 @@ function TabNavigator() {
         options={{
           title: 'Activities',
           tabBarLabel: 'Activities',
-          tabBarIcon: ({ focused, size }) => (
-            <Image source={TAB_ICONS.activities} style={{ width: size, height: size, opacity: focused ? 1 : 0.45 }} resizeMode="contain" />
+          tabBarIcon: ({ size }) => (
+            <OutlinedTabIcon source={TAB_ICONS.activities} size={size} />
           ),
         }}
       />
@@ -99,8 +112,8 @@ function TabNavigator() {
         options={{
           title: 'Skills',
           tabBarLabel: 'Skills',
-          tabBarIcon: ({ focused, size }) => (
-            <Image source={TAB_ICONS.skills} style={{ width: size, height: size, opacity: focused ? 1 : 0.45 }} resizeMode="contain" />
+          tabBarIcon: ({ size }) => (
+            <Image source={TAB_ICONS.skills} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
           ),
         }}
       />
@@ -112,8 +125,8 @@ function TabNavigator() {
         options={{
           title: 'Profile',
           tabBarLabel: 'Profile',
-          tabBarIcon: ({ focused, size }) => (
-            <Image source={TAB_ICONS.profile} style={{ width: size, height: size, opacity: focused ? 1 : 0.45 }} resizeMode="contain" />
+          tabBarIcon: ({ size }) => (
+            <Image source={TAB_ICONS.profile} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
           ),
         }}
       />
@@ -125,12 +138,8 @@ function TabNavigator() {
         options={{
           title: 'Workout',
           tabBarLabel: 'Workout',
-          tabBarIcon: ({ focused, size }) => (
-            <MaterialCommunityIcons
-              name="dumbbell"
-              size={size}
-              color={focused ? colors.gold : colors.textSecondary}
-            />
+          tabBarIcon: ({ size }) => (
+            <Image source={TAB_ICONS.workout} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
           ),
         }}
       />
@@ -142,8 +151,8 @@ function TabNavigator() {
         options={{
           title: 'Settings',
           tabBarLabel: 'Settings',
-          tabBarIcon: ({ focused, size }) => (
-            <Image source={TAB_ICONS.settings} style={{ width: size, height: size, opacity: focused ? 1 : 0.45 }} resizeMode="contain" />
+          tabBarIcon: ({ size }) => (
+            <Image source={TAB_ICONS.settings} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
           ),
         }}
       />

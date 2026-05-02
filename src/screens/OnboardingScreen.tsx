@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -17,7 +18,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { ACTIVITY_TEMPLATES, ActivityTemplate } from '../constants/activities';
 import { Cadence } from '../types';
-import { SKILL_COLORS } from '../constants/osrsSkills';
+import { OSRS_SKILLS, SKILL_COLORS, SKILL_ICONS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
@@ -86,6 +87,25 @@ function Step1({
           returnKeyType="done"
           onSubmitEditing={onNext}
         />
+
+        <Text style={styles.howItWorksLabel}>HOW IT WORKS</Text>
+        <View style={styles.howItWorksCard}>
+          {([
+            { num: '1', title: 'Pick your activities', desc: 'Choose from dozens of habits across all OSRS skills.' },
+            { num: '2', title: 'Set your schedule', desc: 'Each activity gets its own cadence — daily, 3×/week, weekly, and more.' },
+            { num: '3', title: 'Earn XP & level up', desc: 'Complete activities to gain XP and watch your skills grow.' },
+          ] as const).map(({ num, title, desc }, i, arr) => (
+            <View key={num} style={[styles.howItWorksRow, i < arr.length - 1 && styles.howItWorksRowDivider]}>
+              <View style={styles.howItWorksNum}>
+                <Text style={styles.howItWorksNumText}>{num}</Text>
+              </View>
+              <View style={styles.howItWorksBody}>
+                <Text style={styles.howItWorksTitle}>{title}</Text>
+                <Text style={styles.howItWorksDesc}>{desc}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -120,7 +140,10 @@ function Step2({
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
 
   const allSkills = useMemo(
-    () => [...new Set(ACTIVITY_TEMPLATES.map(t => t.skillId))].sort(),
+    () => {
+      const skillSet = new Set(ACTIVITY_TEMPLATES.map(t => t.skillId));
+      return OSRS_SKILLS.filter(s => skillSet.has(s));
+    },
     []
   );
 
@@ -135,9 +158,9 @@ function Step2({
       bySkill[t.skillId].push(t);
     }
 
-    return Object.entries(bySkill)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([skillId, data]) => ({ title: skillId, data }));
+    return OSRS_SKILLS
+      .filter(skill => bySkill[skill]?.length)
+      .map(skill => ({ title: skill, data: bySkill[skill] }));
   }, [search, selectedSkill]);
 
   const count = selected.size;
@@ -159,66 +182,60 @@ function Step2({
         </View>
       </View>
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.skillFilterRow}
+        contentContainerStyle={styles.skillFilterContent}
+      >
+        <Pressable
+          style={[styles.filterPill, !selectedSkill && styles.filterPillActive]}
+          onPress={() => setSelectedSkill(null)}
+        >
+          <Text style={[styles.filterPillText, !selectedSkill && styles.filterPillTextActive]}>ALL</Text>
+        </Pressable>
+        {allSkills.map(skill => {
+          const active = selectedSkill === skill;
+          return (
+            <Pressable
+              key={skill}
+              style={[styles.filterPill, active && styles.filterPillActive]}
+              onPress={() => setSelectedSkill(active ? null : skill)}
+            >
+              <Image source={SKILL_ICONS[skill]} style={styles.filterPillIcon} resizeMode="contain" />
+              <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>{skill.toUpperCase()}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
       <SectionList
         style={{ flex: 1 }}
         sections={sections}
         keyExtractor={item => item.id}
-        ListHeaderComponent={
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.skillFilterRow}
-            contentContainerStyle={styles.skillFilterContent}
-          >
-            <Pressable
-              style={[styles.filterPill, !selectedSkill && styles.filterPillActive]}
-              onPress={() => setSelectedSkill(null)}
-            >
-              <Text style={[styles.filterPillText, !selectedSkill ? { color: colors.gold } : null]}>All</Text>
-            </Pressable>
-            {allSkills.map(skill => {
-              const c = SKILL_COLORS[skill] ?? colors.gold;
-              const active = selectedSkill === skill;
-              return (
-                <Pressable
-                  key={skill}
-                  style={[styles.filterPill, active ? styles.filterPillActive : null]}
-                  onPress={() => setSelectedSkill(active ? null : skill)}
-                >
-                  <Text style={[styles.filterPillText, active ? { color: c } : null]}>{skill}</Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        }
-        stickySectionHeadersEnabled
-        renderSectionHeader={({ section }) => {
-          const c = SKILL_COLORS[section.title] ?? colors.gold;
-          return (
-            <View style={[styles.sectionHeader, { borderLeftColor: c }]}>
-              <Text style={[styles.sectionHeaderText, { color: c }]}>{section.title}</Text>
-            </View>
-          );
-        }}
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={({ section }) => (
+          <View style={styles.sectionHeader}>
+            <Image source={SKILL_ICONS[section.title]} style={styles.sectionHeaderIcon} resizeMode="contain" />
+            <Text style={styles.sectionHeaderText}>{section.title.toUpperCase()}</Text>
+          </View>
+        )}
         renderItem={({ item }) => {
           const isSelected = selected.has(item.id);
-          const skillColor = SKILL_COLORS[item.skillId] ?? colors.gold;
           return (
             <Pressable
               style={[styles.activityRow, isSelected && styles.activityRowSelected]}
               onPress={() => onToggle(item.id)}
             >
-              <View style={[styles.activityCheckbox, isSelected && { backgroundColor: colors.gold, borderColor: colors.gold }]}>
-                {isSelected && <Text style={styles.checkmark}>✓</Text>}
-              </View>
+              <Image source={SKILL_ICONS[item.skillId]} style={styles.activityRowIcon} resizeMode="contain" />
               <View style={styles.activityRowInfo}>
                 <Text style={[styles.activityRowName, isSelected && { color: colors.gold }]}>
                   {item.activityName}
                 </Text>
                 <Text style={styles.activityRowDesc} numberOfLines={1}>{item.description}</Text>
               </View>
-              <View style={[styles.skillPill, { backgroundColor: `${skillColor}22`, borderColor: `${skillColor}66` }]}>
-                <Text style={[styles.skillPillText, { color: skillColor }]}>{item.skillId}</Text>
+              <View style={[styles.activityCheckbox, isSelected && { backgroundColor: colors.gold, borderColor: colors.gold }]}>
+                {isSelected && <Text style={styles.checkmark}>✓</Text>}
               </View>
             </Pressable>
           );
@@ -501,6 +518,59 @@ const styles = StyleSheet.create({
     ...bevel.inset,
   },
 
+  // Step 1 — how it works
+  howItWorksLabel: {
+    fontFamily: fonts.heading,
+    fontSize: 8,
+    color: colors.textSecondary,
+    letterSpacing: 1,
+    marginTop: 28,
+    marginBottom: 8,
+  },
+  howItWorksCard: {
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+  },
+  howItWorksRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 12,
+  },
+  howItWorksRowDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.bevelDark,
+  },
+  howItWorksNum: {
+    width: 24,
+    height: 24,
+    backgroundColor: colors.gold,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...bevel.raised,
+    marginTop: 1,
+  },
+  howItWorksNumText: {
+    fontFamily: fonts.heading,
+    fontSize: 9,
+    color: colors.background,
+  },
+  howItWorksBody: {
+    flex: 1,
+  },
+  howItWorksTitle: {
+    fontFamily: fonts.display,
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  howItWorksDesc: {
+    fontFamily: fonts.display,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+
   // Step 2 — activity list
   searchRow: {
     marginTop: 8,
@@ -518,37 +588,50 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.background,
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 6,
-    borderLeftWidth: 3,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    marginTop: 4,
+    gap: 6,
     elevation: 2,
+  },
+  sectionHeaderIcon: {
+    width: 14,
+    height: 14,
+    opacity: 0.7,
   },
   sectionHeaderText: {
     fontFamily: fonts.heading,
-    fontSize: 9,
+    fontSize: 7,
+    color: colors.textSecondary,
+    letterSpacing: 1,
   },
   activityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     marginHorizontal: 12,
     marginTop: 4,
     backgroundColor: colors.surface,
     ...bevel.raised,
+    gap: 10,
   },
   activityRowSelected: {
     backgroundColor: `${colors.gold}18`,
     borderColor: `${colors.gold}55`,
+  },
+  activityRowIcon: {
+    width: 26,
+    height: 26,
   },
   activityCheckbox: {
     width: 20,
     height: 20,
     borderWidth: 2,
     borderColor: colors.textSecondary,
-    marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
     ...bevel.inset,
@@ -560,7 +643,6 @@ const styles = StyleSheet.create({
   },
   activityRowInfo: {
     flex: 1,
-    marginRight: 8,
   },
   activityRowName: {
     fontFamily: fonts.display,
@@ -572,16 +654,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginTop: 1,
-  },
-  skillPill: {
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderWidth: 1,
-    borderRadius: 2,
-  },
-  skillPillText: {
-    fontFamily: fonts.display,
-    fontSize: 13,
   },
 
   // Step 3 — cadence cards
@@ -713,14 +785,30 @@ const styles = StyleSheet.create({
     color: '#ff9999',
   },
 
-  skillFilterRow: { backgroundColor: colors.background },
-  skillFilterContent: { paddingHorizontal: 12, paddingVertical: 8, gap: 6, flexDirection: 'row', alignItems: 'center' },
+  skillFilterRow: {
+    backgroundColor: colors.surfaceSunken,
+    flexGrow: 0,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.bevelDark,
+  },
+  skillFilterContent: { paddingHorizontal: 10, paddingVertical: 8, gap: 6, flexDirection: 'row', alignItems: 'center' },
   filterPill: {
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
     paddingVertical: 6,
     backgroundColor: colors.surface,
     ...bevel.raised,
+    gap: 5,
   },
-  filterPillActive: { backgroundColor: colors.surfaceSunken, ...bevel.inset },
-  filterPillText: { fontFamily: fonts.display, fontSize: 14, color: colors.textSecondary },
+  filterPillActive: {
+    backgroundColor: colors.gold,
+    borderTopColor: '#f0d060',
+    borderLeftColor: '#f0d060',
+    borderBottomColor: colors.bevelDark,
+    borderRightColor: colors.bevelDark,
+  },
+  filterPillIcon: { width: 14, height: 14 },
+  filterPillText: { fontFamily: fonts.heading, fontSize: 7, color: colors.textSecondary },
+  filterPillTextActive: { color: colors.background },
 });
