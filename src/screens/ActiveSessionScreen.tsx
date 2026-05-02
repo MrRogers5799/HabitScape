@@ -227,7 +227,8 @@ function ExerciseCard({
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
 export function ActiveSessionScreen({ route, navigation }: Props) {
-  const { templateId, templateName } = route.params;
+  const { templateId, templateName, backdateDate } = route.params;
+  const backdate = backdateDate ? new Date(backdateDate) : undefined;
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
 
@@ -251,7 +252,7 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
       try {
         const [exercises, sid, prev] = await Promise.all([
           getExercises(user!.uid, templateId),
-          createWorkoutSession(user!.uid, templateId, templateName),
+          createWorkoutSession(user!.uid, templateId, templateName, backdate),
           getLastCompletedSessionSets(user!.uid, templateId).catch(() => ({} as PrevSets)),
         ]);
         if (cancelled) return;
@@ -335,7 +336,7 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
         se.sets.map((set, i) => {
           const weight = set.weight ? parseFloat(set.weight) : null;
           const reps = set.reps ? parseInt(set.reps, 10) : null;
-          return logSet(user.uid, sessionId, se.exercise.id, se.exercise.name, i + 1, reps, weight, unit)
+          return logSet(user.uid, sessionId, se.exercise.id, se.exercise.name, i + 1, reps, weight, unit, backdate)
             .then(id => ({ index: i, id }));
         })
       );
@@ -410,7 +411,7 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
     if (!user || !sessionId) return;
     setFinishing(true);
     try {
-      await completeWorkoutSession(user.uid, sessionId);
+      await completeWorkoutSession(user.uid, sessionId, backdate);
       navigation.popToTop();
     } catch {
       setFinishing(false);
@@ -516,9 +517,17 @@ export function ActiveSessionScreen({ route, navigation }: Props) {
       {/* Footer */}
       <View style={[styles.footer, { paddingBottom: 12 }]}>
         <View style={styles.footerRow}>
-          <View style={styles.timerChip}>
-            <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
-          </View>
+          {backdate ? (
+            <View style={styles.timerChip}>
+              <Text style={styles.backdateChipText}>
+                {backdate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.timerChip}>
+              <Text style={styles.timerText}>{formatElapsed(elapsed)}</Text>
+            </View>
+          )}
           <TouchableOpacity
             style={[styles.finishBtn, (finishing || completedCount === 0) && styles.finishBtnDisabled]}
             onPress={handleFinish}
@@ -707,6 +716,7 @@ const styles = StyleSheet.create({
     ...bevel.inset,
   },
   timerText: { fontFamily: fonts.display, fontSize: 16, color: colors.textSecondary },
+  backdateChipText: { fontFamily: fonts.display, fontSize: 14, color: colors.gold },
   finishBtn: {
     flex: 1,
     paddingVertical: 14,

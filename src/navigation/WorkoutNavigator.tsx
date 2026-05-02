@@ -9,7 +9,7 @@ export type WorkoutStackParamList = {
   WorkoutTemplates: undefined;
   WorkoutMetrics: { templateId: string; templateName: string };
   TemplateDetail: { templateId: string; templateName: string };
-  ActiveSession: { templateId: string; templateName: string };
+  ActiveSession: { templateId: string; templateName: string; backdateDate?: string };
 };
 
 const Stack = createNativeStackNavigator<WorkoutStackParamList>();

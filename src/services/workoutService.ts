@@ -182,13 +182,15 @@ export async function reorderExercises(
 export async function createWorkoutSession(
   userId: string,
   templateId: string,
-  templateName: string
+  templateName: string,
+  date?: Date
 ): Promise<string> {
   const ref = doc(collection(db, 'users', userId, 'workoutSessions'));
+  const ts = date ? Timestamp.fromDate(date) : Timestamp.now();
   await setDoc(ref, {
     templateId,
     templateName,
-    startedAt: Timestamp.now(),
+    startedAt: ts,
     completedAt: null,
   });
   return ref.id;
@@ -196,10 +198,12 @@ export async function createWorkoutSession(
 
 export async function completeWorkoutSession(
   userId: string,
-  sessionId: string
+  sessionId: string,
+  date?: Date
 ): Promise<void> {
   const ref = doc(db, 'users', userId, 'workoutSessions', sessionId);
-  await setDoc(ref, { completedAt: Timestamp.now() }, { merge: true });
+  const ts = date ? Timestamp.fromDate(date) : Timestamp.now();
+  await setDoc(ref, { completedAt: ts }, { merge: true });
 }
 
 /** Deletes all set logs and the session document — used when abandoning mid-session. */
@@ -225,7 +229,8 @@ export async function logSet(
   setNumber: number,
   reps: number | null,
   weight: number | null,
-  unit: WeightUnit
+  unit: WeightUnit,
+  date?: Date
 ): Promise<string> {
   const ref = doc(collection(db, 'users', userId, 'workoutSessions', sessionId, 'sets'));
   await setDoc(ref, {
@@ -235,7 +240,7 @@ export async function logSet(
     reps,
     weight,
     unit,
-    completedAt: Timestamp.now(),
+    completedAt: date ? Timestamp.fromDate(date) : Timestamp.now(),
   });
   return ref.id;
 }

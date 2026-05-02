@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParamList } from '../navigation/WorkoutNavigator';
 import { useAuth } from '../context/AuthContext';
 import { SetLog, WorkoutSession } from '../types';
-import { getTemplateSessionHistory, updateSetLog } from '../services/workoutService';
+import { getTemplateSessionHistory, updateSetLog, abandonWorkoutSession } from '../services/workoutService';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
@@ -140,18 +141,21 @@ function SessionCard({
   userId,
   onToggle,
   onSetUpdated,
+  onDelete,
 }: {
   item: SessionEntry;
   expanded: boolean;
   userId: string;
   onToggle: () => void;
   onSetUpdated: (sessionId: string, setId: string, weight: number | null, reps: number | null) => void;
+  onDelete: (sessionId: string) => void;
 }) {
   const { session, sets } = item;
   const [editingSetId, setEditingSetId] = useState<string | null>(null);
   const [editWeight, setEditWeight] = useState('');
   const [editReps, setEditReps] = useState('');
   const [saving, setSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const grouped: Record<string, SetLog[]> = {};
   for (const s of sets) {
@@ -209,6 +213,7 @@ function SessionCard({
       {expanded && (
         <View style={styles.sessionCardBody}>
           {exerciseNames.map(name => {
+
             const exSets = grouped[name];
             const exVolume = exSets.reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0);
             return (
@@ -287,6 +292,30 @@ function SessionCard({
               </View>
             );
           })}
+
+          {confirmingDelete ? (
+            <View style={styles.deleteConfirmRow}>
+              <Pressable
+                style={styles.deleteConfirmYes}
+                onPress={() => { setConfirmingDelete(false); onDelete(session.id); }}
+              >
+                <Text style={styles.deleteConfirmYesText}>Confirm Delete</Text>
+              </Pressable>
+              <Pressable
+                style={styles.deleteConfirmNo}
+                onPress={() => setConfirmingDelete(false)}
+              >
+                <Text style={styles.deleteConfirmNoText}>Cancel</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              style={({ pressed }) => [styles.deleteSessionBtn, pressed && { opacity: 0.7 }]}
+              onPress={() => setConfirmingDelete(true)}
+            >
+              <Text style={styles.deleteSessionBtnText}>🗑  Delete Session</Text>
+            </Pressable>
+          )}
         </View>
       )}
     </View>
@@ -304,6 +333,16 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<SessionEntry[]>([]);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+
+  const backdateDays = useMemo(() => {
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(12, 0, 0, 0);
+      return d;
+    });
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -352,6 +391,17 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
 
   const historyDesc = useMemo(() => [...history].reverse(), [history]);
 
+  async function handleDeleteSession(sessionId: string) {
+    if (!user) return;
+    try {
+      await abandonWorkoutSession(user.uid, sessionId);
+      setHistory(prev => prev.filter(e => e.session.id !== sessionId));
+      setExpandedIdx(null);
+    } catch {
+      Alert.alert('Error', 'Could not delete session. Please try again.');
+    }
+  }
+
   function handleSetUpdated(sessionId: string, setId: string, weight: number | null, reps: number | null) {
     setHistory(prev => prev.map(entry =>
       entry.session.id !== sessionId ? entry : {
@@ -391,11 +441,60 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.manageBtn}
+            onPress={() => setDatePickerVisible(true)}
+          >
+            <Text style={styles.manageBtnText}>📅  Log Past</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.manageBtn}
             onPress={() => navigation.push('TemplateDetail', { templateId, templateName })}
           >
             <Text style={styles.manageBtnText}>✎  Exercises</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Date picker modal */}
+        <Modal visible={datePickerVisible} transparent animationType="slide" onRequestClose={() => setDatePickerVisible(false)}>
+          <Pressable style={styles.datePickerOverlay} onPress={() => setDatePickerVisible(false)}>
+            <Pressable style={styles.datePickerSheet} onPress={() => {}}>
+              <View style={styles.datePickerHeader}>
+                <Text style={styles.datePickerTitle}>Select Date</Text>
+                <Pressable onPress={() => setDatePickerVisible(false)}>
+                  <Text style={styles.datePickerClose}>✕</Text>
+                </Pressable>
+              </View>
+              <ScrollView>
+                {backdateDays.map((date, i) => {
+                  const isToday = i === 0;
+                  const label = isToday
+                    ? 'Today'
+                    : i === 1
+                    ? 'Yesterday'
+                    : date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+                  return (
+                    <TouchableOpacity
+                      key={i}
+                      style={styles.dateOption}
+                      onPress={() => {
+                        setDatePickerVisible(false);
+                        navigation.push('ActiveSession', {
+                          templateId,
+                          templateName,
+                          backdateDate: date.toISOString(),
+                        });
+                      }}
+                    >
+                      <Text style={styles.dateOptionLabel}>{label}</Text>
+                      <Text style={styles.dateOptionSub}>
+                        {date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
 
         {loading ? (
           <ActivityIndicator color={colors.gold} style={{ marginTop: 40 }} />
@@ -503,6 +602,7 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
                 userId={user!.uid}
                 onToggle={() => setExpandedIdx(prev => (prev === i ? null : i))}
                 onSetUpdated={handleSetUpdated}
+                onDelete={handleDeleteSession}
               />
             ))}
           </>
@@ -553,6 +653,30 @@ const styles = StyleSheet.create({
     ...bevel.raised,
   },
   manageBtnText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
+
+  // Date picker
+  datePickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+  datePickerSheet: { backgroundColor: colors.surface, maxHeight: '70%', ...bevel.raised },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: colors.surfaceSunken,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.bevelDark,
+  },
+  datePickerTitle: { fontFamily: fonts.heading, fontSize: 10, color: colors.gold },
+  datePickerClose: { fontFamily: fonts.display, fontSize: 22, color: colors.textSecondary, paddingHorizontal: 4 },
+  dateOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.bevelDark,
+  },
+  dateOptionLabel: { fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary, marginBottom: 2 },
+  dateOptionSub: { fontFamily: fonts.display, fontSize: 13, color: colors.textMuted },
 
   // Empty
   emptyState: { alignItems: 'center', paddingTop: 40, gap: 8 },
@@ -631,7 +755,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     marginBottom: 8,
     ...bevel.raised,
-    overflow: 'hidden',
   },
   sessionCardHeader: {
     flexDirection: 'row',
@@ -714,4 +837,34 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   setEditBtnText: { fontFamily: fonts.display, fontSize: 14, color: colors.textMuted },
+  deleteSessionBtn: {
+    marginTop: 16,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: `${colors.destructive}33`,
+    borderWidth: 1,
+    borderColor: `${colors.destructive}66`,
+  },
+  deleteSessionBtnText: { fontFamily: fonts.display, fontSize: 15, color: colors.error },
+  deleteConfirmRow: { flexDirection: 'row', marginTop: 16, gap: 8 },
+  deleteConfirmYes: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: colors.destructive,
+    borderWidth: 2,
+    borderTopColor: '#dd3333',
+    borderLeftColor: '#dd3333',
+    borderBottomColor: colors.bevelDark,
+    borderRightColor: colors.bevelDark,
+  },
+  deleteConfirmYesText: { fontFamily: fonts.display, fontSize: 15, color: colors.textPrimary },
+  deleteConfirmNo: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+  },
+  deleteConfirmNoText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
 });
