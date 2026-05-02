@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 8,
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     ...bevel.raised,
   },
   settingsCancelText: { fontFamily: fonts.display, fontSize: 16, color: colors.textSecondary },
