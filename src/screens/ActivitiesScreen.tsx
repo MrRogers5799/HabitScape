@@ -8,7 +8,7 @@ import {
   SectionList,
   Alert,
   RefreshControl,
-  Pressable,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActivities } from '../context/ActivitiesContext';
@@ -16,7 +16,7 @@ import { useSkills } from '../context/SkillsContext';
 import { Cadence, UserActivity, ActivityCompletion } from '../types';
 import { getCadenceLabel, CADENCE_CONFIG } from '../constants/cadences';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
-import { SKILL_COLORS } from '../constants/osrsSkills';
+import { SKILL_ICONS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import * as Haptics from 'expo-haptics';
@@ -94,7 +94,6 @@ export function ActivitiesScreen() {
   const [xpDrops, setXPDrops] = useState<XPDropEntry[]>([]);
   const [levelUpEvent, setLevelUpEvent] = useState<LevelUpEvent | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<UserActivity | null>(null);
-  const [completedCollapsed, setCompletedCollapsed] = useState(false);
 
   // Selected date for browsing — defaults to today
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
@@ -114,7 +113,6 @@ export function ActivitiesScreen() {
       d.setDate(d.getDate() - 1);
       return d;
     });
-    setCompletedCollapsed(false);
   };
 
   const handleNextDay = () => {
@@ -124,7 +122,6 @@ export function ActivitiesScreen() {
       d.setDate(d.getDate() + 1);
       return d;
     });
-    setCompletedCollapsed(true);
   };
 
   const handleRefresh = async () => {
@@ -311,11 +308,17 @@ export function ActivitiesScreen() {
           style={[styles.checkbox, gated && styles.checkboxCompleted]}
           onPress={(e) => {
             e.stopPropagation();
-            if (!gated && !completingId) {
+            if (!!completingId) return;
+            if (gated) {
+              const completion = [...dateCompletions]
+                .filter(c => c.activityId === activity.id)
+                .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
+              if (completion) handleUndoCompletion(completion);
+            } else {
               handleActivityPress(activity, e.nativeEvent.pageY);
             }
           }}
-          disabled={gated || !!completingId}
+          disabled={!!completingId}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           {isLoading
@@ -329,19 +332,12 @@ export function ActivitiesScreen() {
             {activityName}
           </Text>
           <View style={styles.activityMeta}>
-            {(() => {
-              const c = SKILL_COLORS[activity.skillId] ?? '#888888';
-              return (
-                <View style={[styles.skillBadge, { backgroundColor: `${c}22`, borderColor: `${c}88` }]}>
-                  <Text style={[styles.skillBadgeText, { color: c }]}>{activity.skillId}</Text>
-                </View>
-              );
-            })()}
+            {SKILL_ICONS[activity.skillId] && (
+              <Image source={SKILL_ICONS[activity.skillId]} style={styles.skillIcon} resizeMode="contain" />
+            )}
             <Text style={styles.skillMetaText}>+{activity.xpPerCompletion} XP</Text>
             {viewing && (activity.currentStreak ?? 0) > 0 && (
-              <Text style={styles.streakText}>
-                {'🔥 '}<Text style={styles.streakValue}>{activity.currentStreak}</Text>
-              </Text>
+              <Text style={styles.streakFlame}>🔥<Text style={styles.streakText}> {activity.currentStreak}</Text></Text>
             )}
           </View>
         </View>
@@ -370,64 +366,6 @@ export function ActivitiesScreen() {
     </View>
   );
 
-  const renderCompletedSection = () => {
-    if (dateCompletions.length === 0) return null;
-
-    const panelLabel = viewing
-      ? `Completed Today (${dateCompletions.length})`
-      : `Completed (${dateCompletions.length})`;
-
-    return (
-      <View style={styles.completedSection}>
-        <Pressable
-          style={styles.completedSectionHeader}
-          onPress={() => setCompletedCollapsed(prev => !prev)}
-        >
-          <Text style={styles.completedSectionTitle}>{panelLabel}</Text>
-          <Text style={styles.completedChevron}>
-            {completedCollapsed ? '›' : '⌄'}
-          </Text>
-        </Pressable>
-
-        {!completedCollapsed && dateCompletions.map(completion => {
-          const activity = userActivities.find(a => a.id === completion.activityId);
-          const template = ACTIVITY_TEMPLATES.find(t => t.id === completion.activityId);
-          const activityName = template?.activityName || completion.activityId;
-
-          return (
-            <View key={completion.id} style={styles.completionItem}>
-              <View style={styles.completionInfo}>
-                <Text style={styles.completionName}>{activityName}</Text>
-                <View style={styles.activityMeta}>
-                  {activity?.skillId && (() => {
-                    const c = SKILL_COLORS[activity.skillId] ?? '#888888';
-                    return (
-                      <View style={[styles.skillBadge, { backgroundColor: `${c}22`, borderColor: `${c}88` }]}>
-                        <Text style={[styles.skillBadgeText, { color: c }]}>{activity.skillId}</Text>
-                      </View>
-                    );
-                  })()}
-                  <Text style={styles.skillMetaText}>
-                    {completion.xpEarned} XP •{' '}
-                    {new Date(completion.completedAt).toLocaleTimeString('en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                </View>
-              </View>
-              <Pressable
-                onPress={() => handleUndoCompletion(completion)}
-                style={({ pressed }) => [styles.undoButton, pressed && styles.undoButtonPressed]}
-              >
-                <Text style={styles.undoButtonText}>↶ Undo</Text>
-              </Pressable>
-            </View>
-          );
-        })}
-      </View>
-    );
-  };
 
   // ── states ────────────────────────────────────────────────────────────────
 
@@ -497,7 +435,6 @@ export function ActivitiesScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderActivityItem}
         renderSectionHeader={renderSectionHeader}
-        ListHeaderComponent={renderCompletedSection()}
         ListEmptyComponent={<Text style={styles.noActivitiesText}>No activities</Text>}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -561,7 +498,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.heading,
     fontSize: 16,
     color: colors.gold,
-    marginBottom: 10,
+    marginBottom: 1,
   },
   dateNav: {
     flexDirection: 'row',
@@ -589,62 +526,6 @@ const styles = StyleSheet.create({
   },
 
   listContent: { paddingVertical: 8 },
-
-  // Completed section
-  completedSection: {
-    backgroundColor: colors.successSurface,
-    marginVertical: 8,
-    marginHorizontal: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    ...bevel.green,
-  },
-  completedSectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  completedSectionTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 9,
-    color: colors.successText,
-  },
-  completedChevron: {
-    fontFamily: fonts.display,
-    fontSize: 22,
-    color: colors.successText,
-    lineHeight: 22,
-  },
-  completionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    marginBottom: 6,
-    backgroundColor: colors.surface,
-    ...bevel.raised,
-  },
-  completionInfo: { flex: 1, marginRight: 8 },
-  completionName: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  undoButton: {
-    backgroundColor: colors.successSurface,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    ...bevel.raised,
-  },
-  undoButtonPressed: { opacity: 0.7 },
-  undoButtonText: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.successText,
-  },
 
   // Section headers
   sectionHeader: {
@@ -686,11 +567,10 @@ const styles = StyleSheet.create({
   activityName: { fontFamily: fonts.display, fontSize: 20, color: colors.textPrimary, marginBottom: 2 },
   activityNameCompleted: { color: colors.textSecondary, textDecorationLine: 'line-through' },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  skillBadge: { paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1 },
-  skillBadgeText: { fontFamily: fonts.display, fontSize: 14 },
+  skillIcon: { width: 18, height: 18 },
   skillMetaText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
-  streakText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
-  streakValue: { fontFamily: fonts.display, fontSize: 26, color: colors.gold },
+  streakFlame: { fontFamily: fonts.display, fontSize: 14, color: colors.gold },
+  streakText: { fontFamily: fonts.display, fontSize: 18, color: colors.gold },
   rowChevron: {
     fontFamily: fonts.display,
     fontSize: 22,

@@ -130,6 +130,7 @@ function buildMonthCalendar(
   activityId: string,
   cadence: string,
   timesPerWeek: number,
+  trackingStart: Date,
 ): CalendarDay[][] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -175,7 +176,7 @@ function buildMonthCalendar(
   if (cadence === 'daily') {
     for (const week of weeks) {
       for (const day of week) {
-        if (day.date && !day.completed && !day.isFuture && !day.isToday) {
+        if (day.date && !day.completed && !day.isFuture && !day.isToday && day.date >= trackingStart) {
           day.isMissed = true;
         }
       }
@@ -192,7 +193,7 @@ function buildMonthCalendar(
       if (monthHits === 0) {
         for (const week of weeks) {
           for (const day of week) {
-            if (day.date && !day.completed && !day.isFuture && !day.isToday) {
+            if (day.date && !day.completed && !day.isFuture && !day.isToday && day.date >= trackingStart) {
               day.isMissed = true;
             }
           }
@@ -200,13 +201,27 @@ function buildMonthCalendar(
       }
     }
   } else {
-    // Nx/week + weekly: evaluate each visual (Sun-Sat) calendar week
+    // Nx/week + weekly: evaluate each full Sun-Sat calendar week
     for (const week of weeks) {
       const realDays = week.filter(d => d.date !== null);
       if (realDays.length === 0) continue;
-      const allPast = realDays.every(d => !d.isFuture && !d.isToday);
-      if (!allPast) continue; // week still in progress — never mark missed
-      const hits = realDays.filter(d => d.completed).length;
+      // Skip any week that overlaps the tracking start — partial first weeks aren't fair to evaluate
+      if (realDays.some(d => d.date! < trackingStart)) continue;
+      // Compute actual Sunday and Saturday of this week (weeks can span two months)
+      const firstRealDate = realDays[0].date!;
+      const weekSun = new Date(firstRealDate);
+      weekSun.setDate(weekSun.getDate() - weekSun.getDay());
+      const weekSat = new Date(weekSun);
+      weekSat.setDate(weekSat.getDate() + 6);
+      // Only evaluate fully closed weeks — Saturday must be strictly in the past
+      if (weekSat >= today) continue;
+      // Count completions across the full Sun-Sat span (including cross-month days)
+      const hits = completions.filter(c => {
+        if (c.activityId !== activityId) return false;
+        const d = new Date(c.completedAt);
+        d.setHours(0, 0, 0, 0);
+        return d >= weekSun && d <= weekSat;
+      }).length;
       if (hits < timesPerWeek) {
         for (const day of week) {
           if (day.date && !day.completed) day.isMissed = true;
@@ -276,9 +291,17 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
     [weeklyXP]
   );
 
+  const trackingStart = useMemo(() => {
+    const d = new Date(activity.selectedAt ?? (activityCompletions.length > 0
+      ? activityCompletions[activityCompletions.length - 1].completedAt
+      : new Date()));
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, [activity.selectedAt, activityCompletions]);
+
   const calendarWeeks = useMemo(
-    () => buildMonthCalendar(calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek),
-    [calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek]
+    () => buildMonthCalendar(calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek, trackingStart),
+    [calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek, trackingStart]
   );
 
   const currentStreak = activity.currentStreak ?? 0;
@@ -329,7 +352,7 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
             )}
             {activity.selectedAt && (
               <Text style={styles.trainingSince}>
-                Training since {new Date(activity.selectedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                Training since {new Date(activity.selectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </Text>
             )}
           </View>

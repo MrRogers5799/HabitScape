@@ -424,7 +424,7 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backBtnText}>‹</Text>
+          <Text style={styles.backBtnText}>{"<"}</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{templateName}</Text>
         <View style={styles.headerSpacer} />
@@ -437,19 +437,19 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
             style={styles.startBtn}
             onPress={() => navigation.push('ActiveSession', { templateId, templateName })}
           >
-            <Text style={styles.startBtnText}>▶  Start Workout</Text>
+            <Text style={styles.startBtnText}>Start Workout</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.manageBtn}
             onPress={() => setDatePickerVisible(true)}
           >
-            <Text style={styles.manageBtnText}>📅  Log Past</Text>
+            <Text style={styles.manageBtnText} numberOfLines={1} adjustsFontSizeToFit>Log Past</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.manageBtn}
             onPress={() => navigation.push('TemplateDetail', { templateId, templateName })}
           >
-            <Text style={styles.manageBtnText}>✎  Exercises</Text>
+            <Text style={styles.manageBtnText} numberOfLines={1} adjustsFontSizeToFit>Exercises</Text>
           </TouchableOpacity>
         </View>
 
@@ -627,10 +627,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...bevel.raised,
   },
-  backBtn: { paddingRight: 12, paddingVertical: 4 },
-  backBtnText: { fontFamily: fonts.display, fontSize: 28, color: colors.gold, lineHeight: 30 },
-  headerTitle: { flex: 1, fontFamily: fonts.heading, fontSize: 13, color: colors.gold },
-  headerSpacer: { width: 40 },
+  backBtn: { paddingRight: 12, justifyContent: 'center' },
+  backBtnText: { fontFamily: fonts.display, fontSize: 20, fontWeight: '700', color: colors.gold, lineHeight: 20, includeFontPadding: false },
+  headerTitle: { flex: 1, fontFamily: fonts.heading, fontSize: 13, color: colors.gold, lineHeight: 20, includeFontPadding: false },
+  headerSpacer: { width: 0 },
 
   // Scroll
   scroll: { paddingHorizontal: 12, paddingBottom: 32, paddingTop: 12 },
@@ -648,11 +648,12 @@ const styles = StyleSheet.create({
   manageBtn: {
     flex: 1,
     paddingVertical: 14,
+    paddingHorizontal: 6,
     alignItems: 'center',
     backgroundColor: colors.surface,
     ...bevel.raised,
   },
-  manageBtnText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
+  manageBtnText: { fontFamily: fonts.display, fontSize: 17, color: colors.textSecondary },
 
   // Date picker
   datePickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
