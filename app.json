@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.buckorogers.habitscape",
-      "versionCode": 7,
+      "versionCode": 8,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#0d1117",
@@ -34,7 +34,8 @@
         {
           "image": "./assets/splash/splash.png",
           "resizeMode": "cover",
-          "backgroundColor": "#0f1623"
+          "backgroundColor": "#0f1623",
+          "imageWidth": 360
         }
       ],
       "./plugins/withAndroidSplashFill",
