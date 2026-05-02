@@ -37,6 +37,7 @@
           "backgroundColor": "#0f1623"
         }
       ],
+      "./plugins/withAndroidSplashFill",
       [
         "@sentry/react-native/expo",
         {

@@ -303,9 +303,15 @@ export function ActivitiesScreen() {
     const isNxWeek = ['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence);
     const doneToday = isNxWeek && !quotaMet && gated;
 
+    const trackingStart = activity.selectedAt ? new Date(activity.selectedAt) : null;
+    if (trackingStart) trackingStart.setHours(0, 0, 0, 0);
+    const selectedDay = new Date(selectedDate);
+    selectedDay.setHours(0, 0, 0, 0);
+    const isPreTracking = trackingStart !== null && selectedDay < trackingStart;
+
     return (
       <TouchableOpacity
-        style={[styles.activityItem, gated && styles.activityItemCompleted]}
+        style={[styles.activityItem, gated && styles.activityItemCompleted, isPreTracking && styles.activityItemPreTracking]}
         onPress={() => setSelectedActivity(activity)}
         activeOpacity={0.7}
       >
@@ -313,7 +319,7 @@ export function ActivitiesScreen() {
           style={[styles.checkbox, gated && styles.checkboxCompleted]}
           onPress={(e) => {
             e.stopPropagation();
-            if (!!completingId) return;
+            if (!!completingId || isPreTracking) return;
             if (gated) {
               const completion = [...dateCompletions]
                 .filter(c => c.activityId === activity.id)
@@ -323,7 +329,7 @@ export function ActivitiesScreen() {
               handleActivityPress(activity, e.nativeEvent.pageY);
             }
           }}
-          disabled={!!completingId}
+          disabled={!!completingId || isPreTracking}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           {isLoading
@@ -557,6 +563,7 @@ const styles = StyleSheet.create({
     ...bevel.raised,
   },
   activityItemCompleted: { backgroundColor: colors.successSurface, opacity: 0.85 },
+  activityItemPreTracking: { opacity: 0.4 },
   checkbox: {
     width: 22,
     height: 22,
