@@ -40,7 +40,7 @@ const CADENCE_LABEL: Record<Cadence, string> = {
 function StepDots({ step }: { step: number }) {
   return (
     <View style={styles.dots}>
-      {[1, 2, 3].map(n => (
+      {[1, 2, 3, 4].map(n => (
         <View key={n} style={[styles.dot, n === step && styles.dotActive]} />
       ))}
     </View>
@@ -270,16 +270,14 @@ function Step3({
   selected,
   cadences,
   onCadenceChange,
-  onFinish,
+  onNext,
   onBack,
-  saving,
 }: {
   selected: Set<string>;
   cadences: Record<string, Cadence>;
   onCadenceChange: (templateId: string, cadence: Cadence) => void;
-  onFinish: () => void;
+  onNext: () => void;
   onBack: () => void;
-  saving: boolean;
 }) {
   const templates = useMemo(
     () => ACTIVITY_TEMPLATES.filter(t => selected.has(t.id)),
@@ -328,6 +326,64 @@ function Step3({
 
       <View style={styles.footer}>
         <View style={styles.footerRow}>
+          <TouchableOpacity style={styles.backButton} onPress={onBack}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.primaryButton, styles.primaryButtonGrow]}
+            onPress={onNext}
+          >
+            <Text style={styles.primaryButtonText}>Next  →</Text>
+          </TouchableOpacity>
+        </View>
+        <StepDots step={3} />
+      </View>
+    </View>
+  );
+}
+
+// ─── Step 4: Week start day ───────────────────────────────────────────────────
+
+function Step4({
+  weekStartDay,
+  onSelect,
+  onFinish,
+  onBack,
+  saving,
+}: {
+  weekStartDay: 0 | 1;
+  onSelect: (day: 0 | 1) => void;
+  onFinish: () => void;
+  onBack: () => void;
+  saving: boolean;
+}) {
+  return (
+    <View style={styles.stepContainer}>
+      <View style={styles.stepHeader}>
+        <Text style={styles.stepTitle}>Week Start Day</Text>
+        <Text style={styles.stepSubtitle}>
+          Choose which day your week begins. This affects streaks, progress tracking, and your activity calendar.
+        </Text>
+      </View>
+
+      <View style={styles.weekStartOptions}>
+        {([{ label: 'Monday', sub: 'Mon → Sun', value: 1 }, { label: 'Sunday', sub: 'Sun → Sat', value: 0 }] as const).map(({ label, sub, value }) => {
+          const active = weekStartDay === value;
+          return (
+            <TouchableOpacity
+              key={value}
+              style={[styles.weekStartCard, active && styles.weekStartCardActive]}
+              onPress={() => onSelect(value)}
+            >
+              <Text style={[styles.weekStartCardLabel, active && styles.weekStartCardLabelActive]}>{label}</Text>
+              <Text style={[styles.weekStartCardSub, active && styles.weekStartCardSubActive]}>{sub}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <View style={styles.footer}>
+        <View style={styles.footerRow}>
           <TouchableOpacity style={styles.backButton} onPress={onBack} disabled={saving}>
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
@@ -342,7 +398,7 @@ function Step3({
             }
           </TouchableOpacity>
         </View>
-        <StepDots step={3} />
+        <StepDots step={4} />
       </View>
     </View>
   );
@@ -351,12 +407,13 @@ function Step3({
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export function OnboardingScreen() {
-  const { user, completeOnboarding, logOut } = useAuth();
+  const { user, completeOnboarding, logOut, updateWeekStartDay } = useAuth();
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState(1);
   const [displayName, setDisplayName] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [cadences, setCadences] = useState<Record<string, Cadence>>({});
+  const [weekStartDay, setWeekStartDay] = useState<0 | 1>(1);
   const [saving, setSaving] = useState(false);
 
   // Pre-fill cadences to each template's defaultCadence when entering step 3
@@ -395,7 +452,10 @@ export function OnboardingScreen() {
           skillId: t.skillId,
           baseXP: t.baseXP,
         }));
-      await completeOnboarding(displayName, activities);
+      await Promise.all([
+        completeOnboarding(displayName, activities),
+        updateWeekStartDay(weekStartDay),
+      ]);
       // RootNavigator re-renders automatically once user.profileComplete flips to true
     } catch (err) {
       setSaving(false);
@@ -426,8 +486,16 @@ export function OnboardingScreen() {
           selected={selected}
           cadences={cadences}
           onCadenceChange={(id, c) => setCadences(prev => ({ ...prev, [id]: c }))}
-          onFinish={handleFinish}
+          onNext={() => setStep(4)}
           onBack={() => setStep(2)}
+        />
+      )}
+      {step === 4 && (
+        <Step4
+          weekStartDay={weekStartDay}
+          onSelect={setWeekStartDay}
+          onFinish={handleFinish}
+          onBack={() => setStep(3)}
           saving={saving}
         />
       )}
@@ -811,4 +879,12 @@ const styles = StyleSheet.create({
   filterPillIcon: { width: 14, height: 14 },
   filterPillText: { fontFamily: fonts.heading, fontSize: 7, color: colors.textSecondary },
   filterPillTextActive: { color: colors.background },
+  // Step 4 — week start
+  weekStartOptions: { flex: 1, justifyContent: 'center', gap: 16, paddingHorizontal: 24 },
+  weekStartCard: { paddingVertical: 24, alignItems: 'center', backgroundColor: colors.surface, ...bevel.raised },
+  weekStartCardActive: { backgroundColor: colors.gold, ...bevel.raised },
+  weekStartCardLabel: { fontFamily: fonts.display, fontSize: 22, fontWeight: '700', color: colors.textPrimary },
+  weekStartCardLabelActive: { color: colors.background },
+  weekStartCardSub: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary, marginTop: 4 },
+  weekStartCardSubActive: { color: colors.background },
 });

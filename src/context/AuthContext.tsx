@@ -21,6 +21,7 @@ import {
   getUserProfile,
   updateUserDisplayName,
   updateUserTimezone,
+  updateUserWeekStartDay,
   changePassword as firebaseChangePassword,
 } from '../services/authService';
 import { completeOnboarding as firestoreCompleteOnboarding } from '../services/firestoreService';
@@ -140,6 +141,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(prev => prev ? { ...prev, timezone } : prev);
   }
 
+  async function handleUpdateWeekStartDay(weekStartDay: 0 | 1): Promise<void> {
+    if (!user) throw new Error('Not authenticated');
+    setError(null);
+    await updateUserWeekStartDay(user.uid, weekStartDay);
+    setUser(prev => prev ? { ...prev, weekStartDay } : prev);
+  }
+
   async function handleChangePassword(currentPassword: string, newPassword: string): Promise<void> {
     setError(null);
     await firebaseChangePassword(currentPassword, newPassword);
@@ -150,7 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     activities: { templateId: string; cadence: import('../types').Cadence; skillId: string; baseXP: number }[]
   ): Promise<void> {
     if (!user) throw new Error('Not authenticated');
-    await firestoreCompleteOnboarding(user.uid, displayName, activities, user.timezone);
+    await firestoreCompleteOnboarding(user.uid, displayName, activities, user.timezone, user.weekStartDay ?? 1);
     setUser(prev => prev ? { ...prev, profileComplete: true, displayName: displayName.trim() } : prev);
   }
 
@@ -184,6 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logOut: handleLogOut,
     updateDisplayName: handleUpdateDisplayName,
     updateTimezone: handleUpdateTimezone,
+    updateWeekStartDay: handleUpdateWeekStartDay,
     changePassword: handleChangePassword,
     completeOnboarding: handleCompleteOnboarding,
   };

@@ -136,7 +136,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!user || !userActivities.length || loading) return;
 
-    const resets = computeStreakResets(userActivities, completions);
+    const resets = computeStreakResets(userActivities, completions, user.weekStartDay ?? 1);
     if (resets.length === 0) return;
 
     updateActivityStreaks(user.uid, resets).catch(err =>
@@ -157,7 +157,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
 
         const activity = userActivities.find(a => a.id === activityId);
         if (activity) {
-          const streakUpdate = computeCompletionStreakUpdate(activity, completions);
+          const streakUpdate = computeCompletionStreakUpdate(activity, completions, user.weekStartDay ?? 1);
           if (streakUpdate) {
             await updateActivityStreaks(user.uid, [streakUpdate]);
           }
@@ -195,7 +195,8 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
           };
           const streakUpdate = recomputeStreakFromHistory(
             activity,
-            [...completions, optimisticCompletion]
+            [...completions, optimisticCompletion],
+            user.weekStartDay ?? 1
           );
           if (streakUpdate) {
             await updateActivityStreaks(user.uid, [streakUpdate]);
@@ -238,7 +239,8 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
           xpPerCompletion,
           1,
           template.skillId,
-          user.timezone ?? 'UTC'
+          user.timezone ?? 'UTC',
+          user.weekStartDay ?? 1
         );
         
         console.log(`✅ Activity ${activityTemplateId} added successfully`);
@@ -317,7 +319,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
           const activity = userActivities.find(a => a.id === undoneCompletion.activityId);
           if (activity) {
             const remainingCompletions = completions.filter(c => c.id !== completionId);
-            const streakUpdate = computeUndoStreakUpdate(activity, remainingCompletions);
+            const streakUpdate = computeUndoStreakUpdate(activity, remainingCompletions, user.weekStartDay ?? 1);
             if (streakUpdate) {
               await updateActivityStreaks(user.uid, [streakUpdate]);
             }

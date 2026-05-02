@@ -34,7 +34,8 @@ import Constants from 'expo-constants';
  */
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
-  const { user, updateTimezone } = useAuth();
+  const { user, updateTimezone, updateWeekStartDay } = useAuth();
+  const [savingWeekStart, setSavingWeekStart] = useState(false);
   const { userActivities, addActivity, removeActivity } = useActivities();
   const [wizardVisible, setWizardVisible] = useState(false);
   const [addingActivity, setAddingActivity] = useState(false);
@@ -89,6 +90,18 @@ export function SettingsScreen() {
     Linking.openURL(
       'mailto:rogersalec99@gmail.com?subject=HabitScape%20Feedback&body=App%20version%3A%201.0.0%0A%0A'
     );
+  };
+
+  const handleSelectWeekStartDay = async (day: 0 | 1) => {
+    if (day === (user?.weekStartDay ?? 1)) return;
+    try {
+      setSavingWeekStart(true);
+      await updateWeekStartDay(day);
+    } catch {
+      Alert.alert('Error', 'Failed to update week start. Please try again.');
+    } finally {
+      setSavingWeekStart(false);
+    }
   };
 
   const handleSelectTimezone = async (timezone: string) => {
@@ -164,6 +177,28 @@ export function SettingsScreen() {
             >
               <Text style={styles.editIconText}>{savingTimezone ? '…' : '✎'}</Text>
             </Pressable>
+          </View>
+
+          {/* Week Start Day */}
+          <View style={styles.settingItem}>
+            <Text style={styles.settingLabel}>Week Starts On</Text>
+            <View style={styles.weekStartToggle}>
+              {([{ label: 'Monday', value: 1 }, { label: 'Sunday', value: 0 }] as const).map(({ label, value }) => {
+                const active = (user?.weekStartDay ?? 1) === value;
+                return (
+                  <Pressable
+                    key={value}
+                    onPress={() => handleSelectWeekStartDay(value)}
+                    disabled={savingWeekStart}
+                    style={[styles.weekStartOption, active && styles.weekStartOptionActive]}
+                  >
+                    <Text style={[styles.weekStartOptionText, active && styles.weekStartOptionTextActive]}>
+                      {label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
         </View>
@@ -347,6 +382,11 @@ const styles = StyleSheet.create({
   settingItemBody: { flex: 1 },
   editIconButton: { width: 34, height: 34, justifyContent: 'center', alignItems: 'center', marginLeft: 8, backgroundColor: colors.surface, ...bevel.raised },
   editIconText: { fontSize: 16, color: colors.gold },
+  weekStartToggle: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  weekStartOption: { flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: colors.surfaceSunken, ...bevel.inset },
+  weekStartOptionActive: { backgroundColor: colors.gold, ...bevel.raised },
+  weekStartOptionText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
+  weekStartOptionTextActive: { color: colors.background, fontWeight: '700' },
   // Timezone modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
   modalSheet: { backgroundColor: colors.surface, maxHeight: '70%', ...bevel.raised },

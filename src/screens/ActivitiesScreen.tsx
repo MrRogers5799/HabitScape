@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useActivities } from '../context/ActivitiesContext';
 import { useSkills } from '../context/SkillsContext';
+import { useAuth } from '../context/AuthContext';
 import { Cadence, UserActivity, ActivityCompletion } from '../types';
 import { getCadenceLabel, CADENCE_CONFIG } from '../constants/cadences';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
@@ -43,10 +44,12 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-function startOfWeekFor(d: Date): Date {
-  const daysFromMonday = d.getDay() === 0 ? 6 : d.getDay() - 1;
+function startOfWeekFor(d: Date, weekStartDay: 0 | 1 = 1): Date {
+  const daysFromStart = weekStartDay === 1
+    ? (d.getDay() === 0 ? 6 : d.getDay() - 1)
+    : d.getDay();
   const start = new Date(d);
-  start.setDate(start.getDate() - daysFromMonday);
+  start.setDate(start.getDate() - daysFromStart);
   start.setHours(0, 0, 0, 0);
   return start;
 }
@@ -89,6 +92,8 @@ export function ActivitiesScreen() {
   } = useActivities();
 
   const { skills } = useSkills();
+  const { user } = useAuth();
+  const weekStartDay: 0 | 1 = user?.weekStartDay ?? 1;
   const [refreshing, setRefreshing] = useState(false);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [xpDrops, setXPDrops] = useState<XPDropEntry[]>([]);
@@ -165,7 +170,7 @@ export function ActivitiesScreen() {
         return { count, target: 1, periodLabel: viewing ? 'today' : 'that day' };
       }
       if (cadence === 'weekly') {
-        const count = countCompletionDaysInWindow(activity.id, startOfWeekFor(selectedDate), end);
+        const count = countCompletionDaysInWindow(activity.id, startOfWeekFor(selectedDate, weekStartDay), end);
         return { count, target: 1, periodLabel: viewing ? 'this week' : 'that week' };
       }
       if (cadence === 'monthly') {
@@ -173,7 +178,7 @@ export function ActivitiesScreen() {
         return { count, target: 1, periodLabel: viewing ? 'this month' : 'that month' };
       }
       // Nx/week
-      const count = countCompletionDaysInWindow(activity.id, startOfWeekFor(selectedDate), end);
+      const count = countCompletionDaysInWindow(activity.id, startOfWeekFor(selectedDate, weekStartDay), end);
       return { count, target: config.timesPerWeek, periodLabel: viewing ? 'this week' : 'that week' };
     },
     [completions, selectedDate, viewing, countCompletionDaysInWindow]

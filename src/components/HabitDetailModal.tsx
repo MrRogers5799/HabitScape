@@ -10,7 +10,9 @@ import {
 import { UserActivity, ActivityCompletion } from '../types';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { SKILL_COLORS } from '../constants/osrsSkills';
+import { useAuth } from '../context/AuthContext';
 import { CADENCE_CONFIG } from '../constants/cadences';
+import { getWeekStart } from '../utils/streakUtils';
 import { formatXP } from '../utils/xpCalculations';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -36,16 +38,6 @@ function formatDateTime(date: Date): string {
   return `${datePart}  ·  ${timePart}`;
 }
 
-// Monday of the week containing `date`
-function getWeekMonday(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  const dow = d.getDay(); // 0 = Sun
-  const diff = dow === 0 ? -6 : -(dow - 1);
-  d.setDate(d.getDate() + diff);
-  return d;
-}
-
 // ─── completion rate ──────────────────────────────────────────────────────────
 
 function calculateCompletionRate(
@@ -54,6 +46,7 @@ function calculateCompletionRate(
   cadence: string,
   timesPerWeek: number,
   selectedAt: Date | undefined,
+  weekStartDay: 0 | 1 = 1,
 ): number | null {
   const ac = completions.filter(c => c.activityId === activityId);
   if (ac.length === 0) return null;
@@ -91,9 +84,9 @@ function calculateCompletionRate(
     return total === 0 ? null : Math.round((hit / total) * 100);
   }
 
-  // Nx/week + weekly — evaluate closed Mon-Sun weeks
-  const firstMonday = getWeekMonday(start);
-  const thisMonday = getWeekMonday(today);
+  // Nx/week + weekly — evaluate closed weeks
+  const firstMonday = getWeekStart(start, weekStartDay);
+  const thisMonday = getWeekStart(today, weekStartDay);
   if (firstMonday >= thisMonday) return null;
 
   let hit = 0, total = 0;
@@ -131,6 +124,7 @@ function buildMonthCalendar(
   cadence: string,
   timesPerWeek: number,
   trackingStart: Date,
+  weekStartDay: 0 | 1 = 1,
 ): CalendarDay[][] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -143,7 +137,8 @@ function buildMonthCalendar(
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  const startDow = firstDay.getDay();
+  // How many blank cells before the 1st, adjusted for week start day
+  const startDow = (firstDay.getDay() - weekStartDay + 7) % 7;
 
   const weeks: CalendarDay[][] = [];
   let currentWeek: CalendarDay[] = [];
@@ -207,10 +202,9 @@ function buildMonthCalendar(
       if (realDays.length === 0) continue;
       // Skip any week that overlaps the tracking start — partial first weeks aren't fair to evaluate
       if (realDays.some(d => d.date! < trackingStart)) continue;
-      // Compute actual Sunday and Saturday of this week (weeks can span two months)
+      // Compute actual week start and end (can span two months)
       const firstRealDate = realDays[0].date!;
-      const weekSun = new Date(firstRealDate);
-      weekSun.setDate(weekSun.getDate() - weekSun.getDay());
+      const weekSun = getWeekStart(firstRealDate, weekStartDay);
       const weekSat = new Date(weekSun);
       weekSat.setDate(weekSat.getDate() + 6);
       // Only evaluate fully closed weeks — Saturday must be strictly in the past
@@ -234,7 +228,8 @@ function buildMonthCalendar(
 }
 
 const MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const DAY_LABELS = ['S','M','T','W','T','F','S'];
+const DAY_LABELS_SUN = ['S','M','T','W','T','F','S'];
+const DAY_LABELS_MON = ['M','T','W','T','F','S','S'];
 const SPARKLINE_WEEKS = 7;
 const BAR_MAX_HEIGHT = 44;
 
@@ -242,6 +237,10 @@ const BAR_MAX_HEIGHT = 44;
 
 export function HabitDetailModal({ activity, completions, onClose }: HabitDetailModalProps) {
   if (!activity) return null;
+
+  const { user } = useAuth();
+  const weekStartDay: 0 | 1 = user?.weekStartDay ?? 1;
+  const DAY_LABELS = weekStartDay === 1 ? DAY_LABELS_MON : DAY_LABELS_SUN;
 
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -264,13 +263,13 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
   );
 
   const completionRate = useMemo(
-    () => calculateCompletionRate(completions, activity.id, activity.cadence, timesPerWeek, activity.selectedAt),
-    [completions, activity.id, activity.cadence, timesPerWeek, activity.selectedAt]
+    () => calculateCompletionRate(completions, activity.id, activity.cadence, timesPerWeek, activity.selectedAt, weekStartDay),
+    [completions, activity.id, activity.cadence, timesPerWeek, activity.selectedAt, weekStartDay]
   );
 
-  // Weekly XP for sparkline — 7 most recent Mon-Sun weeks
+  // Weekly XP for sparkline — 7 most recent weeks
   const weeklyXP = useMemo(() => {
-    const thisMonday = getWeekMonday(now);
+    const thisMonday = getWeekStart(now, weekStartDay);
     return Array.from({ length: SPARKLINE_WEEKS }, (_, i) => {
       const weekStart = new Date(thisMonday);
       weekStart.setDate(weekStart.getDate() - (SPARKLINE_WEEKS - 1 - i) * 7);
@@ -284,7 +283,7 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
         : `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
       return { label, xp };
     });
-  }, [activityCompletions]);
+  }, [activityCompletions, weekStartDay]);
 
   const sparklineMax = useMemo(
     () => Math.max(...weeklyXP.map(w => w.xp), 1),
@@ -300,8 +299,8 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
   }, [activity.selectedAt, activityCompletions]);
 
   const calendarWeeks = useMemo(
-    () => buildMonthCalendar(calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek, trackingStart),
-    [calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek, trackingStart]
+    () => buildMonthCalendar(calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek, trackingStart, weekStartDay),
+    [calYear, calMonth, completions, activity.id, activity.cadence, timesPerWeek, trackingStart, weekStartDay]
   );
 
   const currentStreak = activity.currentStreak ?? 0;

@@ -143,7 +143,7 @@ export function getAllCadences(): Cadence[] {
  * @param userTimezone - User's timezone string (e.g., "America/New_York")
  * @returns Date of next reset time
  */
-export function calculateNextResetTime(cadence: Cadence, userTimezone: string): Date {
+export function calculateNextResetTime(cadence: Cadence, userTimezone: string, weekStartDay: 0 | 1 = 1): Date {
   // Create a date in the user's timezone
   const now = new Date();
   
@@ -158,12 +158,11 @@ export function calculateNextResetTime(cadence: Cadence, userTimezone: string): 
   }
 
   if (cadence === 'weekly') {
-    // Calculate next Monday at midnight
-    const daysUntilMonday = (1 - now.getDay() + 7) % 7;
-    const nextMonday = new Date(now);
-    nextMonday.setDate(nextMonday.getDate() + (daysUntilMonday === 0 ? 7 : daysUntilMonday));
-    nextMonday.setHours(0, 0, 0, 0);
-    return nextMonday;
+    const daysUntilStart = (weekStartDay - now.getDay() + 7) % 7;
+    const nextWeekStart = new Date(now);
+    nextWeekStart.setDate(nextWeekStart.getDate() + (daysUntilStart === 0 ? 7 : daysUntilStart));
+    nextWeekStart.setHours(0, 0, 0, 0);
+    return nextWeekStart;
   }
 
   if (cadence === '2x/week' || cadence === '3x/week' || cadence === '4x/week' || cadence === '5x/week' || cadence === '6x/week') {

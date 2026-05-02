@@ -529,7 +529,8 @@ export async function addUserActivity(
   xpPerCompletion: number,
   cadenceMultiplier: number,
   skillId: string,
-  timezone: string
+  timezone: string,
+  weekStartDay: 0 | 1 = 1
 ): Promise<void> {
   try {
     const userActivityRef = doc(
@@ -540,7 +541,7 @@ export async function addUserActivity(
       activityTemplateId
     );
 
-    const nextResetTime = calculateNextResetTime(cadence, timezone);
+    const nextResetTime = calculateNextResetTime(cadence, timezone, weekStartDay);
 
     await setDoc(userActivityRef, {
       id: activityTemplateId,
@@ -689,7 +690,8 @@ export async function completeOnboarding(
   userId: string,
   displayName: string,
   activities: { templateId: string; cadence: Cadence; skillId: string; baseXP: number }[],
-  timezone: string
+  timezone: string,
+  weekStartDay: 0 | 1 = 1
 ): Promise<void> {
   try {
     const batch = writeBatch(db);
@@ -702,7 +704,7 @@ export async function completeOnboarding(
 
     for (const { templateId, cadence, skillId, baseXP } of activities) {
       const xpPerCompletion = calculateXPPerCompletion(baseXP, cadence);
-      const nextResetTime = calculateNextResetTime(cadence, timezone);
+      const nextResetTime = calculateNextResetTime(cadence, timezone, weekStartDay);
       const activityRef = doc(db, 'users', userId, 'userActivities', templateId);
       batch.set(activityRef, {
         id: templateId,

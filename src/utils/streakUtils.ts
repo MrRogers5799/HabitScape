@@ -1,12 +1,19 @@
 import { UserActivity, ActivityCompletion } from '../types';
 import { CADENCE_CONFIG } from '../constants/cadences';
 
-export function getWeekMonday(date: Date): Date {
+export function getWeekStart(date: Date, weekStartDay: 0 | 1 = 1): Date {
   const d = new Date(date);
-  const daysFromMonday = d.getDay() === 0 ? 6 : d.getDay() - 1;
-  d.setDate(d.getDate() - daysFromMonday);
+  const daysFromStart = weekStartDay === 1
+    ? (d.getDay() === 0 ? 6 : d.getDay() - 1)  // Monday-based
+    : d.getDay();                                  // Sunday-based
+  d.setDate(d.getDate() - daysFromStart);
   d.setHours(0, 0, 0, 0);
   return d;
+}
+
+// Kept for backward compatibility — callers that haven't migrated yet
+export function getWeekMonday(date: Date): Date {
+  return getWeekStart(date, 1);
 }
 
 export function toDateStr(date: Date): string {
@@ -52,7 +59,7 @@ function longestDailyStreak(activityId: string, allCompletions: ActivityCompleti
   return longest;
 }
 
-function longestNxWeekStreak(activity: UserActivity, allCompletions: ActivityCompletion[]): number {
+function longestNxWeekStreak(activity: UserActivity, allCompletions: ActivityCompletion[], weekStartDay: 0 | 1 = 1): number {
   const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
   const activityCompletions = allCompletions.filter(c => c.activityId === activity.id);
@@ -62,11 +69,11 @@ function longestNxWeekStreak(activity: UserActivity, allCompletions: ActivityCom
     (min, c) => { const d = new Date(c.completedAt); return d < min ? d : min; },
     new Date(activityCompletions[0].completedAt)
   );
-  const thisWeekMonday = getWeekMonday(new Date());
+  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
 
   let longest = 0;
   let current = 0;
-  let weekStart = getWeekMonday(earliestDate);
+  let weekStart = getWeekStart(earliestDate, weekStartDay);
 
   while (weekStart <= thisWeekMonday) {
     const weekEnd = new Date(weekStart.getTime() + msPerWeek);
@@ -114,7 +121,8 @@ export interface StreakUpdate {
  */
 export function computeCompletionStreakUpdate(
   activity: UserActivity,
-  allCompletions: ActivityCompletion[]
+  allCompletions: ActivityCompletion[],
+  weekStartDay: 0 | 1 = 1
 ): StreakUpdate | null {
   if (activity.cadence === 'monthly') return null;
 
@@ -191,7 +199,8 @@ export function computeCompletionStreakUpdate(
  */
 export function computeUndoStreakUpdate(
   activity: UserActivity,
-  remainingCompletions: ActivityCompletion[]
+  remainingCompletions: ActivityCompletion[],
+  weekStartDay: 0 | 1 = 1
 ): StreakUpdate | null {
   if (activity.cadence === 'monthly') return null;
 
@@ -233,7 +242,7 @@ export function computeUndoStreakUpdate(
   // Non-daily: recompute current streak from remaining completions' week walk.
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
   const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
-  const thisWeekMonday = getWeekMonday(new Date());
+  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
   let currentStreak = 0;
   let weekStart = new Date(thisWeekMonday);
 
@@ -254,7 +263,7 @@ export function computeUndoStreakUpdate(
   return {
     activityId: activity.id,
     currentStreak,
-    longestStreak: longestNxWeekStreak(activity, remainingCompletions),
+    longestStreak: longestNxWeekStreak(activity, remainingCompletions, weekStartDay),
     lastStreakCheckWeek: toDateStr(thisWeekMonday),
   };
 }
@@ -269,12 +278,13 @@ export function computeUndoStreakUpdate(
  */
 export function recomputeStreakFromHistory(
   activity: UserActivity,
-  allCompletions: ActivityCompletion[]
+  allCompletions: ActivityCompletion[],
+  weekStartDay: 0 | 1 = 1
 ): StreakUpdate | null {
   if (activity.cadence === 'monthly') return null;
 
   const yesterday = getYesterdayStr();
-  const thisWeekMonday = getWeekMonday(new Date());
+  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
   const thisWeekStr = toDateStr(thisWeekMonday);
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
 
@@ -312,7 +322,7 @@ export function recomputeStreakFromHistory(
   // Nx/week: walk back from this week to compute currentStreak.
   const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
   let currentStreak = 0;
-  let weekStart = new Date(thisWeekMonday);
+  let weekStart = new Date(thisWeekMonday); // recomputeStreakFromHistory
 
   for (let i = 0; i < 104; i++) {
     const weekEnd = new Date(weekStart.getTime() + msPerWeek);
@@ -335,7 +345,7 @@ export function recomputeStreakFromHistory(
   return {
     activityId: activity.id,
     currentStreak,
-    longestStreak: longestNxWeekStreak(activity, allCompletions),
+    longestStreak: longestNxWeekStreak(activity, allCompletions, weekStartDay),
     lastStreakCheckWeek: thisWeekStr,
     streakVersion: STREAK_VERSION,
   };
@@ -351,11 +361,12 @@ export function recomputeStreakFromHistory(
  */
 export function computeStreakResets(
   activities: UserActivity[],
-  completions: ActivityCompletion[]
+  completions: ActivityCompletion[],
+  weekStartDay: 0 | 1 = 1
 ): StreakUpdate[] {
   const updates: StreakUpdate[] = [];
   const yesterday = getYesterdayStr();
-  const thisWeekMonday = getWeekMonday(new Date());
+  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
   const thisWeekStr = toDateStr(thisWeekMonday);
   const msPerWeek = 7 * 24 * 60 * 60 * 1000;
 
@@ -467,7 +478,7 @@ export function computeStreakResets(
         weekStart = new Date(weekStart.getTime() - msPerWeek);
       }
 
-      const newLongest = Math.max(backfillStreak, longestStreak);
+      const newLongest = Math.max(backfillStreak, longestNxWeekStreak(activity, completions, weekStartDay));
       updates.push({
         activityId: activity.id,
         currentStreak: backfillStreak,

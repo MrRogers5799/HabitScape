@@ -25,6 +25,8 @@ export interface User {
   displayName?: string;
   /** User's timezone for activity reset calculations (e.g., "America/New_York") */
   timezone: string;
+  /** Which day the user's week starts on: 0 = Sunday, 1 = Monday */
+  weekStartDay: 0 | 1;
   /** Timestamp when user account was created */
   createdAt: Date;
   /** Timestamp of last login */
@@ -177,6 +179,8 @@ export interface AuthContextType {
   updateDisplayName: (displayName: string) => Promise<void>;
   /** Update the user's timezone in their Firestore profile */
   updateTimezone: (timezone: string) => Promise<void>;
+  /** Update which day the user's week starts on */
+  updateWeekStartDay: (weekStartDay: 0 | 1) => Promise<void>;
   /** Change the user's password (requires current password for reauthentication) */
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   /** Finalize onboarding: saves display name + selected activities, sets profileComplete: true */

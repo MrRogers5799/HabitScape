@@ -60,6 +60,7 @@ export async function signUp(
       uid: firebaseUser.uid,
       email: firebaseUser.email || '',
       timezone,
+      weekStartDay: 1,
       createdAt: new Date(),
       lastLoginAt: new Date(),
       profileComplete: false,
@@ -219,6 +220,7 @@ export async function getUserProfile(uid: string): Promise<User | null> {
       ...data,
       createdAt: data.createdAt?.toDate?.() || new Date(),
       lastLoginAt: data.lastLoginAt?.toDate?.() || new Date(),
+      weekStartDay: data.weekStartDay ?? 1, // default existing accounts to Monday
     } as User;
   } catch (error) {
     console.error('❌ Error fetching user profile:', error);
@@ -270,6 +272,12 @@ export async function updateUserTimezone(uid: string, timezone: string): Promise
   const { updateDoc, doc } = await import('firebase/firestore');
   const userRef = doc(db, 'users', uid);
   await updateDoc(userRef, { timezone });
+}
+
+export async function updateUserWeekStartDay(uid: string, weekStartDay: 0 | 1): Promise<void> {
+  const { updateDoc, doc } = await import('firebase/firestore');
+  const userRef = doc(db, 'users', uid);
+  await updateDoc(userRef, { weekStartDay });
 }
 
 /**
