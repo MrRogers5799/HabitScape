@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
   editIconButton: { width: 34, height: 34, justifyContent: 'center', alignItems: 'center', marginLeft: 8, backgroundColor: colors.surface, ...bevel.raised },
   editIconText: { fontSize: 16, color: colors.gold },
   weekStartToggle: { flexDirection: 'row', gap: 8, marginTop: 8 },
-  weekStartOption: { flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: colors.surfaceSunken, ...bevel.inset },
+  weekStartOption: { flex: 1, paddingVertical: 8, alignItems: 'center', backgroundColor: colors.surface, ...bevel.raised },
   weekStartOptionActive: { backgroundColor: colors.gold, ...bevel.raised },
   weekStartOptionText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
   weekStartOptionTextActive: { color: colors.background, fontWeight: '700' },

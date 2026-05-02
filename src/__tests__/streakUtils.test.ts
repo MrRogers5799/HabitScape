@@ -5,6 +5,7 @@ import {
   recomputeStreakFromHistory,
   toDateStr,
   getWeekMonday,
+  getWeekStart,
 } from '../utils/streakUtils';
 import { UserActivity, ActivityCompletion } from '../types';
 
@@ -557,5 +558,128 @@ describe('computeStreakResets', () => {
       expect(updates).toHaveLength(1);
       expect(updates[0].currentStreak).toBe(6); // unchanged
     });
+  });
+});
+
+// ── getWeekStart ──────────────────────────────────────────────────────────────
+
+describe('getWeekStart', () => {
+  // Use a fixed Wednesday to make assertions unambiguous
+  const wednesday = new Date('2026-04-29T12:00:00'); // Wednesday
+
+  it('Monday start: returns the Monday of the given week', () => {
+    const result = getWeekStart(wednesday, 1);
+    expect(toDateStr(result)).toBe('2026-04-27'); // Monday
+  });
+
+  it('Sunday start: returns the Sunday of the given week', () => {
+    const result = getWeekStart(wednesday, 0);
+    expect(toDateStr(result)).toBe('2026-04-26'); // Sunday
+  });
+
+  it('Monday start: Sunday input rolls back 6 days to the previous Monday', () => {
+    const sunday = new Date('2026-04-26T12:00:00');
+    expect(toDateStr(getWeekStart(sunday, 1))).toBe('2026-04-20');
+  });
+
+  it('Sunday start: Sunday input stays on that Sunday', () => {
+    const sunday = new Date('2026-04-26T12:00:00');
+    expect(toDateStr(getWeekStart(sunday, 0))).toBe('2026-04-26');
+  });
+
+  it('Monday start: Monday input stays on that Monday', () => {
+    const monday = new Date('2026-04-27T12:00:00');
+    expect(toDateStr(getWeekStart(monday, 1))).toBe('2026-04-27');
+  });
+
+  it('Sunday start: Saturday input rolls back 6 days to the previous Sunday', () => {
+    const saturday = new Date('2026-05-02T12:00:00');
+    expect(toDateStr(getWeekStart(saturday, 0))).toBe('2026-04-26');
+  });
+
+  it('defaults to Monday when weekStartDay is omitted', () => {
+    expect(toDateStr(getWeekStart(wednesday))).toBe(toDateStr(getWeekStart(wednesday, 1)));
+  });
+});
+
+// ── computeStreakResets — weekStartDay ────────────────────────────────────────
+
+describe('computeStreakResets with weekStartDay', () => {
+  // Pin "today" to Wednesday 2026-04-29 by using weeksAgo relative to Monday 2026-04-27
+  // so closed weeks are well-defined regardless of when the test runs.
+  // We use absolute dates to avoid sensitivity to the real current date.
+
+  function makeSundayWeeksAgo(n: number, dayOffset = 0): Date {
+    // Current Sunday-based week start (most recent Sunday)
+    const now = new Date();
+    const thisSunday = getWeekStart(now, 0);
+    const d = new Date(thisSunday);
+    d.setDate(d.getDate() - n * 7 + dayOffset);
+    d.setHours(12, 0, 0, 0);
+    return d;
+  }
+
+  it('Monday start: marks streak reset when previous Mon-Sun week was missed', () => {
+    const activity = makeActivity({
+      cadence: '3x/week',
+      currentStreak: 3,
+      lastStreakCheckWeek: toDateStr(getWeekStart(new Date(), 1)), // not yet this week
+    });
+    // Override lastStreakCheckWeek to last Monday so we evaluate the completed week
+    const lastMonday = getWeekStart(new Date(), 1);
+    const prevMonday = new Date(lastMonday);
+    prevMonday.setDate(prevMonday.getDate() - 7);
+    activity.lastStreakCheckWeek = toDateStr(prevMonday);
+
+    // Only 1 completion in that week — misses the 3x target
+    const completions = [makeCompletion('run', new Date(prevMonday.getTime() + 86400000))];
+    const updates = computeStreakResets([activity], completions, 1);
+    expect(updates[0].currentStreak).toBe(0);
+  });
+
+  it('Sunday start: marks streak reset when previous Sun-Sat week was missed', () => {
+    const activity = makeActivity({
+      cadence: '3x/week',
+      currentStreak: 3,
+    });
+    const thisSunday = getWeekStart(new Date(), 0);
+    const prevSunday = new Date(thisSunday);
+    prevSunday.setDate(prevSunday.getDate() - 7);
+    activity.lastStreakCheckWeek = toDateStr(prevSunday);
+
+    // Only 1 completion in that Sun-Sat week
+    const completions = [makeCompletion('run', new Date(prevSunday.getTime() + 86400000))];
+    const updates = computeStreakResets([activity], completions, 0);
+    expect(updates[0].currentStreak).toBe(0);
+  });
+
+  it('Sunday start: does NOT reset when previous Sun-Sat week met the target', () => {
+    const activity = makeActivity({
+      cadence: '3x/week',
+      currentStreak: 9,
+      streakVersion: 2, // must be set to bypass the migration/backfill path
+    });
+    const thisSunday = getWeekStart(new Date(), 0);
+    const prevSunday = new Date(thisSunday);
+    prevSunday.setDate(prevSunday.getDate() - 7);
+    activity.lastStreakCheckWeek = toDateStr(prevSunday);
+
+    // 3 completions on Mon, Tue, Wed of that week
+    const completions = [
+      makeCompletion('run', new Date(prevSunday.getTime() + 1 * 86400000)),
+      makeCompletion('run', new Date(prevSunday.getTime() + 2 * 86400000)),
+      makeCompletion('run', new Date(prevSunday.getTime() + 3 * 86400000)),
+    ];
+    const updates = computeStreakResets([activity], completions, 0);
+    expect(updates[0].currentStreak).toBe(9); // unchanged
+  });
+
+  it('Sunday vs Monday start produce different week boundaries for the same date', () => {
+    // A completion on Sunday 2026-04-26 at noon
+    const sundayCompletion = new Date('2026-04-26T12:00:00');
+    // With Monday start: Apr 26 (Sun) belongs to the PREVIOUS week (Mon Apr 20 – Sun Apr 26)
+    expect(toDateStr(getWeekStart(sundayCompletion, 1))).toBe('2026-04-20');
+    // With Sunday start: Apr 26 (Sun) is the START of a new week
+    expect(toDateStr(getWeekStart(sundayCompletion, 0))).toBe('2026-04-26');
   });
 });

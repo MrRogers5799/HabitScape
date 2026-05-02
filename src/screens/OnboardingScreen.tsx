@@ -93,7 +93,8 @@ function Step1({
           {([
             { num: '1', title: 'Pick your activities', desc: 'Choose from dozens of habits across all OSRS skills.' },
             { num: '2', title: 'Set your schedule', desc: 'Each activity gets its own cadence — daily, 3×/week, weekly, and more.' },
-            { num: '3', title: 'Earn XP & level up', desc: 'Complete activities to gain XP and watch your skills grow.' },
+            { num: '3', title: 'Choose your week', desc: 'Pick whether your week starts on Monday or Sunday.' },
+            { num: '4', title: 'Earn XP & level up', desc: 'Complete activities to gain XP and watch your skills grow.' },
           ] as const).map(({ num, title, desc }, i, arr) => (
             <View key={num} style={[styles.howItWorksRow, i < arr.length - 1 && styles.howItWorksRowDivider]}>
               <View style={styles.howItWorksNum}>

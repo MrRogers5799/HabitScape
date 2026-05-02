@@ -6,10 +6,11 @@ import {
   Text,
   TouchableOpacity,
   SectionList,
+  Image,
 } from 'react-native';
 import { UserActivity, ActivityCompletion } from '../types';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
-import { SKILL_COLORS } from '../constants/osrsSkills';
+import { SKILL_ICONS } from '../constants/osrsSkills';
 import { useAuth } from '../context/AuthContext';
 import { CADENCE_CONFIG } from '../constants/cadences';
 import { getWeekStart } from '../utils/streakUtils';
@@ -114,6 +115,7 @@ interface CalendarDay {
   isToday: boolean;
   isFuture: boolean;
   isMissed: boolean;
+  isPreTracking: boolean;
 }
 
 function buildMonthCalendar(
@@ -144,7 +146,7 @@ function buildMonthCalendar(
   let currentWeek: CalendarDay[] = [];
 
   for (let i = 0; i < startDow; i++) {
-    currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false, isMissed: false });
+    currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false, isMissed: false, isPreTracking: false });
   }
 
   for (let day = 1; day <= lastDay.getDate(); day++) {
@@ -156,13 +158,14 @@ function buildMonthCalendar(
       isToday: date.getTime() === today.getTime(),
       isFuture: date > today,
       isMissed: false,
+      isPreTracking: date < trackingStart,
     });
     if (currentWeek.length === 7) { weeks.push(currentWeek); currentWeek = []; }
   }
 
   if (currentWeek.length > 0) {
     while (currentWeek.length < 7) {
-      currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false, isMissed: false });
+      currentWeek.push({ date: null, completed: false, isToday: false, isFuture: false, isMissed: false, isPreTracking: false });
     }
     weeks.push(currentWeek);
   }
@@ -200,16 +203,14 @@ function buildMonthCalendar(
     for (const week of weeks) {
       const realDays = week.filter(d => d.date !== null);
       if (realDays.length === 0) continue;
-      // Skip any week that overlaps the tracking start — partial first weeks aren't fair to evaluate
-      if (realDays.some(d => d.date! < trackingStart)) continue;
       // Compute actual week start and end (can span two months)
       const firstRealDate = realDays[0].date!;
       const weekSun = getWeekStart(firstRealDate, weekStartDay);
       const weekSat = new Date(weekSun);
       weekSat.setDate(weekSat.getDate() + 6);
-      // Only evaluate fully closed weeks — Saturday must be strictly in the past
+      // Only evaluate fully closed weeks — end of week must be strictly in the past
       if (weekSat >= today) continue;
-      // Count completions across the full Sun-Sat span (including cross-month days)
+      // Count completions across the full week span (including cross-month days)
       const hits = completions.filter(c => {
         if (c.activityId !== activityId) return false;
         const d = new Date(c.completedAt);
@@ -218,7 +219,8 @@ function buildMonthCalendar(
       }).length;
       if (hits < timesPerWeek) {
         for (const day of week) {
-          if (day.date && !day.completed) day.isMissed = true;
+          // Pre-tracking days stay grey even in a missed week
+          if (day.date && !day.completed && day.date >= trackingStart) day.isMissed = true;
         }
       }
     }
@@ -336,14 +338,9 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
           <View style={styles.headerText}>
             <Text style={styles.activityName}>{activityName}</Text>
             <View style={styles.activityMeta}>
-              {(() => {
-                const c = SKILL_COLORS[activity.skillId] ?? '#888888';
-                return (
-                  <View style={[styles.skillBadge, { backgroundColor: `${c}22`, borderColor: `${c}88` }]}>
-                    <Text style={[styles.skillBadgeText, { color: c }]}>{activity.skillId}</Text>
-                  </View>
-                );
-              })()}
+              {SKILL_ICONS[activity.skillId] && (
+                <Image source={SKILL_ICONS[activity.skillId]} style={styles.skillIcon} resizeMode="contain" />
+              )}
               <Text style={styles.cadenceLabel}>{cadenceLabel}</Text>
             </View>
             {template?.description && (
@@ -473,16 +470,18 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
                         key={di}
                         style={[
                           styles.calendarDayCell,
-                          day.date === null                  && styles.dayCellEmpty,
-                          day.date !== null && day.isFuture && !day.isToday && styles.dayCellFuture,
-                          day.date !== null && day.isMissed  && styles.dayCellMissed,
-                          day.date !== null && day.completed && styles.dayCellCompleted,
-                          day.isToday                        && styles.dayCellToday,
+                          day.date === null                                    && styles.dayCellEmpty,
+                          day.date !== null && day.isPreTracking               && styles.dayCellPreTracking,
+                          day.date !== null && day.isFuture && !day.isToday   && styles.dayCellFuture,
+                          day.date !== null && day.isMissed                   && styles.dayCellMissed,
+                          day.date !== null && day.completed                  && styles.dayCellCompleted,
+                          day.isToday                                         && styles.dayCellToday,
                         ]}
                       >
                         {day.date !== null && (
                           <Text style={[
                             styles.dayNumber,
+                            day.isPreTracking            && styles.dayNumberPreTracking,
                             day.isFuture && !day.isToday && styles.dayNumberFuture,
                             day.completed                && styles.dayNumberCompleted,
                             day.isToday                  && styles.dayNumberToday,
@@ -503,6 +502,10 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
                   <View style={styles.legendItem}>
                     <View style={[styles.legendSwatch, styles.dayCellMissed]} />
                     <Text style={styles.legendText}>Missed</Text>
+                  </View>
+                  <View style={styles.legendItem}>
+                    <View style={[styles.legendSwatch, styles.dayCellPreTracking]} />
+                    <Text style={styles.legendText}>Before tracking</Text>
                   </View>
                   <View style={styles.legendItem}>
                     <View style={[styles.legendSwatch, styles.dayCellToday]} />
@@ -566,15 +569,7 @@ const styles = StyleSheet.create({
     gap: 8,
     flexWrap: 'wrap',
   },
-  skillBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderWidth: 1,
-  },
-  skillBadgeText: {
-    fontFamily: fonts.display,
-    fontSize: 15,
-  },
+  skillIcon: { width: 20, height: 20 },
   cadenceLabel: {
     fontFamily: fonts.display,
     fontSize: 18,
@@ -773,6 +768,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
     borderColor: colors.successLight,
   },
+  dayCellPreTracking: {
+    backgroundColor: colors.background,
+    borderColor: colors.background,
+  },
   dayCellFuture: {
     backgroundColor: colors.surfaceSunken,
     borderColor: colors.borderSubtle,
@@ -793,6 +792,7 @@ const styles = StyleSheet.create({
   dayNumberCompleted: { color: colors.successText },
   dayNumberToday: { color: colors.gold },
   dayNumberFuture: { color: colors.textMuted },
+  dayNumberPreTracking: { color: colors.bevelDark },
 
   // Legend
   legendRow: {
