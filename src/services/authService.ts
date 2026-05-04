@@ -21,10 +21,12 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  deleteUser,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { User } from '../types';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { deleteAllUserData } from './firestoreService';
 import { OSRS_SKILLS } from '../constants/osrsSkills';
 
 /**
@@ -306,4 +308,28 @@ export async function changePassword(
   const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
   await reauthenticateWithCredential(currentUser, credential);
   await updatePassword(currentUser, newPassword);
+}
+
+/**
+ * Permanently delete the user's account and all their data.
+ *
+ * Order matters:
+ *   1. Reauthenticate — Firebase requires a fresh credential for destructive ops.
+ *   2. Delete Firestore data — must happen while the user is still authenticated
+ *      so security rules allow the writes.
+ *   3. Delete the Firebase Auth record — after this the session is gone.
+ *
+ * @param password - Current password used to reauthenticate before deletion.
+ */
+export async function deleteAccount(password: string): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser || !currentUser.email) {
+    throw new Error('No authenticated user found');
+  }
+
+  const credential = EmailAuthProvider.credential(currentUser.email, password);
+  await reauthenticateWithCredential(currentUser, credential);
+
+  await deleteAllUserData(currentUser.uid);
+  await deleteUser(currentUser);
 }

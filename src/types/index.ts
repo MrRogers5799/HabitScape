@@ -188,6 +188,8 @@ export interface AuthContextType {
     displayName: string,
     activities: { templateId: string; cadence: Cadence; skillId: string; baseXP: number }[]
   ) => Promise<void>;
+  /** Permanently delete the account and all user data (requires current password) */
+  deleteAccount: (password: string) => Promise<void>;
 }
 
 /**

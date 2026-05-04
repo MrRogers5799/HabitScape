@@ -29,6 +29,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/withAndroidSplashFill",
       [
         "expo-splash-screen",
         {
@@ -38,7 +39,6 @@
           "imageWidth": 360
         }
       ],
-      "./plugins/withAndroidSplashFill",
       [
         "@sentry/react-native/expo",
         {

@@ -16,6 +16,7 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
+  TextInput,
   Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,7 +35,7 @@ import Constants from 'expo-constants';
  */
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
-  const { user, updateTimezone, updateWeekStartDay } = useAuth();
+  const { user, updateTimezone, updateWeekStartDay, deleteAccount } = useAuth();
   const [savingWeekStart, setSavingWeekStart] = useState(false);
   const { userActivities, addActivity, removeActivity } = useActivities();
   const [wizardVisible, setWizardVisible] = useState(false);
@@ -44,6 +45,12 @@ export function SettingsScreen() {
   const [timezonePickerVisible, setTimezonePickerVisible] = useState(false);
   const [savingTimezone, setSavingTimezone] = useState(false);
   const [privacyPolicyVisible, setPrivacyPolicyVisible] = useState(false);
+
+  // Delete account state
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<'warn' | 'confirm'>('warn');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   /**
    * Handle activity added from wizard
@@ -115,6 +122,31 @@ export function SettingsScreen() {
     } finally {
       setSavingTimezone(false);
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      Alert.alert('Password required', 'Please enter your password to confirm.');
+      return;
+    }
+    try {
+      setDeleting(true);
+      await deleteAccount(deletePassword);
+      // Auth state change will redirect to login automatically
+    } catch (e: any) {
+      const msg = e?.code === 'auth/wrong-password' || e?.code === 'auth/invalid-credential'
+        ? 'Incorrect password. Please try again.'
+        : (e?.message ?? 'Failed to delete account. Please try again.');
+      Alert.alert('Error', msg);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleOpenDeleteModal = () => {
+    setDeleteStep('warn');
+    setDeletePassword('');
+    setDeleteModalVisible(true);
   };
 
   return (
@@ -279,9 +311,112 @@ export function SettingsScreen() {
             <Text style={styles.settingLabel}>Legal</Text>
             <Text style={styles.settingValue}>Privacy Policy</Text>
           </Pressable>
+
+          <View style={[styles.settingItem, { marginTop: 4 }]}>
+            <Text style={styles.settingLabel}>Game Assets</Text>
+            <Text style={styles.settingValue}>Old School RuneScape</Text>
+            <Text style={[styles.settingValue, { fontSize: 14, marginTop: 2 }]}>
+              © Jagex Ltd. All OSRS assets (icons, fonts, and visual style) are the property of Jagex Ltd. HabitScape is a fan-made app and is not affiliated with or endorsed by Jagex.
+            </Text>
+          </View>
+        </View>
+
+        {/* Danger Zone */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Cross the Wilderness Ditch</Text>
+          <Pressable
+            style={({ pressed }) => [styles.deleteButton, pressed && { opacity: 0.8 }]}
+            onPress={handleOpenDeleteModal}
+          >
+            <Text style={styles.deleteButtonText}>Delete Account</Text>
+          </Pressable>
         </View>
 
       </ScrollView>
+
+      {/* Delete Account Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalSheet, { maxHeight: '80%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.error }]}>Delete Account</Text>
+              <Pressable onPress={() => setDeleteModalVisible(false)}>
+                <Text style={styles.modalClose}>✕</Text>
+              </Pressable>
+            </View>
+
+            <View style={{ padding: 20 }}>
+              {deleteStep === 'warn' ? (
+                <>
+                  <Text style={styles.deleteWarningHeading}>This cannot be undone.</Text>
+                  <Text style={styles.deleteWarningBody}>
+                    Permanently deleting your account will erase:
+                  </Text>
+                  {['All skills and XP', 'All activities and streaks', 'All completion history', 'All workout templates and history'].map(item => (
+                    <Text key={item} style={styles.deleteWarningItem}>· {item}</Text>
+                  ))}
+                  <Text style={styles.deleteWarningBody}>
+                    Your data cannot be recovered after deletion.
+                  </Text>
+                  <View style={styles.deleteActions}>
+                    <Pressable
+                      style={({ pressed }) => [styles.deleteCancelBtn, pressed && { opacity: 0.7 }]}
+                      onPress={() => setDeleteModalVisible(false)}
+                    >
+                      <Text style={styles.deleteCancelText}>Cancel</Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [styles.deleteConfirmBtn, pressed && { opacity: 0.8 }]}
+                      onPress={() => setDeleteStep('confirm')}
+                    >
+                      <Text style={styles.deleteConfirmText}>I Understand, Continue</Text>
+                    </Pressable>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.deleteWarningHeading}>Confirm with your password</Text>
+                  <Text style={styles.deleteWarningBody}>
+                    Enter your password to permanently delete your account and all data.
+                  </Text>
+                  <TextInput
+                    style={styles.deletePasswordInput}
+                    placeholder="Your password"
+                    placeholderTextColor={colors.textSecondary}
+                    secureTextEntry
+                    value={deletePassword}
+                    onChangeText={setDeletePassword}
+                    autoCapitalize="none"
+                    autoFocus
+                  />
+                  <View style={styles.deleteActions}>
+                    <Pressable
+                      style={({ pressed }) => [styles.deleteCancelBtn, pressed && { opacity: 0.7 }]}
+                      onPress={() => setDeleteStep('warn')}
+                    >
+                      <Text style={styles.deleteCancelText}>Back</Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [styles.deleteFinalBtn, pressed && { opacity: 0.8 }]}
+                      onPress={handleDeleteAccount}
+                      disabled={deleting}
+                    >
+                      <Text style={styles.deleteConfirmText}>
+                        {deleting ? 'Deleting…' : 'Delete My Account'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Privacy Policy Modal */}
       <Modal
@@ -406,4 +541,79 @@ const styles = StyleSheet.create({
   policyBody: { fontFamily: fonts.display, fontSize: 17, color: colors.textSecondary, lineHeight: 24 },
 
   scrollContent: { paddingBottom: 32 },
+
+  // Danger zone
+  deleteButton: {
+    marginHorizontal: 12,
+    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.destructive,
+    alignItems: 'center',
+    ...bevel.raised,
+    borderTopColor: '#b22222',
+    borderLeftColor: '#b22222',
+  },
+  deleteButtonText: { fontFamily: fonts.display, fontSize: 18, color: colors.textPrimary },
+
+  // Delete modal
+  deleteWarningHeading: {
+    fontFamily: fonts.heading,
+    fontSize: 10,
+    color: colors.error,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+  },
+  deleteWarningBody: {
+    fontFamily: fonts.display,
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 8,
+    lineHeight: 22,
+  },
+  deleteWarningItem: {
+    fontFamily: fonts.display,
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginBottom: 4,
+    paddingLeft: 8,
+  },
+  deleteActions: { flexDirection: 'row', gap: 8, marginTop: 20 },
+  deleteCancelBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+  },
+  deleteCancelText: { fontFamily: fonts.display, fontSize: 16, color: colors.textSecondary },
+  deleteConfirmBtn: {
+    flex: 2,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: colors.destructive,
+    ...bevel.raised,
+    borderTopColor: '#b22222',
+    borderLeftColor: '#b22222',
+  },
+  deleteFinalBtn: {
+    flex: 2,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: colors.destructive,
+    ...bevel.raised,
+    borderTopColor: '#b22222',
+    borderLeftColor: '#b22222',
+  },
+  deleteConfirmText: { fontFamily: fonts.display, fontSize: 16, color: colors.textPrimary },
+  deletePasswordInput: {
+    backgroundColor: colors.background,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: fonts.display,
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginTop: 8,
+    ...bevel.inset,
+  },
 });

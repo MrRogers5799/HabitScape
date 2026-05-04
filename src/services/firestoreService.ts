@@ -25,6 +25,7 @@ import {
   Timestamp,
   Unsubscribe,
   updateDoc,
+  deleteDoc,
   QueryConstraint,
   limit as firestoreLimit,
 } from 'firebase/firestore';
@@ -728,4 +729,58 @@ export async function completeOnboarding(
     console.error('❌ Error completing onboarding:', error);
     throw error;
   }
+}
+
+/**
+ * DELETE ALL USER DATA - Permanently erase every Firestore document for a user.
+ *
+ * Deletes all subcollections (including nested ones) then the user document.
+ * Called before deleting the Firebase Auth record so Firestore rules still
+ * allow the write while the user is authenticated.
+ *
+ * Subcollections deleted:
+ *   skills, userActivities, activity_completions,
+ *   workoutTemplates (+ exercises sub-sub-collection),
+ *   workoutSessions  (+ sets sub-sub-collection)
+ */
+export async function deleteAllUserData(userId: string): Promise<void> {
+  const topLevelCollections = [
+    'skills',
+    'userActivities',
+    'activity_completions',
+  ];
+
+  const batch = writeBatch(db);
+
+  // Flat collections
+  for (const colName of topLevelCollections) {
+    const snap = await getDocs(collection(db, 'users', userId, colName));
+    snap.forEach(d => batch.delete(d.ref));
+  }
+
+  // workoutTemplates + nested exercises
+  const templateSnap = await getDocs(collection(db, 'users', userId, 'workoutTemplates'));
+  for (const templateDoc of templateSnap.docs) {
+    const exercisesSnap = await getDocs(
+      collection(db, 'users', userId, 'workoutTemplates', templateDoc.id, 'exercises')
+    );
+    exercisesSnap.forEach(d => batch.delete(d.ref));
+    batch.delete(templateDoc.ref);
+  }
+
+  // workoutSessions + nested sets
+  const sessionSnap = await getDocs(collection(db, 'users', userId, 'workoutSessions'));
+  for (const sessionDoc of sessionSnap.docs) {
+    const setsSnap = await getDocs(
+      collection(db, 'users', userId, 'workoutSessions', sessionDoc.id, 'sets')
+    );
+    setsSnap.forEach(d => batch.delete(d.ref));
+    batch.delete(sessionDoc.ref);
+  }
+
+  // User document itself
+  batch.delete(doc(db, 'users', userId));
+
+  await batch.commit();
+  console.log(`✅ All Firestore data deleted for user ${userId}`);
 }

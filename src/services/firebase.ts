@@ -22,8 +22,15 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeAuth } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore } from 'firebase/firestore';
+
+// Firebase 12 dropped getReactNativePersistence from the public firebase/auth
+// bundle. Import directly from the RN-specific dist file so Metro doesn't
+// resolve the browser/ESM variant that omits it.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { getReactNativePersistence } = require('@firebase/auth/dist/rn/index.js');
 
 /**
  * Firebase configuration object
@@ -67,7 +74,9 @@ const app = initializeApp(firebaseConfig);
  * Initialize Firebase Authentication
  * Used for user signup, login, and logout
  */
-export const auth = getAuth(app);
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
 
 /**
  * Initialize Firestore Database

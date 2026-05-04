@@ -23,6 +23,7 @@ import {
   updateUserTimezone,
   updateUserWeekStartDay,
   changePassword as firebaseChangePassword,
+  deleteAccount as firebaseDeleteAccount,
 } from '../services/authService';
 import { completeOnboarding as firestoreCompleteOnboarding } from '../services/firestoreService';
 import { User, AuthContextType } from '../types';
@@ -153,6 +154,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await firebaseChangePassword(currentPassword, newPassword);
   }
 
+  async function handleDeleteAccount(password: string): Promise<void> {
+    setError(null);
+    await firebaseDeleteAccount(password);
+    setUser(null);
+  }
+
   async function handleCompleteOnboarding(
     displayName: string,
     activities: { templateId: string; cadence: import('../types').Cadence; skillId: string; baseXP: number }[]
@@ -195,6 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateWeekStartDay: handleUpdateWeekStartDay,
     changePassword: handleChangePassword,
     completeOnboarding: handleCompleteOnboarding,
+    deleteAccount: handleDeleteAccount,
   };
 
   return (
