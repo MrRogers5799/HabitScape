@@ -1,26 +1,12 @@
 export const OSRS_SKILLS = [
-  'Attack',
-  'Strength',
-  'Defense',
-  'Hitpoints',
-  'Ranged',
-  'Prayer',
-  'Magic',
-  'Cooking',
-  'Woodcutting',
-  'Fletching',
-  'Fishing',
-  'Firemaking',
-  'Crafting',
-  'Smithing',
-  'Mining',
-  'Herblore',
-  'Agility',
-  'Thieving',
-  'Slayer',
-  'Farming',
-  'Runecrafting',
-  'Construction',
+  'Attack',       'Hitpoints',  'Mining',
+  'Strength',     'Agility',    'Smithing',
+  'Defense',      'Herblore',   'Fishing',
+  'Ranged',       'Thieving',   'Cooking',
+  'Prayer',       'Crafting',   'Firemaking',
+  'Magic',        'Fletching',  'Woodcutting',
+  'Runecrafting', 'Slayer',     'Farming',
+  'Construction', 'Hunter',     'Sailing',
 ] as const;
 
 export type OSRSSkill = typeof OSRS_SKILLS[number];
@@ -48,6 +34,8 @@ export const SKILL_DESCRIPTIONS: Record<string, string> = {
   Farming: 'Growth and cultivation',
   Runecrafting: 'Energy and transformation',
   Construction: 'Building and creating structure',
+  Hunter:       'Tracking, trapping, and time in the wild',
+  Sailing:      'Navigation, adventure, and exploring the world',
 };
 
 export const SKILL_COLORS: Record<string, string> = {
@@ -73,6 +61,8 @@ export const SKILL_COLORS: Record<string, string> = {
   Farming:      '#77aa33',
   Runecrafting: '#ddaaff',
   Construction: '#cc9955',
+  Hunter:       '#cc7722',
+  Sailing:      '#2299cc',
 };
 
 // Static requires are mandatory for React Native's Metro bundler
@@ -99,4 +89,6 @@ export const SKILL_ICONS: Record<string, ReturnType<typeof require>> = {
   Farming:      require('../../assets/icons/skills/farming.png'),
   Runecrafting: require('../../assets/icons/skills/runecrafting.png'),
   Construction: require('../../assets/icons/skills/construction.png'),
+  Hunter:       require('../../assets/icons/skills/hunter.png'),
+  Sailing:      require('../../assets/icons/skills/sailing.png'),
 };

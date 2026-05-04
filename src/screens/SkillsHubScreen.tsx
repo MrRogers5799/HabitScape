@@ -17,7 +17,6 @@
 import React, { useMemo } from 'react';
 import {
   View,
-  FlatList,
   StyleSheet,
   Text,
   Image,
@@ -27,9 +26,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSkills } from '../context/SkillsContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { Skill } from '../types';
-import { calculateLevel, calculateProgress, formatXP } from '../utils/xpCalculations';
+import { calculateLevel, calculateProgress } from '../utils/xpCalculations';
 import { ProgressBar } from '../components/ProgressBar';
-import { SKILL_ICONS, SKILL_COLORS } from '../constants/osrsSkills';
+import { SKILL_ICONS, OSRS_SKILLS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
@@ -45,14 +44,25 @@ export function SkillsHubScreen() {
   const { skills, loading, error } = useSkills();
   const { userActivities } = useActivities();
 
-  // Only show skills the user has engaged with — either XP earned or an active habit attached.
-  // This keeps the grid clean and motivating rather than showing 22 greyed-out level-1 skills.
+  const activeSkillIds = useMemo(
+    () => new Set(userActivities.map(a => a.skillId)),
+    [userActivities]
+  );
+
+  // Build display list from OSRS_SKILLS as source of truth so skills added
+  // after account creation (Hunter, Sailing) always appear even if the
+  // Firestore documents don't exist yet for existing users.
   const visibleSkills = useMemo(() => {
-    const activeSkillIds = new Set(userActivities.map(a => a.skillId));
-    return [...skills]
-      .filter(skill => skill.totalXP > 0 || activeSkillIds.has(skill.skillName))
-      .sort((a, b) => a.skillName.localeCompare(b.skillName));
-  }, [skills, userActivities]);
+    const byName = new Map(skills.map(s => [s.skillName, s]));
+    return OSRS_SKILLS.map(name => byName.get(name) ?? {
+      id: name,
+      skillName: name,
+      totalXP: 0,
+      level: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }, [skills]);
 
   const totalLevel = useMemo(() => {
     return visibleSkills.reduce((sum, skill) => sum + calculateLevel(skill.totalXP), 0);
@@ -61,51 +71,56 @@ export function SkillsHubScreen() {
   /**
    * Render a single skill cell in the grid
    */
-  const renderSkillCell = ({ item: skill }: { item: Skill }) => {
+  const renderSkillCell = (skill: Skill) => {
     const currentLevel = calculateLevel(skill.totalXP);
     const progress = calculateProgress(skill.totalXP);
+    const isActive = skill.totalXP > 0 || activeSkillIds.has(skill.skillName);
 
     return (
-      <View style={styles.skillCell}>
-        {/* Skill Icon */}
-        {SKILL_ICONS[skill.skillName] ? (
-          <View style={{ filter: `drop-shadow(0 0 4px ${SKILL_COLORS[skill.skillName] ?? '#888888'}66)` } as any}>
+      <View key={skill.skillName} style={[styles.skillCell, !isActive && styles.skillCellInactive]}>
+        {/* Top row: icon left, level right */}
+        <View style={styles.skillCellTop}>
+          {SKILL_ICONS[skill.skillName] ? (
             <Image
-              source={SKILL_ICONS[skill.skillName]}
+              source={SKILL_ICONS[skill.skillName] as any}
               style={styles.skillIcon}
               resizeMode="contain"
             />
-          </View>
-        ) : (
-          <View style={styles.skillIcon} />
-        )}
+          ) : (
+            <View style={styles.skillIcon} />
+          )}
+          <Text style={styles.levelRow}>
+            <Text style={styles.levelValue}>{currentLevel}</Text>
+            <Text style={styles.levelMax}>/99</Text>
+          </Text>
+        </View>
 
-        {/* Skill Name */}
-        <Text style={styles.skillName} numberOfLines={2}>
+        {/* Skill name */}
+        <Text style={styles.skillName} numberOfLines={1}>
           {skill.skillName}
         </Text>
 
-        {/* Level — large number + /99 in smaller muted text */}
-        <Text style={styles.levelRow}>
-          <Text style={styles.levelValue}>{currentLevel}</Text>
-          <Text style={styles.levelMax}>/99</Text>
-        </Text>
-
-        {/* Current XP */}
-        <Text style={styles.xpLabel}>XP: {formatXP(skill.totalXP)}</Text>
-
-        {/* Progress Bar */}
+        {/* Progress bar */}
         <View style={styles.progressContainer}>
           <ProgressBar
             progress={progress}
-            height={4}
-            barColor={colors.gold}
+            height={2}
+            barColor={isActive ? colors.gold : colors.bevelDark}
             backgroundColor={colors.surfaceSunken}
           />
         </View>
       </View>
     );
   };
+
+  // Chunk skills into rows of 3 for the flex grid
+  const skillRows = useMemo(() => {
+    const rows: Skill[][] = [];
+    for (let i = 0; i < visibleSkills.length; i += 3) {
+      rows.push(visibleSkills.slice(i, i + 3) as Skill[]);
+    }
+    return rows;
+  }, [visibleSkills]);
 
   // Loading state
   if (loading) {
@@ -135,23 +150,14 @@ export function SkillsHubScreen() {
         <Text style={styles.headerTitle}>Skills</Text>
       </View>
 
-      {/* Skills Grid or empty state */}
-      {visibleSkills.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.emptyText}>No skills trained yet</Text>
-          <Text style={styles.emptySubtext}>Add habits in Settings to start earning XP</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={visibleSkills}
-          renderItem={renderSkillCell}
-          keyExtractor={item => item.id}
-          numColumns={3}
-          scrollEnabled={true}
-          contentContainerStyle={styles.gridContent}
-          columnWrapperStyle={styles.gridRow}
-        />
-      )}
+      {/* Skills Grid — flex-based so rows fill the screen on every device */}
+      <View style={styles.grid}>
+        {skillRows.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.gridRow}>
+            {row.map(skill => renderSkillCell(skill))}
+          </View>
+        ))}
+      </View>
 
       {/* Footer with Total Level */}
       <View style={styles.footer}>
@@ -175,7 +181,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    paddingVertical: 14,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     ...bevel.raised,
   },
@@ -184,67 +190,69 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.gold,
   },
-  gridContent: {
-    paddingHorizontal: 8,
-    paddingVertical: 10,
+  grid: {
+    flex: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    gap: 5,
   },
   gridRow: {
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    flex: 1,
+    flexDirection: 'row',
+    gap: 5,
   },
   skillCell: {
-    width: '32%',
+    flex: 1,
     backgroundColor: colors.surface,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     ...bevel.raised,
   },
+  skillCellInactive: {
+    opacity: 0.4,
+  },
+  skillCellTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    width: '100%',
+  },
   skillIcon: {
-    width: 38,
-    height: 38,
-    marginBottom: 7,
+    width: 30,
+    height: 30,
     imageRendering: 'pixelated',
   } as any,
   skillName: {
     fontFamily: fonts.display,
-    fontSize: 18,
+    fontSize: 14,
     color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 1,
-    height: 22,
   },
   levelRow: {
-    lineHeight: 28,
-    marginBottom: 1,
+    lineHeight: 24,
   },
   levelValue: {
     fontFamily: fonts.display,
     fontSize: 28,
     color: colors.gold,
-    lineHeight: 28,
+    lineHeight: 30,
   },
   levelMax: {
     fontFamily: fonts.display,
-    fontSize: 17,
+    fontSize: 16,
     color: colors.textSecondary,
-    lineHeight: 28,
-  },
-  xpLabel: {
-    fontFamily: fonts.display,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 4,
+    lineHeight: 30,
   },
   progressContainer: {
-    width: '90%',
-    marginTop: 2,
+    width: '100%',
+    marginTop: 4,
   },
   footer: {
     backgroundColor: colors.surface,
-    paddingVertical: 14,
+    paddingVertical: 8,
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -258,7 +266,7 @@ const styles = StyleSheet.create({
   },
   totalLevelValue: {
     fontFamily: fonts.display,
-    fontSize: 38,
+    fontSize: 26,
     color: colors.gold,
   },
   loadingText: {

@@ -339,10 +339,8 @@ function Step3({
           return (
             <View key={t.id} style={styles.cadenceCard}>
               <View style={styles.cadenceCardHeader}>
+                <Image source={SKILL_ICONS[t.skillId]} style={styles.cadenceSkillIcon} resizeMode="contain" />
                 <Text style={styles.cadenceCardName}>{t.activityName}</Text>
-                <View style={[styles.skillPill, { backgroundColor: `${skillColor}22`, borderColor: `${skillColor}66` }]}>
-                  <Text style={[styles.skillPillText, { color: skillColor }]}>{t.skillId}</Text>
-                </View>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cadenceButtons}>
                 {t.availableCadences.map(c => {
@@ -789,7 +787,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.textPrimary,
     flex: 1,
-    marginRight: 8,
+    marginLeft: 8,
+  },
+  cadenceSkillIcon: {
+    width: 22,
+    height: 22,
   },
   cadenceButtons: {
     gap: 6,
@@ -798,8 +800,8 @@ const styles = StyleSheet.create({
   cadenceBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: colors.surfaceSunken,
-    ...bevel.inset,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
   },
   cadenceBtnActive: {
     backgroundColor: colors.gold,
