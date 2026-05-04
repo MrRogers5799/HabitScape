@@ -126,6 +126,8 @@ function Step1({
 
 // ─── Step 2: Activity multi-select ───────────────────────────────────────────
 
+const POPULAR_SECTION_KEY = '★ TOP PICKS';
+
 function Step2({
   selected,
   onToggle,
@@ -138,6 +140,7 @@ function Step2({
   onBack: () => void;
 }) {
   const [search, setSearch] = useState('');
+  const [showPopular, setShowPopular] = useState(true);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
 
   const allSkills = useMemo(
@@ -150,19 +153,32 @@ function Step2({
 
   const sections = useMemo(() => {
     const q = search.toLowerCase();
-    const bySkill: Record<string, ActivityTemplate[]> = {};
 
+    // Searching always shows full list across all skills
+    if (q) {
+      const bySkill: Record<string, ActivityTemplate[]> = {};
+      for (const t of ACTIVITY_TEMPLATES) {
+        if (!t.activityName.toLowerCase().includes(q) && !t.skillId.toLowerCase().includes(q)) continue;
+        if (!bySkill[t.skillId]) bySkill[t.skillId] = [];
+        bySkill[t.skillId].push(t);
+      }
+      return OSRS_SKILLS.filter(s => bySkill[s]?.length).map(s => ({ title: s, data: bySkill[s] }));
+    }
+
+    // Top Picks view — flat curated list, no skill grouping
+    if (showPopular) {
+      return [{ title: POPULAR_SECTION_KEY, data: ACTIVITY_TEMPLATES.filter(t => t.popular) }];
+    }
+
+    // Full browse filtered by skill
+    const bySkill: Record<string, ActivityTemplate[]> = {};
     for (const t of ACTIVITY_TEMPLATES) {
       if (selectedSkill && t.skillId !== selectedSkill) continue;
-      if (q && !t.activityName.toLowerCase().includes(q) && !t.skillId.toLowerCase().includes(q)) continue;
       if (!bySkill[t.skillId]) bySkill[t.skillId] = [];
       bySkill[t.skillId].push(t);
     }
-
-    return OSRS_SKILLS
-      .filter(skill => bySkill[skill]?.length)
-      .map(skill => ({ title: skill, data: bySkill[skill] }));
-  }, [search, selectedSkill]);
+    return OSRS_SKILLS.filter(s => bySkill[s]?.length).map(s => ({ title: s, data: bySkill[s] }));
+  }, [search, showPopular, selectedSkill]);
 
   const count = selected.size;
 
@@ -189,19 +205,34 @@ function Step2({
         style={styles.skillFilterRow}
         contentContainerStyle={styles.skillFilterContent}
       >
+        {/* Top Picks pill — default active state */}
         <Pressable
-          style={[styles.filterPill, !selectedSkill && styles.filterPillActive]}
-          onPress={() => setSelectedSkill(null)}
+          style={[styles.filterPill, styles.filterPillPopular, showPopular && !search && styles.filterPillPopularActive]}
+          onPress={() => { setShowPopular(true); setSelectedSkill(null); }}
         >
-          <Text style={[styles.filterPillText, !selectedSkill && styles.filterPillTextActive]}>ALL</Text>
+          <Text style={[styles.filterPillText, showPopular && !search && styles.filterPillTextActive]}>
+            ★ TOP PICKS
+          </Text>
         </Pressable>
+
+        {/* All pill */}
+        <Pressable
+          style={[styles.filterPill, !showPopular && !selectedSkill && !search && styles.filterPillActive]}
+          onPress={() => { setShowPopular(false); setSelectedSkill(null); }}
+        >
+          <Text style={[styles.filterPillText, !showPopular && !selectedSkill && !search && styles.filterPillTextActive]}>
+            ALL
+          </Text>
+        </Pressable>
+
+        {/* Skill pills */}
         {allSkills.map(skill => {
-          const active = selectedSkill === skill;
+          const active = !showPopular && selectedSkill === skill && !search;
           return (
             <Pressable
               key={skill}
               style={[styles.filterPill, active && styles.filterPillActive]}
-              onPress={() => setSelectedSkill(active ? null : skill)}
+              onPress={() => { setShowPopular(false); setSelectedSkill(active ? null : skill); }}
             >
               <Image source={SKILL_ICONS[skill]} style={styles.filterPillIcon} resizeMode="contain" />
               <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>{skill.toUpperCase()}</Text>
@@ -216,10 +247,19 @@ function Step2({
         keyExtractor={item => item.id}
         stickySectionHeadersEnabled={false}
         renderSectionHeader={({ section }) => (
-          <View style={styles.sectionHeader}>
-            <Image source={SKILL_ICONS[section.title]} style={styles.sectionHeaderIcon} resizeMode="contain" />
-            <Text style={styles.sectionHeaderText}>{section.title.toUpperCase()}</Text>
-          </View>
+          section.title === POPULAR_SECTION_KEY ? (
+            <View style={[styles.sectionHeader, styles.sectionHeaderPopular]}>
+              <Text style={[styles.sectionHeaderText, styles.sectionHeaderPopularText]}>
+                ★ TOP PICKS
+              </Text>
+              <Text style={styles.sectionHeaderPopularSub}>Most tracked habits to get you started</Text>
+            </View>
+          ) : (
+            <View style={styles.sectionHeader}>
+              <Image source={SKILL_ICONS[section.title]} style={styles.sectionHeaderIcon} resizeMode="contain" />
+              <Text style={styles.sectionHeaderText}>{section.title.toUpperCase()}</Text>
+            </View>
+          )
         )}
         renderItem={({ item }) => {
           const isSelected = selected.has(item.id);
@@ -877,9 +917,39 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.bevelDark,
     borderRightColor: colors.bevelDark,
   },
+  filterPillPopular: {
+    backgroundColor: colors.surfaceRaised,
+    borderTopColor: colors.gold,
+    borderLeftColor: colors.gold,
+    borderBottomColor: colors.goldDark,
+    borderRightColor: colors.goldDark,
+  },
+  filterPillPopularActive: {
+    backgroundColor: colors.gold,
+    borderTopColor: '#f0d060',
+    borderLeftColor: '#f0d060',
+    borderBottomColor: colors.bevelDark,
+    borderRightColor: colors.bevelDark,
+  },
   filterPillIcon: { width: 14, height: 14 },
   filterPillText: { fontFamily: fonts.heading, fontSize: 7, color: colors.textSecondary },
   filterPillTextActive: { color: colors.background },
+
+  // Top Picks section header
+  sectionHeaderPopular: {
+    paddingVertical: 8,
+    paddingBottom: 6,
+  },
+  sectionHeaderPopularText: {
+    color: colors.gold,
+    fontSize: 9,
+  },
+  sectionHeaderPopularSub: {
+    fontFamily: fonts.display,
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
   // Step 4 — week start
   weekStartOptions: { flex: 1, justifyContent: 'center', gap: 16, paddingHorizontal: 24 },
   weekStartCard: { paddingVertical: 24, alignItems: 'center', backgroundColor: colors.surface, ...bevel.raised },

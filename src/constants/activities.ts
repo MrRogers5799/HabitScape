@@ -9,6 +9,7 @@ export interface ActivityTemplate {
   category: 'health' | 'fitness' | 'mental' | 'learning' | 'hobby' | 'productivity';
   defaultCadence?: Cadence;
   availableCadences: Cadence[];
+  popular?: boolean;
 }
 
 // baseXP values are calibrated so that doing an activity at its defaultCadence
@@ -71,6 +72,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Barbell or dumbbell resistance training',
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'group-fitness',
@@ -114,6 +116,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Holistic practice for flexibility, balance, and resilience',
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'pilates',
@@ -147,6 +150,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Quality sleep for recovery and long-term health',
     defaultCadence: 'daily',
     availableCadences: ['daily'],
+    popular: true,
   },
   {
     id: 'hydration',
@@ -157,6 +161,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Daily hydration goal — 8 cups / 64 oz of water',
     defaultCadence: 'daily',
     availableCadences: ['daily'],
+    popular: true,
   },
   {
     id: 'cold-shower',
@@ -213,6 +218,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Mindfulness and breathing exercises',
     defaultCadence: 'daily',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'journaling',
@@ -223,6 +229,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Reflection and mental health journaling',
     defaultCadence: '5x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'gratitude-practice',
@@ -266,6 +273,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Books, long-form articles, or deep reading sessions',
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'online-course',
@@ -309,6 +317,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Cook and eat a meal at home instead of eating out',
     defaultCadence: 'daily',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week'],
+    popular: true,
   },
   {
     id: 'meal-prep',
@@ -319,6 +328,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Batch cook and prepare meals for the week',
     defaultCadence: '2x/week',
     availableCadences: ['daily', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'cooking-advanced',
@@ -560,6 +570,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Uninterrupted 90-minute focused work on a hard problem',
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'research-deep-dive',
@@ -593,6 +604,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Consistent vitamin, mineral, or supplement intake',
     defaultCadence: 'daily',
     availableCadences: ['daily', '6x/week', '5x/week'],
+    popular: true,
   },
   {
     id: 'smoothie-routine',
@@ -636,6 +648,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Outdoor or treadmill running for cardio endurance',
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'walk-hike',
@@ -646,6 +659,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Outdoor walking or hiking — low barrier, high benefit',
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly'],
+    popular: true,
   },
   {
     id: 'cycling',
@@ -676,6 +690,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Dance class or freestyle — coordination and cardio',
     defaultCadence: '2x/week',
     availableCadences: ['daily', '4x/week', '3x/week', '2x/week', 'weekly'],
+  },
+  {
+    id: 'dog-walking',
+    activityName: 'Walk the Dog',
+    skillId: 'Agility',
+    baseXP: 85,
+    category: 'health',
+    description: 'Daily walk with your dog — good for both of you',
+    defaultCadence: 'daily',
+    availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week'],
   },
 
   // ===== THIEVING =====
@@ -891,6 +915,17 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Build or assemble furniture — hands-on construction',
     defaultCadence: 'monthly',
     availableCadences: ['weekly', 'monthly'],
+  },
+  {
+    id: 'house-cleaning',
+    activityName: 'House Cleaning',
+    skillId: 'Construction',
+    baseXP: 595,
+    category: 'productivity',
+    description: 'Full weekly clean — vacuuming, mopping, bathrooms, surfaces',
+    defaultCadence: 'weekly',
+    availableCadences: ['2x/week', 'weekly'],
+    popular: true,
   },
 ];
 
