@@ -178,6 +178,7 @@ export function RootNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        contentStyle: { backgroundColor: colors.background },
       }}
     >
       {!user ? (

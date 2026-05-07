@@ -26,6 +26,7 @@ import {
   deleteAccount as firebaseDeleteAccount,
 } from '../services/authService';
 import { completeOnboarding as firestoreCompleteOnboarding } from '../services/firestoreService';
+import { runMigrations } from '../services/migrations';
 import { User, AuthContextType } from '../types';
 
 /**
@@ -63,6 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const userProfile = await getUserProfile(firebaseUser.uid);
           if (userProfile) {
             setUser(userProfile);
+            runMigrations(firebaseUser.uid).catch(e =>
+              console.warn('Migration error:', e)
+            );
           }
         } else {
           // User is logged out

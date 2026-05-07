@@ -14,9 +14,10 @@
  * Real-time updates: When XP changes, grid updates instantly via Firebase listeners.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
+  ScrollView,
   StyleSheet,
   Text,
   Image,
@@ -43,6 +44,7 @@ export function SkillsHubScreen() {
   const insets = useSafeAreaInsets();
   const { skills, loading, error } = useSkills();
   const { userActivities } = useActivities();
+  const [gridHeight, setGridHeight] = useState(0);
 
   const activeSkillIds = useMemo(
     () => new Set(userActivities.map(a => a.skillId)),
@@ -122,6 +124,13 @@ export function SkillsHubScreen() {
     return rows;
   }, [visibleSkills]);
 
+  const numRows = skillRows.length;
+  const totalGap = (numRows - 1) * 5;
+  const gridPaddingVertical = 12; // paddingVertical: 6 × top + bottom
+  const rowHeight = gridHeight > 0
+    ? (gridHeight - gridPaddingVertical - totalGap) / numRows
+    : 80;
+
   // Loading state
   if (loading) {
     return (
@@ -150,13 +159,18 @@ export function SkillsHubScreen() {
         <Text style={styles.headerTitle}>Skills</Text>
       </View>
 
-      {/* Skills Grid — flex-based so rows fill the screen on every device */}
-      <View style={styles.grid}>
-        {skillRows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.gridRow}>
-            {row.map(skill => renderSkillCell(skill))}
-          </View>
-        ))}
+      {/* Skills Grid — measures available space, then sets a concrete row height */}
+      <View style={styles.grid} onLayout={e => setGridHeight(e.nativeEvent.layout.height)}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.gridContent}
+        >
+          {skillRows.map((row, rowIndex) => (
+            <View key={rowIndex} style={[styles.gridRow, { height: rowHeight }]}>
+              {row.map(skill => renderSkillCell(skill))}
+            </View>
+          ))}
+        </ScrollView>
       </View>
 
       {/* Footer with Total Level */}
@@ -194,10 +208,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 6,
     paddingVertical: 6,
+  },
+  gridContent: {
     gap: 5,
   },
   gridRow: {
-    flex: 1,
     flexDirection: 'row',
     gap: 5,
   },

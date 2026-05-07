@@ -490,7 +490,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [timezone, setTimezone] = useState(getDefaultTimezone);
   const [timezonePickerVisible, setTimezonePickerVisible] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -509,10 +509,6 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
     } else {
       const v = validatePassword(password);
       if (!v.isValid) e.password = v.message;
-    }
-    if (isSignUp) {
-      if (!passwordConfirm) e.passwordConfirm = 'Please confirm your password';
-      else if (password !== passwordConfirm) e.passwordConfirm = 'Passwords do not match';
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -633,38 +629,27 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
 
             <View style={s.field}>
               <Text style={s.fieldLabel}>Password</Text>
-              <TextInput
-                style={[s.input, errors.password ? s.inputError : null, { fontSize: Math.round(22 * scale) }]}
-                placeholder="Enter your password"
-                placeholderTextColor="#4a3c18"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-              />
+              <View style={[s.inputRow, errors.password ? s.inputError : null]}>
+                <TextInput
+                  style={[s.inputInner, { fontSize: Math.round(22 * scale) }]}
+                  placeholder="Enter your password"
+                  placeholderTextColor="#4a3c18"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!passwordVisible}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!isLoading}
+                />
+                <TouchableOpacity style={s.eyeBtn} onPress={() => setPasswordVisible(v => !v)}>
+                  <Text style={s.eyeBtnText}>{passwordVisible ? 'HIDE' : 'SHOW'}</Text>
+                </TouchableOpacity>
+              </View>
               {errors.password ? <Text style={s.fieldError}>{errors.password}</Text> : null}
             </View>
 
             {isSignUp && (
               <>
-                <View style={s.field}>
-                  <Text style={s.fieldLabel}>Confirm Password</Text>
-                  <TextInput
-                    style={[s.input, errors.passwordConfirm ? s.inputError : null, { fontSize: Math.round(22 * scale) }]}
-                    placeholder="Confirm your password"
-                    placeholderTextColor="#4a3c18"
-                    value={passwordConfirm}
-                    onChangeText={setPasswordConfirm}
-                    secureTextEntry
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    editable={!isLoading}
-                  />
-                  {errors.passwordConfirm ? <Text style={s.fieldError}>{errors.passwordConfirm}</Text> : null}
-                </View>
-
                 <View style={s.field}>
                   <Text style={s.fieldLabel}>Timezone</Text>
                   <TouchableOpacity
@@ -843,6 +828,34 @@ const s = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: 22,
     justifyContent: 'center',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1104',
+    borderWidth: 2,
+    borderTopColor: '#0a0700',
+    borderLeftColor: '#0a0700',
+    borderBottomColor: '#6b5820',
+    borderRightColor: '#6b5820',
+  },
+  inputInner: {
+    flex: 1,
+    paddingVertical: 9,
+    paddingHorizontal: 11,
+    color: '#d4b86a',
+    fontFamily: fonts.display,
+    fontSize: 22,
+  },
+  eyeBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  eyeBtnText: {
+    fontFamily: fonts.heading,
+    fontSize: 7,
+    color: '#8a7040',
+    letterSpacing: 0.5,
   },
   inputError: {
     borderTopColor: '#ff8888',

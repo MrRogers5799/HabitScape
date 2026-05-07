@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WorkoutStackParamList } from '../navigation/WorkoutNavigator';
 import { useAuth } from '../context/AuthContext';
 import { SetLog, WorkoutSession } from '../types';
-import { getTemplateSessionHistory, updateSetLog, abandonWorkoutSession } from '../services/workoutService';
+import { getTemplateSessionHistory, updateSetLog, abandonWorkoutSession, subscribeToExercises } from '../services/workoutService';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
@@ -334,6 +334,7 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
   const [history, setHistory] = useState<SessionEntry[]>([]);
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [hasExercises, setHasExercises] = useState<boolean | null>(null);
 
   const backdateDays = useMemo(() => {
     return Array.from({ length: 30 }, (_, i) => {
@@ -350,6 +351,17 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
       .then(h => setHistory(h))
       .catch(e => Alert.alert('Could not load history', e?.message ?? String(e)))
       .finally(() => setLoading(false));
+  }, [user?.uid, templateId]);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsub = subscribeToExercises(
+      user.uid,
+      templateId,
+      ex => setHasExercises(ex.length > 0),
+      () => setHasExercises(false),
+    );
+    return unsub;
   }, [user?.uid, templateId]);
 
   // Build per-exercise progress (oldest → newest for chart)
@@ -432,26 +444,38 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Action buttons */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={styles.startBtn}
-            onPress={() => navigation.push('ActiveSession', { templateId, templateName })}
-          >
-            <Text style={styles.startBtnText}>Start Workout</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.manageBtn}
-            onPress={() => setDatePickerVisible(true)}
-          >
-            <Text style={styles.manageBtnText} numberOfLines={1} adjustsFontSizeToFit>Log Past</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.manageBtn}
-            onPress={() => navigation.push('TemplateDetail', { templateId, templateName })}
-          >
-            <Text style={styles.manageBtnText} numberOfLines={1} adjustsFontSizeToFit>Exercises</Text>
-          </TouchableOpacity>
-        </View>
+        {hasExercises === false ? (
+          <View style={styles.setupPrompt}>
+            <Text style={styles.setupPromptText}>Add exercises to get started.</Text>
+            <TouchableOpacity
+              style={styles.setupPromptBtn}
+              onPress={() => navigation.push('TemplateDetail', { templateId, templateName })}
+            >
+              <Text style={styles.setupPromptBtnText}>Set Up Exercises  →</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.startBtn}
+              onPress={() => navigation.push('ActiveSession', { templateId, templateName })}
+            >
+              <Text style={styles.startBtnText}>Start Workout</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.manageBtn}
+              onPress={() => setDatePickerVisible(true)}
+            >
+              <Text style={styles.manageBtnText} numberOfLines={1} adjustsFontSizeToFit>Log Past</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.manageBtn}
+              onPress={() => navigation.push('TemplateDetail', { templateId, templateName })}
+            >
+              <Text style={styles.manageBtnText} numberOfLines={1} adjustsFontSizeToFit>Exercises</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Date picker modal */}
         <Modal visible={datePickerVisible} transparent animationType="slide" onRequestClose={() => setDatePickerVisible(false)}>
@@ -498,14 +522,14 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
 
         {loading ? (
           <ActivityIndicator color={colors.gold} style={{ marginTop: 40 }} />
-        ) : history.length === 0 ? (
+        ) : history.length === 0 && hasExercises ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>No sessions yet</Text>
             <Text style={styles.emptySubtext}>
               Complete a workout to see your progress here.
             </Text>
           </View>
-        ) : (
+        ) : history.length > 0 ? (
           <>
             {/* Stats */}
             <View style={styles.statsRow}>
@@ -606,7 +630,7 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
               />
             ))}
           </>
-        )}
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -654,6 +678,24 @@ const styles = StyleSheet.create({
     ...bevel.raised,
   },
   manageBtnText: { fontFamily: fonts.display, fontSize: 17, color: colors.textSecondary },
+
+  // Setup prompt — shown when template has no exercises yet
+  setupPrompt: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    gap: 12,
+    marginBottom: 16,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+  },
+  setupPromptText: { fontFamily: fonts.display, fontSize: 17, color: colors.textSecondary },
+  setupPromptBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    backgroundColor: colors.gold,
+    ...bevel.raised,
+  },
+  setupPromptBtnText: { fontFamily: fonts.display, fontSize: 17, fontWeight: '700', color: colors.background },
 
   // Date picker
   datePickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },

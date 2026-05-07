@@ -8,7 +8,7 @@ import {
   SectionList,
   Image,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserActivity, ActivityCompletion } from '../types';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { SKILL_ICONS } from '../constants/osrsSkills';
@@ -241,7 +241,6 @@ const BAR_MAX_HEIGHT = 44;
 export function HabitDetailModal({ activity, completions, onClose }: HabitDetailModalProps) {
   if (!activity) return null;
 
-  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const weekStartDay: 0 | 1 = user?.weekStartDay ?? 1;
   const DAY_LABELS = weekStartDay === 1 ? DAY_LABELS_MON : DAY_LABELS_SUN;
@@ -334,9 +333,9 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         {/* Header */}
-        <View style={[styles.header, { paddingTop: Math.max(20, insets.top) }]}>
+        <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.activityName}>{activityName}</Text>
             <View style={styles.activityMeta}>
@@ -534,7 +533,7 @@ export function HabitDetailModal({ activity, completions, onClose }: HabitDetail
           contentContainerStyle={styles.listContent}
           stickySectionHeadersEnabled={false}
         />
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }
@@ -552,7 +551,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: 14,
     paddingBottom: 16,
     backgroundColor: colors.surface,
     ...bevel.raised,

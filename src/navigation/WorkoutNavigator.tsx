@@ -4,6 +4,7 @@ import { WorkoutTemplatesScreen } from '../screens/WorkoutTemplatesScreen';
 import { TemplateDetailScreen } from '../screens/TemplateDetailScreen';
 import { ActiveSessionScreen } from '../screens/ActiveSessionScreen';
 import { WorkoutMetricsScreen } from '../screens/WorkoutMetricsScreen';
+import { colors } from '../constants/colors';
 
 export type WorkoutStackParamList = {
   WorkoutTemplates: undefined;
@@ -16,7 +17,7 @@ const Stack = createNativeStackNavigator<WorkoutStackParamList>();
 
 export function WorkoutNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade', contentStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="WorkoutTemplates" component={WorkoutTemplatesScreen} />
       <Stack.Screen name="WorkoutMetrics" component={WorkoutMetricsScreen} />
       <Stack.Screen name="TemplateDetail" component={TemplateDetailScreen} />

@@ -1,7 +1,7 @@
 export const OSRS_SKILLS = [
   'Attack',       'Hitpoints',  'Mining',
   'Strength',     'Agility',    'Smithing',
-  'Defense',      'Herblore',   'Fishing',
+  'Defence',      'Herblore',   'Fishing',
   'Ranged',       'Thieving',   'Cooking',
   'Prayer',       'Crafting',   'Firemaking',
   'Magic',        'Fletching',  'Woodcutting',
@@ -14,7 +14,7 @@ export type OSRSSkill = typeof OSRS_SKILLS[number];
 export const SKILL_DESCRIPTIONS: Record<string, string> = {
   Attack: 'Offensive combat and striking power',
   Strength: 'Raw physical power and resistance training',
-  Defense: 'Protection and resilience',
+  Defence: 'Protection and resilience',
   Hitpoints: 'Overall health and endurance',
   Ranged: 'Precision and distance training',
   Prayer: 'Meditation and mindfulness',
@@ -41,7 +41,7 @@ export const SKILL_DESCRIPTIONS: Record<string, string> = {
 export const SKILL_COLORS: Record<string, string> = {
   Attack:       '#cc3333',
   Strength:     '#ff8833',
-  Defense:      '#4488cc',
+  Defence:      '#4488cc',
   Hitpoints:    '#cc3333',
   Ranged:       '#44aa44',
   Prayer:       '#dde8aa',
@@ -69,7 +69,7 @@ export const SKILL_COLORS: Record<string, string> = {
 export const SKILL_ICONS: Record<string, ReturnType<typeof require>> = {
   Attack:       require('../../assets/icons/skills/attack.png'),
   Strength:     require('../../assets/icons/skills/strength.png'),
-  Defense:      require('../../assets/icons/skills/defence.png'),
+  Defence:      require('../../assets/icons/skills/defence.png'),
   Hitpoints:    require('../../assets/icons/skills/hitpoints.png'),
   Ranged:       require('../../assets/icons/skills/ranged.png'),
   Prayer:       require('../../assets/icons/skills/prayer.png'),

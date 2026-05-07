@@ -6,6 +6,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   Share,
   StyleSheet,
   Text,
@@ -109,7 +110,7 @@ function TemplateModal({ visible, initial, onSave, onClose }: TemplateModalProps
           </TouchableOpacity>
 
           {skillPickerOpen && (
-            <View style={styles.skillList}>
+            <ScrollView style={styles.skillList} nestedScrollEnabled keyboardShouldPersistTaps="handled">
               <TouchableOpacity
                 style={styles.skillOption}
                 onPress={() => { setLinkedSkillId(undefined); setSkillPickerOpen(false); }}
@@ -128,7 +129,7 @@ function TemplateModal({ visible, initial, onSave, onClose }: TemplateModalProps
                   </TouchableOpacity>
                 );
               })}
-            </View>
+            </ScrollView>
           )}
 
           <View style={styles.modalFooter}>
@@ -567,7 +568,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderTopWidth: 0,
     borderColor: colors.border,
-    overflow: 'scroll' as any,
   },
   skillOption: { paddingHorizontal: 14, paddingVertical: 8 },
   skillOptionText: { fontFamily: fonts.display, fontSize: 17, color: colors.textPrimary },

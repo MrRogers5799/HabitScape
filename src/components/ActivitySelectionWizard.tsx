@@ -10,8 +10,8 @@ import {
   Pressable,
   Image,
   Alert,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserActivity, Cadence } from '../types';
 import { OSRS_SKILLS, SKILL_ICONS } from '../constants/osrsSkills';
 import { ACTIVITY_TEMPLATES, ActivityTemplate } from '../constants/activities';

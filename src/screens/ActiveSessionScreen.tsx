@@ -84,22 +84,38 @@ function SetRow({
   unit,
   prevWeight,
   prevReps,
+  prevSetWeight,
+  prevSetReps,
   onWeightChange,
   onRepsChange,
   onRemove,
+  onCopyPrev,
 }: {
   set: LocalSet;
   setNumber: number;
   unit: WeightUnit;
   prevWeight: string;
   prevReps: string;
+  prevSetWeight: string;
+  prevSetReps: string;
   onWeightChange: (v: string) => void;
   onRepsChange: (v: string) => void;
   onRemove: () => void;
+  onCopyPrev: () => void;
 }) {
+  const canCopy = !!prevSetWeight || !!prevSetReps;
+
   return (
     <View style={styles.setRow}>
       <Text style={styles.setNumber}>{setNumber}</Text>
+
+      {canCopy ? (
+        <TouchableOpacity style={styles.copyPrevBtn} onPress={onCopyPrev}>
+          <Text style={styles.copyPrevBtnText}>⬇</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.copyPrevBtnSpacer} />
+      )}
 
       <View style={styles.setCenter}>
         <TextInput
@@ -110,7 +126,6 @@ function SetRow({
           placeholderTextColor={prevWeight ? `${colors.gold}bb` : colors.textMuted}
           keyboardType="decimal-pad"
           returnKeyType="next"
-          selectTextOnFocus
         />
         <Text style={styles.unitLabel}>{unit}</Text>
         <Text style={styles.timesLabel}>×</Text>
@@ -122,7 +137,6 @@ function SetRow({
           placeholderTextColor={prevReps ? `${colors.gold}bb` : colors.textMuted}
           keyboardType="number-pad"
           returnKeyType="done"
-          selectTextOnFocus
         />
         <Text style={styles.repsLabel}>reps</Text>
       </View>
@@ -211,9 +225,12 @@ function ExerciseCard({
           unit={unit}
           prevWeight={prevSets[i]?.weight != null ? String(prevSets[i].weight) : ''}
           prevReps={prevSets[i]?.reps != null ? String(prevSets[i].reps) : ''}
+          prevSetWeight={i > 0 ? sets[i - 1].weight : ''}
+          prevSetReps={i > 0 ? sets[i - 1].reps : ''}
           onWeightChange={v => onWeightChange(i, v)}
           onRepsChange={v => onRepsChange(i, v)}
           onRemove={() => onRemoveSet(i)}
+          onCopyPrev={() => { onWeightChange(i, sets[i - 1].weight); onRepsChange(i, sets[i - 1].reps); }}
         />
       ))}
 
@@ -579,7 +596,7 @@ const styles = StyleSheet.create({
   abandonBtnText: { fontFamily: fonts.display, fontSize: 15, color: colors.textPrimary },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { fontFamily: fonts.heading, fontSize: 11, color: colors.gold },
-  unitToggle: { flexDirection: 'row', ...bevel.inset, overflow: 'hidden' },
+  unitToggle: { flexDirection: 'row', ...bevel.raised, overflow: 'hidden' },
   unitBtn: { paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.surfaceSunken },
   unitBtnActive: { backgroundColor: colors.gold },
   unitBtnText: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary },
@@ -618,8 +635,8 @@ const styles = StyleSheet.create({
   addSetBtnSmall: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    backgroundColor: colors.surfaceSunken,
-    ...bevel.inset,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
   },
   addSetBtnSmallText: { fontFamily: fonts.display, fontSize: 13, color: colors.textSecondary },
 
@@ -651,8 +668,8 @@ const styles = StyleSheet.create({
   undoBtn: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    backgroundColor: colors.surfaceSunken,
-    ...bevel.inset,
+    backgroundColor: colors.surface,
+    ...bevel.raised,
   },
   undoBtnText: { fontFamily: fonts.display, fontSize: 13, color: colors.textSecondary },
 
@@ -667,6 +684,16 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   setNumber: { fontFamily: fonts.display, fontSize: 15, color: colors.textMuted, width: 22, textAlign: 'center' },
+  copyPrevBtn: {
+    width: 26,
+    height: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+  },
+  copyPrevBtnText: { fontSize: 13, color: colors.textSecondary },
+  copyPrevBtnSpacer: { width: 26 },
   setCenter: {
     flex: 1,
     flexDirection: 'row',
@@ -695,7 +722,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: `${colors.destructive}44`,
-    ...bevel.inset,
+    ...bevel.raised,
   },
   removeBtnText: { fontFamily: fonts.display, fontSize: 20, color: colors.textPrimary, lineHeight: 22 },
   removeBtnSpacer: { width: 28 },

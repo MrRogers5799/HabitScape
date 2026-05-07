@@ -273,9 +273,9 @@ export function TemplateDetailScreen({ route, navigation }: Props) {
 
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + 14 }]}>
+      <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>‹</Text>
         </TouchableOpacity>
@@ -302,17 +302,15 @@ export function TemplateDetailScreen({ route, navigation }: Props) {
             />
           )}
           contentContainerStyle={styles.listContent}
-          ListHeaderComponent={
-            <TouchableOpacity
-              style={styles.startButton}
-              onPress={() => navigation.push('ActiveSession', { templateId, templateName })}
-            >
-              <Text style={styles.startButtonText}>▶  Start Workout</Text>
-            </TouchableOpacity>
-          }
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No exercises yet. Tap + to add one.</Text>
+              <Text style={styles.emptyText}>No exercises added yet.</Text>
+              <TouchableOpacity
+                style={styles.addExercisesBtn}
+                onPress={() => setAddModalVisible(true)}
+              >
+                <Text style={styles.addExercisesBtnText}>+ Add Exercises</Text>
+              </TouchableOpacity>
             </View>
           }
         />
@@ -351,6 +349,7 @@ const styles = StyleSheet.create({
 
   header: {
     backgroundColor: colors.surface,
+    paddingTop: 14,
     paddingBottom: 14,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -361,17 +360,6 @@ const styles = StyleSheet.create({
   backButton: { paddingRight: 4 },
   backButtonText: { fontFamily: fonts.display, fontSize: 20, color: colors.gold },
   headerTitle: { flex: 1, fontFamily: fonts.heading, fontSize: 13, color: colors.gold },
-  startButton: {
-    marginHorizontal: 12,
-    marginTop: 10,
-    marginBottom: 4,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: colors.gold,
-    ...bevel.raised,
-  },
-  startButtonText: { fontFamily: fonts.display, fontSize: 18, fontWeight: '700', color: colors.background },
-
   listContent: { paddingTop: 4, paddingBottom: 100 },
 
   exerciseRow: {
@@ -421,8 +409,15 @@ const styles = StyleSheet.create({
   deleteBtn: { backgroundColor: `${colors.destructive}44` },
   deleteBtnText: { fontSize: 16 },
 
-  emptyState: { paddingTop: 40, alignItems: 'center' },
-  emptyText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary },
+  emptyState: { paddingTop: 60, alignItems: 'center', paddingHorizontal: 32 },
+  emptyText: { fontFamily: fonts.display, fontSize: 18, color: colors.textSecondary, marginBottom: 20 },
+  addExercisesBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    backgroundColor: colors.gold,
+    ...bevel.raised,
+  },
+  addExercisesBtnText: { fontFamily: fonts.display, fontSize: 18, fontWeight: '700', color: colors.background },
 
   fab: {
     position: 'absolute',

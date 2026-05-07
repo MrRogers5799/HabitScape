@@ -9,7 +9,10 @@ import React, { useEffect } from 'react';
 import { useFonts, PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import { VT323_400Regular } from '@expo-google-fonts/vt323';
 import * as SplashScreen from 'expo-splash-screen';
+import * as SystemUI from 'expo-system-ui';
 import * as Sentry from '@sentry/react-native';
+
+SystemUI.setBackgroundColorAsync('#1e1608');
 
 SplashScreen.preventAutoHideAsync();
 
