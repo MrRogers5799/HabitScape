@@ -22,6 +22,7 @@ import {
   Text,
   Image,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSkills } from '../context/SkillsContext';
@@ -29,6 +30,9 @@ import { useActivities } from '../context/ActivitiesContext';
 import { Skill } from '../types';
 import { calculateLevel, calculateProgress } from '../utils/xpCalculations';
 import { ProgressBar } from '../components/ProgressBar';
+import { SkillGuideModal } from '../components/SkillGuideModal';
+import { ActivitySelectionWizard } from '../components/ActivitySelectionWizard';
+import { Cadence } from '../types';
 import { SKILL_ICONS, OSRS_SKILLS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
@@ -45,6 +49,24 @@ export function SkillsHubScreen() {
   const { skills, loading, error } = useSkills();
   const { userActivities } = useActivities();
   const [gridHeight, setGridHeight] = useState(0);
+  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
+  const [wizardSkill, setWizardSkill] = useState<string | null>(null);
+  const [addingActivity, setAddingActivity] = useState(false);
+
+  async function handleActivityAdded(activityTemplateId: string, cadence: Cadence) {
+    try {
+      setAddingActivity(true);
+      await addActivity(activityTemplateId, cadence);
+    } finally {
+      setAddingActivity(false);
+    }
+  }
+
+  function handleAddActivityFromGuide() {
+    const skill = selectedSkill;
+    setSelectedSkill(null);
+    setWizardSkill(skill);
+  }
 
   const activeSkillIds = useMemo(
     () => new Set(userActivities.map(a => a.skillId)),
@@ -79,7 +101,12 @@ export function SkillsHubScreen() {
     const isActive = skill.totalXP > 0 || activeSkillIds.has(skill.skillName);
 
     return (
-      <View key={skill.skillName} style={[styles.skillCell, !isActive && styles.skillCellInactive]}>
+      <TouchableOpacity
+        key={skill.skillName}
+        style={[styles.skillCell, !isActive && styles.skillCellInactive]}
+        onPress={() => setSelectedSkill(skill.skillName)}
+        activeOpacity={0.75}
+      >
         {/* Top row: icon left, level right */}
         <View style={styles.skillCellTop}>
           {SKILL_ICONS[skill.skillName] ? (
@@ -111,7 +138,7 @@ export function SkillsHubScreen() {
             backgroundColor={colors.surfaceSunken}
           />
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -178,6 +205,22 @@ export function SkillsHubScreen() {
         <Text style={styles.totalLevelLabel}>TOTAL LEVEL</Text>
         <Text style={styles.totalLevelValue}>{totalLevel}</Text>
       </View>
+
+      <SkillGuideModal
+        skill={selectedSkill}
+        onClose={() => setSelectedSkill(null)}
+        onAddActivity={handleAddActivityFromGuide}
+      />
+
+      <ActivitySelectionWizard
+        visible={wizardSkill !== null}
+        onClose={() => setWizardSkill(null)}
+        selectedActivities={userActivities}
+        onActivityAdded={handleActivityAdded}
+        onActivityRemoved={async (id) => { await removeActivity(id); }}
+        loading={addingActivity}
+        initialFilterSkill={wizardSkill ?? undefined}
+      />
     </View>
   );
 }

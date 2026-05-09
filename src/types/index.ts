@@ -10,7 +10,7 @@
  * Cadence Type - represents how frequently an activity should be completed
  * Examples: daily (7x/week), 3x/week, weekly (1x/week), monthly
  */
-export type Cadence = 'daily' | '6x/week' | '5x/week' | '4x/week' | '3x/week' | '2x/week' | 'weekly' | 'monthly';
+export type Cadence = 'daily' | '6x/week' | '5x/week' | '4x/week' | '3x/week' | '2x/week' | 'weekly' | 'bi-weekly' | 'monthly';
 
 /**
  * User object - represents a user account in the system

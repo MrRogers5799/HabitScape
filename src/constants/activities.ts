@@ -12,10 +12,10 @@ export interface ActivityTemplate {
   popular?: boolean;
 }
 
-// baseXP values are calibrated so that doing an activity at its defaultCadence
-// yields roughly equal weekly XP across all cadences. Formula used during design:
-// baseXP = originalBaseXP × (7 / timesPerWeek(defaultCadence))
-// This means weekly activities have high per-session XP to compensate for fewer sessions.
+// baseXP is the XP earned per completion regardless of cadence — frequency is rewarded directly.
+// The values were initially seeded using baseXP = originalBaseXP × (7 / timesPerWeek(defaultCadence))
+// to give infrequent activities (weekly, monthly) higher per-session XP relative to their effort.
+// No runtime multiplier is applied; more completions always means more XP.
 export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
 
   // ===== ATTACK =====
@@ -138,6 +138,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week'],
   },
+  {
+    id: 'physical-therapy',
+    activityName: 'Physical Therapy Session',
+    skillId: 'Defence',
+    baseXP: 120,
+    category: 'health',
+    description: 'Follow a prescribed PT or rehab routine — consistent recovery is progress',
+    defaultCadence: '3x/week',
+    availableCadences: ['daily', '3x/week', '2x/week'],
+  },
 
   // ===== HITPOINTS =====
   // Real-world theme: foundational health habits, recovery, keeping your body running
@@ -172,6 +182,26 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Cold exposure for recovery and mental toughness',
     defaultCadence: '3x/week',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week'],
+  },
+  {
+    id: 'brush-teeth',
+    activityName: 'Brush Your Teeth',
+    skillId: 'Hitpoints',
+    baseXP: 25,
+    category: 'health',
+    description: 'Twice daily brushing for oral health — a cornerstone wellness habit',
+    defaultCadence: 'daily',
+    availableCadences: ['daily'],
+  },
+  {
+    id: 'take-shower',
+    activityName: 'Take a Shower',
+    skillId: 'Hitpoints',
+    baseXP: 40,
+    category: 'health',
+    description: 'Daily hygiene and reset — clean body, clearer mind',
+    defaultCadence: 'daily',
+    availableCadences: ['daily', '6x/week', '5x/week'],
   },
 
   // ===== RANGED =====
@@ -260,6 +290,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Wim Hof, box breathing, or structured breathwork session',
     defaultCadence: 'daily',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week'],
+  },
+  {
+    id: 'reach-out-friend',
+    activityName: 'Reach Out to a Friend',
+    skillId: 'Prayer',
+    baseXP: 280,
+    category: 'mental',
+    description: 'Call, text, or meet up with a friend or family member — connection is medicine',
+    defaultCadence: 'weekly',
+    availableCadences: ['3x/week', '2x/week', 'weekly'],
   },
 
   // ===== MAGIC =====
@@ -382,6 +422,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Volunteer trail clearing, conservation, or outdoor labor',
     defaultCadence: 'monthly',
     availableCadences: ['weekly', 'monthly'],
+  },
+  {
+    id: 'go-outside',
+    activityName: 'Go Outside / Sunlight Exposure',
+    skillId: 'Woodcutting',
+    baseXP: 100,
+    category: 'health',
+    description: 'Get outside for fresh air and natural sunlight — supports vitamin D and mood',
+    defaultCadence: 'daily',
+    availableCadences: ['daily', '5x/week', '3x/week'],
   },
 
   // ===== FLETCHING =====
@@ -522,6 +572,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     baseXP: 525,
     category: 'hobby',
     description: 'Beading, wire work, or metal jewelry craft',
+    defaultCadence: 'weekly',
+    availableCadences: ['2x/week', 'weekly', 'monthly'],
+  },
+  {
+    id: '3d-printing',
+    activityName: '3D Printing',
+    skillId: 'Crafting',
+    baseXP: 560,
+    category: 'hobby',
+    description: 'Design, print, and finish a 3D printed object — digital craft made physical',
     defaultCadence: 'weekly',
     availableCadences: ['2x/week', 'weekly', 'monthly'],
   },
@@ -701,6 +761,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     defaultCadence: 'daily',
     availableCadences: ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week'],
   },
+  {
+    id: 'gentle-movement',
+    activityName: 'Gentle Movement / Seated Exercises',
+    skillId: 'Agility',
+    baseXP: 80,
+    category: 'health',
+    description: 'Low-impact movement, chair exercises, or light stretching — every bit of movement counts',
+    defaultCadence: 'daily',
+    availableCadences: ['daily', '5x/week', '3x/week'],
+  },
 
   // ===== THIEVING =====
   // Real-world theme: cleverness, strategy, problem-solving under pressure
@@ -743,6 +813,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     description: 'Escape room challenge — teamwork, pressure, and problem-solving',
     defaultCadence: 'monthly',
     availableCadences: ['weekly', 'monthly'],
+  },
+  {
+    id: 'savings-deposit',
+    activityName: 'Savings Deposit',
+    skillId: 'Thieving',
+    baseXP: 1260,
+    category: 'productivity',
+    description: 'Make a deliberate contribution to your savings — financial strategy in action',
+    defaultCadence: 'bi-weekly',
+    availableCadences: ['bi-weekly', 'monthly'],
   },
 
   // ===== SLAYER =====
@@ -883,6 +963,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     defaultCadence: 'weekly',
     availableCadences: ['2x/week', 'weekly', 'monthly'],
   },
+  {
+    id: 'code-refactoring',
+    activityName: 'Code Refactoring',
+    skillId: 'Runecrafting',
+    baseXP: 220,
+    category: 'productivity',
+    description: 'Clean, refactor, and optimise existing code — transform raw logic into elegant structure',
+    defaultCadence: '3x/week',
+    availableCadences: ['3x/week', 'weekly', 'bi-weekly'],
+  },
 
   // ===== CONSTRUCTION =====
   // Real-world theme: building and improving your physical environment
@@ -926,6 +1016,16 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     defaultCadence: 'weekly',
     availableCadences: ['2x/week', 'weekly'],
     popular: true,
+  },
+  {
+    id: 'vehicle-cleaning',
+    activityName: 'Vehicle Cleaning / Detailing',
+    skillId: 'Construction',
+    baseXP: 300,
+    category: 'productivity',
+    description: 'Interior and exterior vehicle clean — maintaining your mobile space',
+    defaultCadence: 'bi-weekly',
+    availableCadences: ['weekly', 'bi-weekly', 'monthly'],
   },
 
   // ===== SAILING =====

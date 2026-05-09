@@ -64,6 +64,12 @@ export const CADENCE_CONFIG: Record<Cadence, {
     timesPerWeek: 1,
     multiplier: 1.00,
   },
+  'bi-weekly': {
+    label: 'Bi-Weekly',
+    description: 'Every two weeks',
+    timesPerWeek: 0.5,
+    multiplier: 1.00,
+  },
   'monthly': {
     label: 'Monthly',
     description: 'Once per month',
@@ -169,6 +175,14 @@ export function calculateNextResetTime(cadence: Cadence, userTimezone: string, w
     // For multi-week cadences, reset happens daily (user picks their days)
     // For MVP simplicity, we'll treat it as daily reset for the checklist
     return tomorrow;
+  }
+
+  if (cadence === 'bi-weekly') {
+    const daysUntilStart = (weekStartDay - now.getDay() + 7) % 7;
+    const nextBiWeekStart = new Date(now);
+    nextBiWeekStart.setDate(nextBiWeekStart.getDate() + (daysUntilStart === 0 ? 14 : daysUntilStart + 7));
+    nextBiWeekStart.setHours(0, 0, 0, 0);
+    return nextBiWeekStart;
   }
 
   if (cadence === 'monthly') {

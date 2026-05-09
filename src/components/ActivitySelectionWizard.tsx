@@ -26,6 +26,7 @@ interface ActivitySelectionWizardProps {
   onActivityAdded: (activityTemplateId: string, cadence: Cadence) => Promise<void>;
   onActivityRemoved?: (activityId: string) => Promise<void>;
   loading?: boolean;
+  initialFilterSkill?: string;
 }
 
 type WizardStep = 'browse' | 'cadence-select' | 'confirm';
@@ -42,14 +43,25 @@ export function ActivitySelectionWizard({
   onActivityAdded,
   onActivityRemoved,
   loading = false,
+  initialFilterSkill,
 }: ActivitySelectionWizardProps) {
   const [step, setStep] = useState<WizardStep>('browse');
   const [mode, setMode] = useState<WizardMode>('add');
-  const [filterSkill, setFilterSkill] = useState<string | null>(null);
+  const [filterSkill, setFilterSkill] = useState<string | null>(initialFilterSkill ?? null);
   const [selectedActivity, setSelectedActivity] = useState<string | null>(null);
   const [selectedCadence, setSelectedCadence] = useState<Cadence>('3x/week');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // Sync filter whenever the wizard opens — initialFilterSkill can change between opens
+  React.useEffect(() => {
+    if (visible) {
+      setFilterSkill(initialFilterSkill ?? null);
+      setStep('browse');
+      setMode('add');
+      setSelectedActivity(null);
+    }
+  }, [visible, initialFilterSkill]);
 
   // UserActivity.id === activityTemplateId (Firestore doc ID = template ID)
   const selectedIds = useMemo(
@@ -170,7 +182,7 @@ export function ActivitySelectionWizard({
 
   const resetAndClose = () => {
     setStep('browse');
-    setFilterSkill(null);
+    setFilterSkill(initialFilterSkill ?? null);
     setSelectedActivity(null);
     setSelectedCadence('3x/week');
     onClose();

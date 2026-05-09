@@ -54,11 +54,13 @@ function Step1({
   onChange,
   onNext,
   onSignOut,
+  footerInset,
 }: {
   displayName: string;
   onChange: (v: string) => void;
   onNext: () => void;
   onSignOut: () => void;
+  footerInset: number;
 }) {
   return (
     <KeyboardAvoidingView
@@ -70,7 +72,7 @@ function Step1({
         <Text style={styles.logoTagline}>Level up your real life</Text>
       </View>
 
-      <View style={styles.welcomeMid}>
+      <ScrollView contentContainerStyle={styles.welcomeMid} keyboardShouldPersistTaps="handled">
         <Text style={styles.stepTitle}>Welcome, Adventurer!</Text>
         <Text style={styles.stepSubtitle}>
           Track your daily habits as if they were OSRS skills — earn XP, level up, and build streaks.
@@ -107,9 +109,9 @@ function Step1({
             </View>
           ))}
         </View>
-      </View>
+      </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: footerInset }]}>
         <View style={styles.footerRow}>
           <TouchableOpacity style={styles.signOutButton} onPress={onSignOut}>
             <Text style={styles.signOutButtonText}>Sign Out</Text>
@@ -133,11 +135,13 @@ function Step2({
   onToggle,
   onNext,
   onBack,
+  footerInset,
 }: {
   selected: Set<string>;
   onToggle: (id: string) => void;
   onNext: () => void;
   onBack: () => void;
+  footerInset: number;
 }) {
   const [search, setSearch] = useState('');
   const [showPopular, setShowPopular] = useState(true);
@@ -284,7 +288,7 @@ function Step2({
         contentContainerStyle={styles.sectionListContent}
       />
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: footerInset }]}>
         <View style={styles.footerRow}>
           <TouchableOpacity style={styles.backButton} onPress={onBack}>
             <Text style={styles.backButtonText}>← Back</Text>
@@ -313,12 +317,14 @@ function Step3({
   onCadenceChange,
   onNext,
   onBack,
+  footerInset,
 }: {
   selected: Set<string>;
   cadences: Record<string, Cadence>;
   onCadenceChange: (templateId: string, cadence: Cadence) => void;
   onNext: () => void;
   onBack: () => void;
+  footerInset: number;
 }) {
   const templates = useMemo(
     () => ACTIVITY_TEMPLATES.filter(t => selected.has(t.id)),
@@ -363,7 +369,7 @@ function Step3({
         })}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: footerInset }]}>
         <View style={styles.footerRow}>
           <TouchableOpacity style={styles.backButton} onPress={onBack}>
             <Text style={styles.backButtonText}>← Back</Text>
@@ -389,12 +395,14 @@ function Step4({
   onFinish,
   onBack,
   saving,
+  footerInset,
 }: {
   weekStartDay: 0 | 1;
   onSelect: (day: 0 | 1) => void;
   onFinish: () => void;
   onBack: () => void;
   saving: boolean;
+  footerInset: number;
 }) {
   return (
     <View style={styles.stepContainer}>
@@ -421,7 +429,7 @@ function Step4({
         })}
       </View>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: footerInset }]}>
         <View style={styles.footerRow}>
           <TouchableOpacity style={styles.backButton} onPress={onBack} disabled={saving}>
             <Text style={styles.backButtonText}>← Back</Text>
@@ -510,6 +518,7 @@ export function OnboardingScreen() {
           onChange={setDisplayName}
           onNext={() => setStep(2)}
           onSignOut={logOut}
+          footerInset={insets.bottom}
         />
       )}
       {step === 2 && (
@@ -518,6 +527,7 @@ export function OnboardingScreen() {
           onToggle={toggleActivity}
           onNext={() => setStep(3)}
           onBack={() => setStep(1)}
+          footerInset={insets.bottom}
         />
       )}
       {step === 3 && (
@@ -527,6 +537,7 @@ export function OnboardingScreen() {
           onCadenceChange={(id, c) => setCadences(prev => ({ ...prev, [id]: c }))}
           onNext={() => setStep(4)}
           onBack={() => setStep(2)}
+          footerInset={insets.bottom}
         />
       )}
       {step === 4 && (
@@ -536,6 +547,7 @@ export function OnboardingScreen() {
           onFinish={handleFinish}
           onBack={() => setStep(3)}
           saving={saving}
+          footerInset={insets.bottom}
         />
       )}
     </View>
@@ -604,9 +616,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   welcomeMid: {
-    flex: 1,
     paddingHorizontal: 24,
     paddingTop: 36,
+    paddingBottom: 24,
   },
   inputLabel: {
     fontFamily: fonts.display,
@@ -820,9 +832,12 @@ const styles = StyleSheet.create({
   // Footer
   footer: {
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingTop: 14,
+    paddingBottom: 14,
     backgroundColor: colors.surface,
     ...bevel.raised,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
   },
   footerRow: {
     flexDirection: 'row',

@@ -99,6 +99,10 @@ export function SettingsScreen() {
     );
   };
 
+  const handleOpenDiscord = () => {
+    Linking.openURL('https://discord.gg/6DQxHyEspZ');
+  };
+
   const handleSelectWeekStartDay = async (day: 0 | 1) => {
     if (day === (user?.weekStartDay ?? 1)) return;
     try {
@@ -306,6 +310,14 @@ export function SettingsScreen() {
 
           <Pressable
             style={({ pressed }) => [styles.settingItem, { marginTop: 4 }, pressed && { opacity: 0.7 }]}
+            onPress={handleOpenDiscord}
+          >
+            <Text style={styles.settingLabel}>Community</Text>
+            <Text style={[styles.settingValue, { color: colors.gold }]}>Join the Discord Server →</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.settingItem, { marginTop: 4 }, pressed && { opacity: 0.7 }]}
             onPress={() => setPrivacyPolicyVisible(true)}
           >
             <Text style={styles.settingLabel}>Legal</Text>
@@ -317,6 +329,13 @@ export function SettingsScreen() {
             <Text style={styles.settingValue}>Old School RuneScape</Text>
             <Text style={[styles.settingValue, { fontSize: 14, marginTop: 2 }]}>
               © Jagex Ltd. All OSRS assets (icons, fonts, and visual style) are the property of Jagex Ltd. HabitScape is a fan-made app and is not affiliated with or endorsed by Jagex.
+            </Text>
+          </View>
+
+          <View style={[styles.settingItem, { marginTop: 4 }]}>
+            <Text style={styles.settingLabel}>Security Notice</Text>
+            <Text style={[styles.settingValue, { fontSize: 14, marginTop: 2 }]}>
+              HabitScape staff will never ask for your password, bank PIN, or OSRS credentials. If anyone claims to be from HabitScape and requests this information, do not comply — it is a scam.
             </Text>
           </View>
         </View>
