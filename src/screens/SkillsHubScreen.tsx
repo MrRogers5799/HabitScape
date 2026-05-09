@@ -220,6 +220,7 @@ export function SkillsHubScreen() {
         onActivityRemoved={async (id) => { await removeActivity(id); }}
         loading={addingActivity}
         initialFilterSkill={wizardSkill ?? undefined}
+        mode="manage"
       />
     </View>
   );
