@@ -10,7 +10,7 @@
  * Cadence Type - represents how frequently an activity should be completed
  * Examples: daily (7x/week), 3x/week, weekly (1x/week), monthly
  */
-export type Cadence = 'daily' | '6x/week' | '5x/week' | '4x/week' | '3x/week' | '2x/week' | 'weekly' | 'bi-weekly' | 'monthly';
+export type Cadence = 'daily' | '6x/week' | '5x/week' | '4x/week' | '3x/week' | '2x/week' | 'weekly' | '2x/month' | 'monthly';
 
 /**
  * User object - represents a user account in the system
@@ -33,6 +33,8 @@ export interface User {
   lastLoginAt: Date;
   /** Flag indicating if user has completed character creation (Phase 2) */
   profileComplete: boolean;
+  /** Whether the user's email address has been verified via Firebase */
+  emailVerified?: boolean;
 }
 
 /**
@@ -190,6 +192,10 @@ export interface AuthContextType {
   ) => Promise<void>;
   /** Permanently delete the account and all user data (requires current password) */
   deleteAccount: (password: string) => Promise<void>;
+  /** Send a verification email to the current user's email address */
+  sendVerificationEmail: () => Promise<void>;
+  /** Reload the Firebase Auth user and update emailVerified state; returns true if now verified */
+  refreshEmailVerification: () => Promise<boolean>;
 }
 
 /**

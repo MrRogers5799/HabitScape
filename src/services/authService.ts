@@ -22,6 +22,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   deleteUser,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { User } from '../types';
@@ -91,7 +92,10 @@ export async function signUp(
     });
 
     await Promise.all(skillsInitPromises);
-    console.log(`✅ User ${email} signed up successfully — activities will be set during onboarding`);
+
+    // Send email verification
+    await sendEmailVerification(firebaseUser);
+    console.log(`✅ User ${email} signed up successfully — verification email sent`);
   } catch (error) {
     // Handle specific Firebase Auth errors
     if (error instanceof Error) {
@@ -332,4 +336,17 @@ export async function deleteAccount(password: string): Promise<void> {
 
   await deleteAllUserData(currentUser.uid);
   await deleteUser(currentUser);
+}
+
+export async function sendVerificationEmail(): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('No authenticated user found');
+  await sendEmailVerification(currentUser);
+}
+
+export async function reloadCurrentUser(): Promise<boolean> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) return false;
+  await currentUser.reload();
+  return currentUser.emailVerified;
 }

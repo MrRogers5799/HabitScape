@@ -25,6 +25,7 @@ const TAB_ICONS = {
 
 // Screens
 import { AuthScreen } from '../screens/AuthScreen';
+import { VerifyEmailScreen } from '../screens/VerifyEmailScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { ActivitiesScreen } from '../screens/ActivitiesScreen';
 import { SkillsHubScreen } from '../screens/SkillsHubScreen';
@@ -188,8 +189,15 @@ export function RootNavigator() {
           component={AuthScreen}
           options={{ animationTypeForReplace: 'pop' }}
         />
+      ) : !user.emailVerified && !__DEV__ ? (
+        // Logged in but email not verified
+        <Stack.Screen
+          name="VerifyEmail"
+          component={VerifyEmailScreen}
+          options={{ animationTypeForReplace: 'push' }}
+        />
       ) : user.profileComplete !== true ? (
-        // Logged in but hasn't completed onboarding
+        // Verified but hasn't completed onboarding
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}

@@ -5,6 +5,7 @@ import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -25,14 +26,15 @@ import { fonts } from '../constants/typography';
 // ─── Cadence display helpers ──────────────────────────────────────────────────
 
 const CADENCE_LABEL: Record<Cadence, string> = {
-  'daily':   'Daily',
-  '6x/week': '6×/wk',
-  '5x/week': '5×/wk',
-  '4x/week': '4×/wk',
-  '3x/week': '3×/wk',
-  '2x/week': '2×/wk',
-  'weekly':  'Weekly',
-  'monthly': 'Monthly',
+  'daily':      'Daily',
+  '6x/week':    '6×/wk',
+  '5x/week':    '5×/wk',
+  '4x/week':    '4×/wk',
+  '3x/week':    '3×/wk',
+  '2x/week':    '2×/wk',
+  'weekly':     'Weekly',
+  '2x/month':   '2×/mo',
+  'monthly':    'Monthly',
 };
 
 // ─── Step dots ───────────────────────────────────────────────────────────────
@@ -343,7 +345,7 @@ function Step3({
           const skillColor = SKILL_COLORS[t.skillId] ?? colors.gold;
           const chosen = cadences[t.id] ?? t.defaultCadence ?? t.availableCadences[0];
           return (
-            <View key={t.id} style={styles.cadenceCard}>
+            <View key={t.id} style={[styles.cadenceCard, { borderLeftColor: skillColor }]}>
               <View style={styles.cadenceCardHeader}>
                 <Image source={SKILL_ICONS[t.skillId]} style={styles.cadenceSkillIcon} resizeMode="contain" />
                 <Text style={styles.cadenceCardName}>{t.activityName}</Text>
@@ -462,6 +464,7 @@ export function OnboardingScreen() {
   const [cadences, setCadences] = useState<Record<string, Cadence>>({});
   const [weekStartDay, setWeekStartDay] = useState<0 | 1>(1);
   const [saving, setSaving] = useState(false);
+  const [welcomeVisible, setWelcomeVisible] = useState(true);
 
   // Pre-fill cadences to each template's defaultCadence when entering step 3
   useEffect(() => {
@@ -512,6 +515,41 @@ export function OnboardingScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+
+      {/* Welcome modal — shown once on first entry to onboarding */}
+      <Modal visible={welcomeVisible} transparent animationType="fade" onRequestClose={() => setWelcomeVisible(false)}>
+        <View style={styles.welcomeOverlay}>
+          <View style={styles.welcomeModal}>
+            <Text style={styles.welcomeModalTitle}>Welcome to HabitScape</Text>
+
+            <View style={styles.welcomeModalSection}>
+              {[
+                ['Activities',     'Track real-life habits, earn XP, and level up your OSRS skills'],
+                ['Skills Hub',     'Tap any skill to explore its theme and available activities'],
+                ['Workout Tracker','Log gym sessions with sets, reps, and weight'],
+                ['Streaks',        'Stay consistent to build momentum across your skills'],
+              ].map(([heading, body]) => (
+                <View key={heading} style={styles.welcomeFeatureRow}>
+                  <Text style={styles.welcomeFeatureHeading}>{heading}</Text>
+                  <Text style={styles.welcomeFeatureBody}>{body}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.welcomeModalDivider} />
+
+            <Text style={styles.welcomeSecurityTitle}>Security Notice</Text>
+            <Text style={styles.welcomeSecurityBody}>
+              HabitScape is not affiliated with Jagex. Staff will never ask for your password, bank PIN, or OSRS credentials.
+            </Text>
+
+            <TouchableOpacity style={styles.welcomeModalBtn} onPress={() => setWelcomeVisible(false)}>
+              <Text style={styles.welcomeModalBtnText}>Let's Begin  →</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {step === 1 && (
         <Step1
           displayName={displayName}
@@ -786,6 +824,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingVertical: 10,
     paddingHorizontal: 14,
+    borderLeftWidth: 3,
     ...bevel.raised,
   },
   cadenceCardHeader: {
@@ -975,4 +1014,73 @@ const styles = StyleSheet.create({
   weekStartCardLabelActive: { color: colors.background },
   weekStartCardSub: { fontFamily: fonts.display, fontSize: 15, color: colors.textSecondary, marginTop: 4 },
   weekStartCardSubActive: { color: colors.background },
+
+  // Welcome modal
+  welcomeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  welcomeModal: {
+    backgroundColor: colors.surface,
+    ...bevel.raised,
+    padding: 24,
+  },
+  welcomeModalTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 14,
+    color: colors.gold,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  welcomeModalSection: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  welcomeFeatureRow: {
+    gap: 2,
+  },
+  welcomeFeatureHeading: {
+    fontFamily: fonts.heading,
+    fontSize: 8,
+    color: colors.gold,
+    textTransform: 'uppercase',
+  },
+  welcomeFeatureBody: {
+    fontFamily: fonts.display,
+    fontSize: 16,
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+  welcomeModalDivider: {
+    height: 1,
+    backgroundColor: colors.bevelDark,
+    marginBottom: 16,
+  },
+  welcomeSecurityTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 8,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  welcomeSecurityBody: {
+    fontFamily: fonts.display,
+    fontSize: 15,
+    color: colors.textMuted,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  welcomeModalBtn: {
+    backgroundColor: colors.gold,
+    paddingVertical: 13,
+    alignItems: 'center',
+    ...bevel.raised,
+  },
+  welcomeModalBtnText: {
+    fontFamily: fonts.display,
+    fontSize: 20,
+    color: colors.background,
+  },
 });

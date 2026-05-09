@@ -821,8 +821,8 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     baseXP: 1260,
     category: 'productivity',
     description: 'Make a deliberate contribution to your savings — financial strategy in action',
-    defaultCadence: 'bi-weekly',
-    availableCadences: ['bi-weekly', 'monthly'],
+    defaultCadence: '2x/month',
+    availableCadences: ['2x/month', 'monthly'],
   },
 
   // ===== SLAYER =====
@@ -971,7 +971,7 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     category: 'productivity',
     description: 'Clean, refactor, and optimise existing code — transform raw logic into elegant structure',
     defaultCadence: '3x/week',
-    availableCadences: ['3x/week', 'weekly', 'bi-weekly'],
+    availableCadences: ['3x/week', 'weekly', '2x/month'],
   },
 
   // ===== CONSTRUCTION =====
@@ -1024,8 +1024,8 @@ export const ACTIVITY_TEMPLATES: ActivityTemplate[] = [
     baseXP: 300,
     category: 'productivity',
     description: 'Interior and exterior vehicle clean — maintaining your mobile space',
-    defaultCadence: 'bi-weekly',
-    availableCadences: ['weekly', 'bi-weekly', 'monthly'],
+    defaultCadence: '2x/month',
+    availableCadences: ['weekly', '2x/month', 'monthly'],
   },
 
   // ===== SAILING =====

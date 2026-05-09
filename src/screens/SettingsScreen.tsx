@@ -505,6 +505,7 @@ export function SettingsScreen() {
         onActivityAdded={handleActivityAdded}
         onActivityRemoved={handleActivityRemoved}
         loading={addingActivity}
+        mode="manage"
       />
     </View>
   );

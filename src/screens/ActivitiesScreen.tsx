@@ -177,6 +177,10 @@ export function ActivitiesScreen() {
         const count = countCompletionDaysInWindow(activity.id, startOfMonthFor(selectedDate), end);
         return { count, target: 1, periodLabel: viewing ? 'this month' : 'that month' };
       }
+      if (cadence === '2x/month') {
+        const count = countCompletionDaysInWindow(activity.id, startOfMonthFor(selectedDate), end);
+        return { count, target: 2, periodLabel: viewing ? 'this month' : 'that month' };
+      }
       // Nx/week
       const count = countCompletionDaysInWindow(activity.id, startOfWeekFor(selectedDate, weekStartDay), end);
       return { count, target: config.timesPerWeek, periodLabel: viewing ? 'this week' : 'that week' };
@@ -189,7 +193,7 @@ export function ActivitiesScreen() {
       const { count, target } = getActivityProgress(activity);
       if (count >= target) return true;
       // For Nx/week, also gate if already done on the selected date (one per day)
-      if (['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence)) {
+      if (['6x/week', '5x/week', '4x/week', '3x/week', '2x/week', '2x/month'].includes(activity.cadence)) {
         return countCompletionDaysInWindow(
           activity.id,
           startOfDay(selectedDate),
@@ -263,7 +267,7 @@ export function ActivitiesScreen() {
   // ── sections ──────────────────────────────────────────────────────────────
 
   const sections = useMemo(() => {
-    const cadences: Cadence[] = ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly', 'monthly'];
+    const cadences: Cadence[] = ['daily', '6x/week', '5x/week', '4x/week', '3x/week', '2x/week', 'weekly', '2x/month', 'monthly'];
     const allSections = [];
 
     for (const cadence of cadences) {
@@ -277,7 +281,7 @@ export function ActivitiesScreen() {
 
       const periodLabel =
         cadence === 'daily' ? (viewing ? 'today' : 'that day')
-        : cadence === 'monthly' ? (viewing ? 'this month' : 'that month')
+        : (cadence === 'monthly' || cadence === '2x/month') ? (viewing ? 'this month' : 'that month')
         : (viewing ? 'this week' : 'that week');
 
       allSections.push({
@@ -300,7 +304,7 @@ export function ActivitiesScreen() {
     const activityName = template?.activityName || activity.id;
     const { count, target } = getActivityProgress(activity);
     const quotaMet = count >= target;
-    const isNxWeek = ['6x/week', '5x/week', '4x/week', '3x/week', '2x/week'].includes(activity.cadence);
+    const isNxWeek = ['6x/week', '5x/week', '4x/week', '3x/week', '2x/week', '2x/month'].includes(activity.cadence);
     const doneToday = isNxWeek && !quotaMet && gated;
 
     const trackingStart = activity.selectedAt ? new Date(activity.selectedAt) : null;

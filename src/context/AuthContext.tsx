@@ -24,6 +24,8 @@ import {
   updateUserWeekStartDay,
   changePassword as firebaseChangePassword,
   deleteAccount as firebaseDeleteAccount,
+  sendVerificationEmail as firebaseSendVerificationEmail,
+  reloadCurrentUser,
 } from '../services/authService';
 import { completeOnboarding as firestoreCompleteOnboarding } from '../services/firestoreService';
 import { runMigrations } from '../services/migrations';
@@ -63,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // User is logged in - fetch their profile from Firestore
           const userProfile = await getUserProfile(firebaseUser.uid);
           if (userProfile) {
-            setUser(userProfile);
+            setUser({ ...userProfile, emailVerified: firebaseUser.emailVerified });
             runMigrations(firebaseUser.uid).catch(e =>
               console.warn('Migration error:', e)
             );
@@ -164,6 +166,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function handleSendVerificationEmail(): Promise<void> {
+    setError(null);
+    await firebaseSendVerificationEmail();
+  }
+
+  async function handleRefreshEmailVerification(): Promise<boolean> {
+    const verified = await reloadCurrentUser();
+    if (verified) {
+      setUser(prev => prev ? { ...prev, emailVerified: true } : prev);
+    }
+    return verified;
+  }
+
   async function handleCompleteOnboarding(
     displayName: string,
     activities: { templateId: string; cadence: import('../types').Cadence; skillId: string; baseXP: number }[]
@@ -207,6 +222,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     changePassword: handleChangePassword,
     completeOnboarding: handleCompleteOnboarding,
     deleteAccount: handleDeleteAccount,
+    sendVerificationEmail: handleSendVerificationEmail,
+    refreshEmailVerification: handleRefreshEmailVerification,
   };
 
   return (
