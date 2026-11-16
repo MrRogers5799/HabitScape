@@ -22,9 +22,9 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { initializeAuth } from 'firebase/auth';
+import { initializeAuth, connectAuthEmulator } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 // Firebase 12 dropped getReactNativePersistence from the public firebase/auth
 // bundle. Import directly from the RN-specific dist file so Metro doesn't
@@ -83,6 +83,23 @@ export const auth = initializeAuth(app, {
  * Used for storing and syncing user data in real-time
  */
 export const db = getFirestore(app);
+
+/**
+ * Local test backend (debug builds only).
+ * When EXPO_PUBLIC_USE_FIREBASE_EMULATOR=1 is set at bundle time, Auth and
+ * Firestore talk to the Firebase Emulator Suite instead of production.
+ * scripts/test-env forwards the ports with `adb reverse`, so 127.0.0.1 on
+ * the device reaches the emulators on this machine.
+ * Release builds never connect, even if the variable is set.
+ */
+export const usingFirebaseEmulator =
+  __DEV__ && process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATOR === '1';
+
+if (usingFirebaseEmulator) {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+  console.warn('[firebase] Using local Firebase emulators (test backend)');
+}
 
 /**
  * Export the app instance for any additional Firebase services

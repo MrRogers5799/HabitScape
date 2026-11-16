@@ -19,6 +19,8 @@ SplashScreen.preventAutoHideAsync();
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   debug: __DEV__,
+  // Keep local test runs (test-env/, Firebase emulators) out of Sentry.
+  enabled: process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATOR !== '1',
 });
 
 function RootLayout() {

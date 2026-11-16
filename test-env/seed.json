@@ -1,0 +1,10 @@
+{
+  "note": "Local Firebase emulator accounts only. Never valid against production.",
+  "accounts": [
+    {
+      "email": "tester1@habitscape.test",
+      "password": "Hs-21c5108a43c0",
+      "displayName": "Tester One"
+    }
+  ]
+}

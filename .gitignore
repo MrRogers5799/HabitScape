@@ -47,3 +47,10 @@ app-example
 
 # Design handoff files
 /claudeDesign/
+
+# Local test environment (test-env/)
+test-env/.logs/
+test-env/.shots/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
