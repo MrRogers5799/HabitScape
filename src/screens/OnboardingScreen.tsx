@@ -544,7 +544,7 @@ export function OnboardingScreen() {
             </Text>
 
             <TouchableOpacity style={styles.welcomeModalBtn} onPress={() => setWelcomeVisible(false)}>
-              <Text style={styles.welcomeModalBtnText}>Let's Begin  →</Text>
+              <Text style={styles.welcomeModalBtnText}>Let&apos;s Begin  →</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -787,7 +787,6 @@ const styles = StyleSheet.create({
   activityCheckbox: {
     width: 20,
     height: 20,
-    borderWidth: 2,
     borderColor: colors.textSecondary,
     justifyContent: 'center',
     alignItems: 'center',

@@ -239,8 +239,16 @@ const BAR_MAX_HEIGHT = 44;
 // ─── component ───────────────────────────────────────────────────────────────
 
 export function HabitDetailModal({ activity, completions, onClose }: HabitDetailModalProps) {
+  // Early return lives in this wrapper so the hooks below always run in the same order.
   if (!activity) return null;
+  return <HabitDetailModalContent activity={activity} completions={completions} onClose={onClose} />;
+}
 
+function HabitDetailModalContent({
+  activity,
+  completions,
+  onClose,
+}: HabitDetailModalProps & { activity: NonNullable<HabitDetailModalProps['activity']> }) {
   const { user } = useAuth();
   const weekStartDay: 0 | 1 = user?.weekStartDay ?? 1;
   const DAY_LABELS = weekStartDay === 1 ? DAY_LABELS_MON : DAY_LABELS_SUN;

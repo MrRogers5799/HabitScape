@@ -475,7 +475,7 @@ export function ActivitySelectionWizard({
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>📋</Text>
           <Text style={styles.emptyTitle}>No activities</Text>
-          <Text style={styles.emptyText}>Head to "+ Add Activity" to get started.</Text>
+          <Text style={styles.emptyText}>Head to &quot;+ Add Activity&quot; to get started.</Text>
         </View>
       ) : (
         <>

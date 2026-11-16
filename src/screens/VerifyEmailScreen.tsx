@@ -64,7 +64,7 @@ export function VerifyEmailScreen() {
         >
           {checking
             ? <ActivityIndicator color={colors.background} />
-            : <Text style={styles.primaryBtnText}>I've Verified My Email</Text>
+            : <Text style={styles.primaryBtnText}>I&apos;ve Verified My Email</Text>
           }
         </Pressable>
 

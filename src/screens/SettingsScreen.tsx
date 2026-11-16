@@ -467,7 +467,7 @@ export function SettingsScreen() {
 
               <Text style={styles.policyHeading}>Data Storage</Text>
               <Text style={styles.policyBody}>
-                All data is stored securely using Google Firebase (Firestore and Authentication). Firebase's privacy policy is available at firebase.google.com/support/privacy.
+                All data is stored securely using Google Firebase (Firestore and Authentication). Firebase&apos;s privacy policy is available at firebase.google.com/support/privacy.
               </Text>
 
               <Text style={styles.policyHeading}>Data Sharing</Text>
@@ -480,7 +480,7 @@ export function SettingsScreen() {
                 You may request deletion of your account and all associated data at any time by contacting us at the email below. Data will be permanently deleted within 30 days.
               </Text>
 
-              <Text style={styles.policyHeading}>Children's Privacy</Text>
+              <Text style={styles.policyHeading}>Children&apos;s Privacy</Text>
               <Text style={styles.policyBody}>
                 HabitScape is not intended for children under 13. We do not knowingly collect data from children under 13.
               </Text>

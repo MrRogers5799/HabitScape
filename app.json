@@ -46,7 +46,10 @@
           "organization": "habitscape",
           "project": "habitscape"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

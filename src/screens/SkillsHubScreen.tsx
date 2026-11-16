@@ -47,7 +47,7 @@ import { fonts } from '../constants/typography';
 export function SkillsHubScreen() {
   const insets = useSafeAreaInsets();
   const { skills, loading, error } = useSkills();
-  const { userActivities } = useActivities();
+  const { userActivities, addActivity, removeActivity } = useActivities();
   const [gridHeight, setGridHeight] = useState(0);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [wizardSkill, setWizardSkill] = useState<string | null>(null);

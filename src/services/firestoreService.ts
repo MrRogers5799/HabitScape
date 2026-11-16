@@ -595,7 +595,7 @@ export async function removeUserActivity(
  */
 export async function updateActivityStreaks(
   userId: string,
-  updates: { activityId: string; currentStreak: number; longestStreak: number; lastStreakCheckDate?: string; lastStreakCheckWeek?: string }[]
+  updates: { activityId: string; currentStreak: number; longestStreak: number; lastStreakCheckDate?: string; lastStreakCheckWeek?: string; streakVersion?: number }[]
 ): Promise<void> {
   if (updates.length === 0) return;
   try {

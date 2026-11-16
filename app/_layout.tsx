@@ -40,7 +40,7 @@ function RootLayout() {
           <ActivitiesProvider>
             <WorkoutProvider>
               <Slot />
-              <StatusBar barStyle="light-content" />
+              <StatusBar style="light" />
             </WorkoutProvider>
           </ActivitiesProvider>
         </SkillsProvider>
