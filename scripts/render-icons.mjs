@@ -11,6 +11,7 @@
 // Pixels are scaled by whole numbers only, never smoothed. Rules: vault note "Art bible".
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
+import { Buffer } from 'node:buffer';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
