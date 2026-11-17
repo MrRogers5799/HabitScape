@@ -33,6 +33,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File test-env/stop.ps1
 # Security rules only (no Android emulator needed):
 npx firebase-tools@15.34.0 emulators:exec --only auth,firestore --project demo-habitscape "node test-env/rules-check.mjs"
 ```
+**Before driving the emulator, read the vault note `Ontology/Test environment snags.md`. Whenever anything trips you up (emulator, Firebase emulators, Metro, Gradle, `drive.mjs`), add a row there the same session.** The user wants this kind of knowledge in the vault, not in Claude's private memory.
+
 After a crash or hard power-off, start with `start.ps1 -Wipe` (fresh emulator data), then reinstall the app with `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`. The user's PC once froze with the emulator on 4 cores; keep it at 2.
 The app uses the local Firebase emulators (never production) and has Sentry off in this mode. Create test accounts only there. Heavy files live in `E:/HabitScapeTestEnv` (emulator image, Gradle cache, temp, logs, screenshots) because C: is nearly full. Details: vault note `Ontology/Test environment.md`.
 
@@ -41,4 +43,4 @@ The app uses the local Firebase emulators (never production) and has Sentry off 
 - Skill IDs are display names with OSRS British spelling (`Defence`). Renaming a skill or moving an activity between skills needs a migration in `src/services/migrations.ts`.
 - The activity catalog is `src/constants/activities.ts`; XP per completion is the activity's `baseXP` (cadence never scales it).
 - Bump `android.versionCode` in `app.json` for every Play upload.
-- `docs/` is the GitHub Pages site (privacy policy, account deletion), deployed on push to `master`.
+- `docs/` is the GitHub Pages site (landing, privacy policy, account deletion), deployed on push to `master` when `docs/` changes. The app is not published for the web.
