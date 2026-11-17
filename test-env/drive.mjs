@@ -9,7 +9,8 @@
 //   node test-env/drive.mjs tapxy <x> <y>       tap a coordinate
 //   node test-env/drive.mjs type "<text>"       type into the focused field
 //   node test-env/drive.mjs key <back|enter|tab>
-//   node test-env/drive.mjs wait "<text>" [sec] wait until <text> is on screen
+//   node test-env/drive.mjs wait "<text>" [sec] wait until <text> is on screen (returns at once
+//                                               on animated screens like login: then use `shot`)
 //   node test-env/drive.mjs swipe <up|down>
 //   node test-env/drive.mjs logs                recent React Native errors from logcat
 import { execFileSync } from 'node:child_process';
@@ -30,14 +31,17 @@ const adb = (args, opts = {}) => execFileSync(ADB, ['-s', serial, ...args], { ma
 const sh = (cmd) => adb(['shell', cmd], { encoding: 'utf8' });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+let quietUnreadable = false;
+const appInFront = () => sh('dumpsys activity activities 2>/dev/null | grep -m1 -E "topResumedActivity|mResumedActivity"').includes(PKG);
+
 function nodes() {
   // uiautomator can't dump while the screen animates nonstop (e.g. the login
   // screen's stars and torches): it reports "could not get idle state". Then use
   // `shot` and `tapxy` (screenshot pixels map 1:1 to tap coordinates).
   const res = sh('uiautomator dump /sdcard/ui.xml 2>&1');
   if (/idle state|ERROR/i.test(res)) {
-    console.error('UI tree unavailable (screen never idle). Use `shot` + `tapxy` here.');
-    return [];
+    if (!quietUnreadable) console.error('UI tree unavailable (screen never idle). Use `shot` + `tapxy` here.');
+    return null;
   }
   const xml = sh('cat /sdcard/ui.xml');
   const out = [];
@@ -52,16 +56,25 @@ function nodes() {
   return out;
 }
 
-function find(text) {
+function find(text, all = nodes()) {
   const t = text.toLowerCase();
-  const all = nodes();
+  if (!all) return null;
   return all.find(n => n.label.toLowerCase() === t) ?? all.find(n => n.label.toLowerCase().includes(t));
 }
 
 async function waitFor(text, sec = 20) {
   const end = Date.now() + sec * 1000;
+  // An animated screen (login, sign-up) can never be read, so waiting for its text
+  // would just burn the whole timeout. If the app is in front but unreadable, stop
+  // right away and say so: the screen is up, check it with `shot`.
+  quietUnreadable = true;
   while (Date.now() < end) {
-    const n = find(text);
+    const all = nodes();
+    if (all === null && appInFront()) {
+      console.log(`app is up, but its screen is animating so "${text}" can't be checked; use \`shot\``);
+      process.exit(0);
+    }
+    const n = all && find(text, all);
     if (n) return n;
     await sleep(700);
   }
@@ -72,7 +85,8 @@ const [cmd, ...args] = process.argv.slice(2);
 switch (cmd) {
   case 'launch':
     sh(`am force-stop ${PKG}`);
-    sh(`monkey -p ${PKG} -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1`);
+    // am start brings the app to the front even right after a cold boot (monkey sometimes didn't).
+    sh(`am start -n ${PKG}/.MainActivity >/dev/null 2>&1`);
     console.log('launched');
     break;
   case 'reload':
@@ -90,7 +104,7 @@ switch (cmd) {
     break;
   }
   case 'ui':
-    for (const n of nodes()) console.log(`${n.clickable ? '*' : ' '}${n.focused ? '>' : ' '} (${n.x},${n.y}) ${n.label}`);
+    for (const n of nodes() ?? []) console.log(`${n.clickable ? '*' : ' '}${n.focused ? '>' : ' '} (${n.x},${n.y}) ${n.label}`);
     break;
   case 'tap': {
     const n = await waitFor(args.join(' '), 10);

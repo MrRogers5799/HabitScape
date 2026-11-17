@@ -12,7 +12,10 @@ if (Test-Port $Ports.Auth) {
   Write-Host 'Firebase emulators: already running'
 } else {
   $projectId = (Select-String -Path (Join-Path $Repo '.env.local') -Pattern '^EXPO_PUBLIC_FIREBASE_PROJECT_ID=(.+)$').Matches[0].Groups[1].Value.Trim()
-  Start-Background 'firebase' 'cmd.exe' @('/c', "npx -y $FirebaseCli emulators:start --only auth,firestore --project $projectId") | Out-Null
+  # no-window.cjs stops the CLI from giving the Java emulator its own visible console window.
+  $noWindow = (Join-Path $PSScriptRoot 'no-window.cjs') -replace '\\', '/'
+  Start-Background 'firebase' 'cmd.exe' @('/c', "npx -y $FirebaseCli emulators:start --only auth,firestore --project $projectId") @{ NODE_OPTIONS = "--require $noWindow" } | Out-Null
+  Remove-Item env:NODE_OPTIONS -ErrorAction SilentlyContinue
   Write-Host 'Firebase emulators: starting...'
 }
 

@@ -5,7 +5,8 @@ import { Audio } from 'expo-av';
 import { colors } from '../constants/colors';
 import { ConfettiBurst } from './ConfettiBurst';
 
-const LEVELUP_SOUND_FILE = require('../../assets/sounds/levelup.m4a');
+// Original fanfare synthesized by scripts/render-sounds.mjs (no samples; see the vault's Art bible).
+const LEVELUP_SOUND_FILE = require('../../assets/sounds/levelup.wav');
 
 interface LevelUpModalProps {
   visible: boolean;
