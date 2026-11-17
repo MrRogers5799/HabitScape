@@ -26,6 +26,7 @@ import {
   deleteAccount as firebaseDeleteAccount,
   sendVerificationEmail as firebaseSendVerificationEmail,
   reloadCurrentUser,
+  getCurrentUser,
 } from '../services/authService';
 import { completeOnboarding as firestoreCompleteOnboarding } from '../services/firestoreService';
 import { runMigrations } from '../services/migrations';
@@ -99,17 +100,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     timezone: string
   ): Promise<void> {
+    // No global `loading` here: it swaps the auth screen for a spinner, which
+    // unmounts the form and wipes what the user typed. The screen shows its own spinner.
     try {
       setError(null);
-      setLoading(true);
       await firebaseSignUp(email, password, timezone);
-      // User will be automatically set by the auth listener
+      // The auth listener can fire before the profile write lands and find no
+      // profile, so load it here now that it definitely exists.
+      const fbUser = getCurrentUser();
+      if (fbUser) {
+        const profile = await getUserProfile(fbUser.uid);
+        if (profile) setUser({ ...profile, emailVerified: fbUser.emailVerified });
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Signup failed';
       setError(message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -122,15 +128,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function handleLogIn(email: string, password: string): Promise<void> {
     try {
       setError(null);
-      setLoading(true);
       await firebaseLogIn(email, password);
       // User will be automatically set by the auth listener
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
       setError(message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }
 

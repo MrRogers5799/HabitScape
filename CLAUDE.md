@@ -30,7 +30,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File test-env/start.ps1   # Fireb
 powershell -NoProfile -ExecutionPolicy Bypass -File test-env/build.ps1   # only after native changes (-Prebuild after app.json plugin changes)
 node test-env/drive.mjs launch                                           # then: ui, tap "<text>", type, shot, reload, logs
 powershell -NoProfile -ExecutionPolicy Bypass -File test-env/stop.ps1
+# Security rules only (no Android emulator needed):
+npx firebase-tools@15.34.0 emulators:exec --only auth,firestore --project demo-habitscape "node test-env/rules-check.mjs"
 ```
+After a crash or hard power-off, start with `start.ps1 -Wipe` (fresh emulator data), then reinstall the app with `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`. The user's PC once froze with the emulator on 4 cores; keep it at 2.
 The app uses the local Firebase emulators (never production) and has Sentry off in this mode. Create test accounts only there. Heavy files live in `E:/HabitScapeTestEnv` (emulator image, Gradle cache, temp, logs, screenshots) because C: is nearly full. Details: vault note `Ontology/Test environment.md`.
 
 ## Conventions

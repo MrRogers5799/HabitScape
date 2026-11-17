@@ -44,7 +44,7 @@ import Svg, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { fonts } from '../constants/typography';
-import { isValidEmail, validatePassword } from '../services/authService';
+import { isValidEmail, validatePassword, sendPasswordReset } from '../services/authService';
 import { COMMON_TIMEZONES, getDefaultTimezone } from '../constants/timezones';
 
 // ─── Design reference width ───────────────────────────────────────────────────
@@ -472,7 +472,7 @@ interface AuthScreenProps {
 }
 
 export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
-  const { logIn, signUp, loading, error: contextError } = useAuth();
+  const { logIn, signUp, loading } = useAuth();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -496,6 +496,38 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [localLoading, setLocalLoading] = useState(false);
   const [btnError, setBtnError] = useState(false);
+  // Form-level messages belong to this screen, so they clear on edit or mode switch.
+  const [formError, setFormError] = useState<string | null>(null);
+  const [formInfo, setFormInfo] = useState<string | null>(null);
+
+  function clearMessages() {
+    setFormError(null);
+    setFormInfo(null);
+  }
+
+  function switchMode() {
+    setIsSignUp(v => !v);
+    setErrors({});
+    setBtnError(false);
+    clearMessages();
+  }
+
+  async function handleForgotPassword() {
+    clearMessages();
+    if (!email.trim() || !isValidEmail(email)) {
+      setErrors({ email: 'Enter your email above, then tap "Forgot password?"' });
+      return;
+    }
+    try {
+      setLocalLoading(true);
+      await sendPasswordReset(email);
+      setFormInfo('If an account exists for that email, a reset link is on its way.');
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setLocalLoading(false);
+    }
+  }
 
   function validateForm(): boolean {
     const e: { [k: string]: string } = {};
@@ -521,6 +553,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
       return;
     }
     if (!validateForm()) return;
+    clearMessages();
     try {
       setLocalLoading(true);
       if (isSignUp) {
@@ -529,8 +562,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
         await logIn(email, password);
       }
       onAuthSuccess?.();
-    } catch {
-      // contextError surfaced below
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLocalLoading(false);
     }
@@ -618,7 +651,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                 placeholder="Enter your email"
                 placeholderTextColor="#4a3c18"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={t => { setEmail(t); if (formError) setFormError(null); }}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -635,7 +668,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                   placeholder="Enter your password"
                   placeholderTextColor="#4a3c18"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={t => { setPassword(t); if (formError) setFormError(null); }}
                   secureTextEntry={!passwordVisible}
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -646,6 +679,17 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                 </TouchableOpacity>
               </View>
               {errors.password ? <Text style={s.fieldError}>{errors.password}</Text> : null}
+              {!isSignUp && (
+                <TouchableOpacity
+                  onPress={handleForgotPassword}
+                  disabled={isLoading}
+                  style={s.forgotBtn}
+                  accessibilityRole="button"
+                  accessibilityLabel="Forgot password? Send a reset link to the email above"
+                >
+                  <Text style={s.forgotText}>Forgot password?</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             {isSignUp && (
@@ -665,7 +709,8 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
               </>
             )}
 
-            {contextError ? <Text style={s.contextError}>{contextError}</Text> : null}
+            {formError ? <Text style={s.contextError} accessibilityLiveRegion="polite">{formError}</Text> : null}
+            {formInfo ? <Text style={[s.contextError, s.formInfo]} accessibilityLiveRegion="polite">{formInfo}</Text> : null}
 
             <TouchableOpacity
               style={[s.btnPrimary, btnError && s.btnError, isLoading && s.btnDisabled]}
@@ -687,7 +732,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
               {isSignUp ? 'Have an account? ' : "Don't have an account? "}
               <Text
                 style={s.toggleLink}
-                onPress={() => { setIsSignUp(!isSignUp); setErrors({}); setBtnError(false); }}
+                onPress={switchMode}
               >
                 {isSignUp ? 'Log In' : 'Sign Up'}
               </Text>
@@ -695,7 +740,6 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
           </View>
 
           <View style={s.footer}>
-            <Text style={s.footerText}>Phase 1 MVP</Text>
             <Text style={s.footerText}>© 2026 HabitScape</Text>
           </View>
         </ScrollView>
@@ -922,6 +966,9 @@ const s = StyleSheet.create({
     textAlign: 'center',
   },
   toggleLink: { color: '#c8a857' },
+  forgotBtn: { alignSelf: 'flex-end', paddingVertical: 8, paddingLeft: 12, minHeight: 44, justifyContent: 'center' },
+  forgotText: { fontFamily: fonts.display, fontSize: 18, color: '#c8a857' },
+  formInfo: { color: '#9fd88a' },
 
   // Footer
   footer: { marginTop: 'auto' as any, paddingTop: 20, alignItems: 'center' },

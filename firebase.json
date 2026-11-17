@@ -1,6 +1,6 @@
 {
   "firestore": {
-    "rules": "test-env/firestore.emulator.rules"
+    "rules": "firestore.rules"
   },
   "emulators": {
     "auth": { "host": "127.0.0.1", "port": 9099 },

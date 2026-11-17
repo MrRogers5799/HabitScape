@@ -33,14 +33,31 @@ function Test-Port([int]$Port) {
 
 # Start a hidden, below-normal-priority background process with its output in a log file.
 function Start-Background([string]$Name, [string]$File, [string[]]$Arguments, [hashtable]$Env = @{}) {
+  # CreateNoWindow means no console is allocated at all, and child processes
+  # (node -> java for Firebase) inherit that. -WindowStyle Hidden isn't enough:
+  # with Windows Terminal as the default terminal, children can pop a visible window.
   foreach ($k in $Env.Keys) { Set-Item "env:$k" $Env[$k] }
-  $p = Start-Process -FilePath $File -ArgumentList $Arguments -WorkingDirectory $Repo `
-        -WindowStyle Hidden -PassThru `
-        -RedirectStandardOutput (Join-Path $LogDir "$Name.log") `
-        -RedirectStandardError  (Join-Path $LogDir "$Name.err.log")
+  # Callers pass either ('cmd.exe', '/c', '<command line>') or (exe, args...).
+  if ($File -ieq 'cmd.exe' -and $Arguments[0] -ieq '/c') { $cmdLine = ($Arguments | Select-Object -Skip 1) -join ' ' }
+  else { $cmdLine = (@($File) + $Arguments | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }) -join ' ' }
+  $log = Join-Path $LogDir "$Name.log"; $err = Join-Path $LogDir "$Name.err.log"
+  $psi = New-Object System.Diagnostics.ProcessStartInfo
+  $psi.FileName = 'cmd.exe'
+  # No /s and no wrapping quotes, so cmd never strips quotes from inside the command.
+  $psi.Arguments = "/d /c $cmdLine > `"$log`" 2> `"$err`""
+  $psi.WorkingDirectory = $Repo
+  $psi.UseShellExecute = $false
+  $psi.CreateNoWindow = $true
+  $p = [System.Diagnostics.Process]::Start($psi)
   try { $p.PriorityClass = 'BelowNormal' } catch {}
   Set-Content (Join-Path $LogDir "$Name.pid") $p.Id
   return $p
+}
+
+# True while an emulator process exists, even before adb reports it ready
+# (a cold boot shows as "offline" for minutes). Prevents launching a second one.
+function Test-EmulatorRunning {
+  [bool](Get-Process -Name 'qemu-system-*' -ErrorAction SilentlyContinue)
 }
 
 function Get-EmulatorSerial {

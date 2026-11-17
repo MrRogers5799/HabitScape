@@ -23,11 +23,29 @@ import {
   EmailAuthProvider,
   deleteUser,
   sendEmailVerification,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { User } from '../types';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
+
+/**
+ * Send a password reset email. Resolves even when no account exists for the
+ * address, so the app never reveals which emails are registered.
+ */
+export async function sendPasswordReset(email: string): Promise<void> {
+  try {
+    await sendPasswordResetEmail(auth, email.trim());
+  } catch (error) {
+    const code = (error as { code?: string } | null)?.code;
+    if (code === 'auth/user-not-found') return;
+    throw new Error(friendlyAuthError(error));
+  }
+}
 import { deleteAllUserData } from './firestoreService';
+import { friendlyAuthError } from '../utils/authErrors';
+
+export { friendlyAuthError };
 import { OSRS_SKILLS } from '../constants/osrsSkills';
 
 /**
@@ -70,47 +88,26 @@ export async function signUp(
       displayName: '', // Will be set during character creation in Phase 2
     };
 
-    await setDoc(userRef, userData);
-
-    // Step 3: Initialize all skills with 0 XP for this user
-    // This ensures the user has all 23 OSRS skills available immediately
-    const skillsInitPromises = OSRS_SKILLS.map(skillName => {
-      const skillRef = doc(
-        db,
-        'users',
-        firebaseUser.uid,
-        'skills',
-        skillName
-      );
-      return setDoc(skillRef, {
+    // Steps 2-3 in one atomic batch: the profile and every skill at 0 XP land
+    // together, so a crash or lost connection can't leave a half-created account.
+    const batch = writeBatch(db);
+    batch.set(userRef, userData);
+    for (const skillName of OSRS_SKILLS) {
+      batch.set(doc(db, 'users', firebaseUser.uid, 'skills', skillName), {
         skillName,
         totalXP: 0,
         level: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-    });
-
-    await Promise.all(skillsInitPromises);
+    }
+    await batch.commit();
 
     // Send email verification
     await sendEmailVerification(firebaseUser);
-    console.log(`✅ User ${email} signed up successfully — verification email sent`);
   } catch (error) {
-    // Handle specific Firebase Auth errors
-    if (error instanceof Error) {
-      if (error.message.includes('email-already-in-use')) {
-        throw new Error('This email is already registered');
-      }
-      if (error.message.includes('weak-password')) {
-        throw new Error('Password must be at least 6 characters');
-      }
-      if (error.message.includes('invalid-email')) {
-        throw new Error('Please enter a valid email address');
-      }
-    }
-    console.error('❌ Sign up error:', error);
-    throw error;
+    if (__DEV__) console.error('Sign up error:', error);
+    throw new Error(friendlyAuthError(error));
   }
 }
 
@@ -125,22 +122,9 @@ export async function signUp(
 export async function logIn(email: string, password: string): Promise<void> {
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    console.log(`✅ User ${email} logged in successfully`);
   } catch (error) {
-    // Handle specific Firebase Auth errors
-    if (error instanceof Error) {
-      if (
-        error.message.includes('user-not-found') ||
-        error.message.includes('invalid-credential')
-      ) {
-        throw new Error('Email or password is incorrect');
-      }
-      if (error.message.includes('user-disabled')) {
-        throw new Error('This account has been disabled');
-      }
-    }
-    console.error('❌ Log in error:', error);
-    throw error;
+    if (__DEV__) console.warn('Log in error:', error);
+    throw new Error(friendlyAuthError(error));
   }
 }
 

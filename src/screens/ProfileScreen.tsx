@@ -14,7 +14,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { useSkills } from '../context/SkillsContext';
-import { calculateLevel, formatXP } from '../utils/xpCalculations';
+import { formatXP } from '../utils/xpCalculations';
+import { getTotalLevel, getTotalXP } from '../utils/stats';
+import { OSRS_SKILLS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
@@ -47,10 +49,8 @@ export function ProfileScreen() {
     ? user.displayName
     : derivedUsername(user?.email ?? 'adventurer');
 
-  const trainedSkills = skills.filter(s => s.totalXP > 0);
-
-  const totalLevel = trainedSkills.reduce((sum, s) => sum + calculateLevel(s.totalXP), 0);
-  const totalXP = skills.reduce((sum, s) => sum + s.totalXP, 0);
+  const totalLevel = getTotalLevel(skills, OSRS_SKILLS);
+  const totalXP = getTotalXP(skills);
   const longestStreak = userActivities.reduce((max, a) => Math.max(max, a.longestStreak ?? 0), 0);
 
   const memberSince = user?.createdAt
@@ -169,7 +169,7 @@ export function ProfileScreen() {
           )}
 
           <Text style={styles.totalLevel}>
-            {totalLevel > 0 ? `Total Level ${totalLevel}` : 'Level 1 Adventurer'}
+            {`Total Level ${totalLevel}`}
           </Text>
           <Text style={styles.memberSince}>Adventurer since {memberSince}</Text>
         </View>

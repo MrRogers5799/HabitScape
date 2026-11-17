@@ -5,6 +5,11 @@
       "email": "tester1@habitscape.test",
       "password": "Hs-21c5108a43c0",
       "displayName": "Tester One"
+    },
+    {
+      "email": "tester2@habitscape.test",
+      "password": "Hs-4c0a04c3cfa7",
+      "displayName": "Tester Two"
     }
   ]
 }

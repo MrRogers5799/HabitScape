@@ -683,3 +683,86 @@ describe('computeStreakResets with weekStartDay', () => {
     expect(toDateStr(getWeekStart(sundayCompletion, 0))).toBe('2026-04-26');
   });
 });
+
+// ── 2x/month: judged per calendar month (target 2), not per week ─────────────
+
+/** Noon on `day` of the month N months before the current one. */
+function monthsAgo(n: number, day: number): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() - n, day, 12, 0, 0, 0);
+}
+function monthStartStr(n: number): string {
+  const now = new Date();
+  return toDateStr(new Date(now.getFullYear(), now.getMonth() - n, 1));
+}
+
+describe('2x/month streaks', () => {
+  const base = { id: 'mp', cadence: '2x/month' as const };
+
+  it('keeps the streak when last month hit 2 completions in non-adjacent weeks (the bug case)', () => {
+    const completions = [makeCompletion('mp', monthsAgo(1, 2)), makeCompletion('mp', monthsAgo(1, 20))];
+    const updates = computeStreakResets(
+      [makeActivity({ ...base, currentStreak: 2, longestStreak: 2, lastStreakCheckWeek: monthStartStr(1), streakVersion: 3 })],
+      completions
+    );
+    expect(updates).toHaveLength(1);
+    expect(updates[0].currentStreak).toBe(2);
+    expect(updates[0].lastStreakCheckWeek).toBe(monthStartStr(0));
+  });
+
+  it('resets when last month had only 1 completion', () => {
+    const updates = computeStreakResets(
+      [makeActivity({ ...base, currentStreak: 3, longestStreak: 3, lastStreakCheckWeek: monthStartStr(1), streakVersion: 3 })],
+      [makeCompletion('mp', monthsAgo(1, 10))]
+    );
+    expect(updates[0].currentStreak).toBe(0);
+    expect(updates[0].longestStreak).toBe(3);
+  });
+
+  it('resets when a whole month was skipped', () => {
+    const updates = computeStreakResets(
+      [makeActivity({ ...base, currentStreak: 4, longestStreak: 4, lastStreakCheckWeek: monthStartStr(2), streakVersion: 3 })],
+      []
+    );
+    expect(updates[0].currentStreak).toBe(0);
+  });
+
+  it('does nothing when this month was already evaluated', () => {
+    const updates = computeStreakResets(
+      [makeActivity({ ...base, currentStreak: 2, longestStreak: 2, lastStreakCheckWeek: monthStartStr(0), streakVersion: 3 })],
+      []
+    );
+    expect(updates).toHaveLength(0);
+  });
+
+  it('rebuilds old (weekly-judged) 2x/month streaks once from history', () => {
+    const completions = [
+      makeCompletion('mp', monthsAgo(2, 3)), makeCompletion('mp', monthsAgo(2, 25)),
+      makeCompletion('mp', monthsAgo(1, 2)), makeCompletion('mp', monthsAgo(1, 20)),
+      makeCompletion('mp', new Date()),
+    ];
+    const updates = computeStreakResets(
+      [makeActivity({ ...base, currentStreak: 0, longestStreak: 1, lastStreakCheckWeek: '2020-01-06', streakVersion: 2 })],
+      completions
+    );
+    expect(updates[0].currentStreak).toBe(5);
+    expect(updates[0].longestStreak).toBe(5);
+    expect(updates[0].streakVersion).toBe(3);
+    expect(updates[0].lastStreakCheckWeek).toBe(monthStartStr(0));
+  });
+
+  it('recomputeStreakFromHistory uses month periods', () => {
+    const completions = [makeCompletion('mp', monthsAgo(1, 5)), makeCompletion('mp', monthsAgo(1, 28))];
+    const update = recomputeStreakFromHistory(makeActivity({ ...base }), completions);
+    expect(update?.currentStreak).toBe(2);
+    expect(update?.lastStreakCheckWeek).toBe(monthStartStr(0));
+    expect(update?.streakVersion).toBe(3);
+  });
+
+  it('undo recomputes with month periods', () => {
+    const remaining = [makeCompletion('mp', monthsAgo(1, 5))];
+    const update = computeUndoStreakUpdate(makeActivity({ ...base, currentStreak: 3, longestStreak: 3 }), remaining);
+    // Last month now has 1 of 2, so only this month's (zero) completions count.
+    expect(update?.currentStreak).toBe(0);
+  });
+});

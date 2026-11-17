@@ -15,3 +15,14 @@ foreach ($name in 'metro', 'firebase', 'emulator') {
     Write-Host "${name}: stopped"
   }
 }
+
+# Fallback for anything that outlived its wrapper (e.g. after a crash or reboot):
+# our ports' listeners, and emulator processes from this machine's Android SDK.
+foreach ($port in $Ports.Values) {
+  Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue |
+    ForEach-Object { $pr = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
+      if ($pr -and $pr.ProcessName -in 'java', 'node') { Stop-Process -Id $pr.Id -Force; Write-Host "stopped leftover $($pr.ProcessName) on port $port" } }
+}
+Get-Process -Name 'qemu-system-*', 'emulator' -ErrorAction SilentlyContinue |
+  Where-Object { $_.Path -like "$Sdk*" } |
+  ForEach-Object { Stop-Process -Id $_.Id -Force; Write-Host "stopped leftover $($_.ProcessName)" }
