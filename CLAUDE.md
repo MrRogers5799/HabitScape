@@ -38,6 +38,9 @@ npx firebase-tools@15.34.0 emulators:exec --only auth,firestore --project demo-h
 After a crash or hard power-off, start with `start.ps1 -Wipe` (fresh emulator data), then reinstall the app with `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`. The user's PC once froze with the emulator on 4 cores; keep it at 2.
 The app uses the local Firebase emulators (never production) and has Sentry off in this mode. Create test accounts only there. Heavy files live in `E:/HabitScapeTestEnv` (emulator image, Gradle cache, temp, logs, screenshots) because C: is nearly full. Details: vault note `Ontology/Test environment.md`.
 
+## Art
+Icons are original pixel art (no Jagex sprites). Source of truth: `art/icons.json` (palette + 16×16 grids); export with `node scripts/render-icons.mjs` (writes `art/export/`, not committed). Every new or changed icon follows the vault note `HabitScape - Art bible.md` and passes its review checklist. Never hand-edit exported PNGs.
+
 ## Conventions
 - Expo SDK 54. Add or upgrade Expo packages with `npx expo install`, never a bare `npm install <pkg>@latest`.
 - Skill IDs are display names with OSRS British spelling (`Defence`). Renaming a skill or moving an activity between skills needs a migration in `src/services/migrations.ts`.
