@@ -325,10 +325,10 @@ export function SettingsScreen() {
           </Pressable>
 
           <View style={[styles.settingItem, { marginTop: 4 }]}>
-            <Text style={styles.settingLabel}>Game Assets</Text>
+            <Text style={styles.settingLabel}>Inspired By</Text>
             <Text style={styles.settingValue}>Old School RuneScape</Text>
             <Text style={[styles.settingValue, { fontSize: 14, marginTop: 2 }]}>
-              © Jagex Ltd. All OSRS assets (icons, fonts, and visual style) are the property of Jagex Ltd. HabitScape is a fan-made app and is not affiliated with or endorsed by Jagex.
+              HabitScape is a fan-made app inspired by Old School RuneScape and is not affiliated with or endorsed by Jagex Ltd. Old School RuneScape is a trademark of Jagex Ltd. All HabitScape artwork is original. Fonts: Press Start 2P and VT323 (SIL Open Font License).
             </Text>
           </View>
 

@@ -8,6 +8,11 @@
 //   tabs/<name>-inactive.png (+@2x, @3x)                 cream/gold (inactive tab)
 //   preview/<name>.png                                   64 px on the app tile, for docs
 //   sheet.png                                            every icon at 4x on the app tile
+// and the files the app ships (committed):
+//   assets/icons/skills/<name>.png                       192 px (12x)
+//   assets/icons/tabs/<name>.png, <name>-inactive.png    192 px (12x)
+// The app images are large on purpose: Android smooths images it scales UP, so we
+// ship them big and let it scale DOWN (192 divides evenly into 32/48/64/96 px).
 // Pixels are scaled by whole numbers only, never smoothed. Rules: vault note "Art bible".
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
@@ -94,11 +99,25 @@ function writeScaled(dir, base, rows, colorOf) {
   save(join(outDir, 'preview', base + '.png'), pv);
 }
 
+const APP_SCALE = 12;
+const appDir = join(root, 'assets', 'icons');
+function writeApp(dir, base, rows, colorOf) {
+  const cv = canvas(16 * APP_SCALE, 16 * APP_SCALE);
+  blit(cv, rows, colorOf, 0, 0, APP_SCALE);
+  save(join(appDir, dir, base + '.png'), cv);
+}
+
 let count = 0;
-for (const [name, rows] of Object.entries(src.skills)) { writeScaled('skills', slug(name), rows, full); count++; }
+for (const [name, rows] of Object.entries(src.skills)) {
+  writeScaled('skills', slug(name), rows, full);
+  writeApp('skills', slug(name), rows, full);
+  count++;
+}
 for (const [name, rows] of Object.entries(src.tabs)) {
   writeScaled('tabs', slug(name), rows, full);
   writeScaled('tabs', slug(name) + '-inactive', rows, mono);
+  writeApp('tabs', slug(name), rows, full);
+  writeApp('tabs', slug(name) + '-inactive', rows, mono);
   count++;
 }
 
