@@ -22,6 +22,7 @@ import {
   updateUserDisplayName,
   updateUserTimezone,
   updateUserWeekStartDay,
+  markNoteSeen as firebaseMarkNoteSeen,
   changePassword as firebaseChangePassword,
   deleteAccount as firebaseDeleteAccount,
   sendVerificationEmail as firebaseSendVerificationEmail,
@@ -31,6 +32,7 @@ import {
 import { completeOnboarding as firestoreCompleteOnboarding } from '../services/firestoreService';
 import { runMigrations } from '../services/migrations';
 import { User, AuthContextType } from '../types';
+import { WELCOME_NOTE_ID } from '../constants/links';
 
 /**
  * Create the auth context
@@ -188,7 +190,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<void> {
     if (!user) throw new Error('Not authenticated');
     await firestoreCompleteOnboarding(user.uid, displayName, activities, user.timezone, user.weekStartDay ?? 1);
-    setUser(prev => prev ? { ...prev, profileComplete: true, displayName: displayName.trim() } : prev);
+    setUser(prev => prev ? { ...prev, profileComplete: true, displayName: displayName.trim(), seenNotes: [...(prev.seenNotes ?? []), WELCOME_NOTE_ID] } : prev);
+  }
+
+  async function handleMarkNoteSeen(noteId: string): Promise<void> {
+    if (!user) return;
+    // Hide it right away; if the write fails it just shows again next launch.
+    setUser(prev => prev ? { ...prev, seenNotes: [...(prev.seenNotes ?? []), noteId] } : prev);
+    await firebaseMarkNoteSeen(user.uid, noteId).catch(() => {});
   }
 
   /**
@@ -227,6 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     deleteAccount: handleDeleteAccount,
     sendVerificationEmail: handleSendVerificationEmail,
     refreshEmailVerification: handleRefreshEmailVerification,
+    markNoteSeen: handleMarkNoteSeen,
   };
 
   return (

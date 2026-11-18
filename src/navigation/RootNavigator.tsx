@@ -46,6 +46,7 @@ import { SkillsHubScreen } from '../screens/SkillsHubScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { WorkoutNavigator } from './WorkoutNavigator';
+import { WelcomeOneZeroModal } from '../components/WelcomeNote';
 
 
 // Navigation instances
@@ -61,6 +62,7 @@ const Tab = createBottomTabNavigator();
 function TabNavigator() {
   const insets = useSafeAreaInsets();
   return (
+    <>
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
@@ -150,6 +152,9 @@ function TabNavigator() {
         }}
       />
     </Tab.Navigator>
+    {/* One-time 1.0 note for players who joined before 1.0 */}
+    <WelcomeOneZeroModal />
+    </>
   );
 }
 
