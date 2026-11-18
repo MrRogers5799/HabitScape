@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// HabitScape Firestore security rules.
+// Source of truth for production. Deploy with:
+//   npx firebase-tools@15.34.0 deploy --only firestore:rules --project <project-id>
+// The local test environment (test-env/) runs these same rules in the emulator.
+//
+// Model: every user's data lives under users/{uid} and only that user can touch it.
+// The one shared collection is sharedTemplates/{code} (workout share codes).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ── User profile ─────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read, delete: if isOwner(uid);
+      // The profile's uid field must match the document and can never change.
+      allow create: if isOwner(uid) && request.resource.data.uid == uid;
+      // get() keeps older profiles without a uid field editable.
+      allow update: if isOwner(uid)
+        && request.resource.data.get('uid', null) == resource.data.get('uid', null);
+
+      // Skills, tracked activities, completions, workouts and everything else
+      // under the user: owner only. The {sub} segment matters: in rules v2 a bare
+      // {document=**} also matches users/{uid} itself and would bypass the checks above.
+      match /{sub}/{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // ── Workout share codes ──────────────────────────────────────────────
+    match /sharedTemplates/{code} {
+      // Fetch by exact code only; nobody can list or browse codes.
+      allow get: if signedIn();
+      allow list: if false;
+      // Create-only, stamped with the creator, bounded in size. A code that
+      // already exists can't be overwritten (that would be an update).
+      allow create: if signedIn()
+        && code.size() == 6
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.templates is list
+        && request.resource.data.templates.size() > 0
+        && request.resource.data.templates.size() <= 20;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.createdBy == request.auth.uid;
+    }
+  }
+}

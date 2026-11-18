@@ -205,7 +205,7 @@ function Step2({
         </View>
       </View>
 
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.skillFilterRow}
@@ -340,7 +340,7 @@ function Step3({
         <Text style={styles.stepSubtitle}>How often will you train each activity?</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.cadenceList}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.cadenceList}>
         {templates.map(t => {
           const skillColor = SKILL_COLORS[t.skillId] ?? colors.gold;
           const chosen = cadences[t.id] ?? t.defaultCadence ?? t.availableCadences[0];
@@ -350,7 +350,7 @@ function Step3({
                 <Image source={SKILL_ICONS[t.skillId]} style={styles.cadenceSkillIcon} resizeMode="contain" />
                 <Text style={styles.cadenceCardName}>{t.activityName}</Text>
               </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cadenceButtons}>
+              <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cadenceButtons}>
                 {t.availableCadences.map(c => {
                   const active = c === chosen;
                   return (
@@ -544,7 +544,7 @@ export function OnboardingScreen() {
             </Text>
 
             <TouchableOpacity style={styles.welcomeModalBtn} onPress={() => setWelcomeVisible(false)}>
-              <Text style={styles.welcomeModalBtnText}>Let's Begin  →</Text>
+              <Text style={styles.welcomeModalBtnText}>Let&apos;s Begin  →</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -787,7 +787,6 @@ const styles = StyleSheet.create({
   activityCheckbox: {
     width: 20,
     height: 20,
-    borderWidth: 2,
     borderColor: colors.textSecondary,
     justifyContent: 'center',
     alignItems: 'center',

@@ -30,6 +30,83 @@ function getYesterdayStr(): string {
 }
 
 const STREAK_VERSION = 2;
+// 2x/month streaks were judged weekly (target 0.5) before v3; bumping only this
+// cadence's version recomputes those once without touching other cadences.
+const MONTH_PERIOD_VERSION = 3;
+
+// ── streak periods ────────────────────────────────────────────────────────────
+// Non-daily cadences are judged per period: a week for Nx/week and weekly, a
+// calendar month for 2x/month. `lastStreakCheckWeek` stores the start date of
+// the last evaluated period (a week start, or the 1st of a month).
+
+function usesMonthPeriod(cadence: UserActivity['cadence']): boolean {
+  return cadence === '2x/month';
+}
+
+function versionFor(cadence: UserActivity['cadence']): number {
+  return usesMonthPeriod(cadence) ? MONTH_PERIOD_VERSION : STREAK_VERSION;
+}
+
+function periodStart(date: Date, cadence: UserActivity['cadence'], weekStartDay: 0 | 1): Date {
+  if (usesMonthPeriod(cadence)) return new Date(date.getFullYear(), date.getMonth(), 1);
+  return getWeekStart(date, weekStartDay);
+}
+
+function shiftPeriod(start: Date, cadence: UserActivity['cadence'], n: number): Date {
+  if (usesMonthPeriod(cadence)) return new Date(start.getFullYear(), start.getMonth() + n, 1);
+  const d = new Date(start);
+  d.setDate(d.getDate() + 7 * n);
+  return d;
+}
+
+function periodsBetween(from: Date, to: Date, cadence: UserActivity['cadence']): number {
+  if (usesMonthPeriod(cadence)) {
+    return (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+  }
+  return Math.round((to.getTime() - from.getTime()) / (7 * 24 * 60 * 60 * 1000));
+}
+
+function periodTarget(cadence: UserActivity['cadence']): number {
+  if (usesMonthPeriod(cadence)) return 2;
+  return CADENCE_CONFIG[cadence].timesPerWeek;
+}
+
+function countInPeriod(
+  activityId: string,
+  completions: ActivityCompletion[],
+  start: Date,
+  cadence: UserActivity['cadence']
+): number {
+  const end = shiftPeriod(start, cadence, 1);
+  return completions.filter(c => {
+    if (c.activityId !== activityId) return false;
+    const d = new Date(c.completedAt);
+    return d >= start && d < end;
+  }).length;
+}
+
+/**
+ * Current streak for a non-daily activity: completions in the current (unfinished)
+ * period, plus every earlier consecutive period that met its target.
+ */
+function walkBackPeriodStreak(
+  activity: UserActivity,
+  completions: ActivityCompletion[],
+  weekStartDay: 0 | 1
+): number {
+  const target = periodTarget(activity.cadence);
+  const maxPeriods = usesMonthPeriod(activity.cadence) ? 24 : 104; // ~2 years
+  let start = periodStart(new Date(), activity.cadence, weekStartDay);
+  let streak = 0;
+  for (let i = 0; i < maxPeriods; i++) {
+    const count = countInPeriod(activity.id, completions, start, activity.cadence);
+    if (i === 0) streak += count; // current period isn't over yet
+    else if (count < target) break;
+    else streak += count;
+    start = shiftPeriod(start, activity.cadence, -1);
+  }
+  return streak;
+}
 
 // ── longest-streak helpers ────────────────────────────────────────────────────
 
@@ -60,8 +137,7 @@ function longestDailyStreak(activityId: string, allCompletions: ActivityCompleti
 }
 
 function longestNxWeekStreak(activity: UserActivity, allCompletions: ActivityCompletion[], weekStartDay: 0 | 1 = 1): number {
-  const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const target = periodTarget(activity.cadence);
   const activityCompletions = allCompletions.filter(c => c.activityId === activity.id);
   if (activityCompletions.length === 0) return 0;
 
@@ -69,32 +145,24 @@ function longestNxWeekStreak(activity: UserActivity, allCompletions: ActivityCom
     (min, c) => { const d = new Date(c.completedAt); return d < min ? d : min; },
     new Date(activityCompletions[0].completedAt)
   );
-  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
+  const currentPeriod = periodStart(new Date(), activity.cadence, weekStartDay);
 
   let longest = 0;
   let current = 0;
-  let weekStart = getWeekStart(earliestDate, weekStartDay);
+  let start = periodStart(earliestDate, activity.cadence, weekStartDay);
 
-  while (weekStart <= thisWeekMonday) {
-    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
-    const count = activityCompletions.filter(c => {
-      const d = new Date(c.completedAt);
-      return d >= weekStart && d < weekEnd;
-    }).length;
+  while (start <= currentPeriod) {
+    const count = countInPeriod(activity.id, activityCompletions, start, activity.cadence);
+    const isCurrent = start.getTime() === currentPeriod.getTime();
 
-    const isCurrentWeek = weekStart.getTime() === thisWeekMonday.getTime();
-
-    if (isCurrentWeek) {
-      current += count;
-      longest = Math.max(longest, current);
-    } else if (count >= target) {
+    if (isCurrent || count >= target) {
       current += count;
       longest = Math.max(longest, current);
     } else {
       current = 0;
     }
 
-    weekStart = new Date(weekStart.getTime() + msPerWeek);
+    start = shiftPeriod(start, activity.cadence, 1);
   }
 
   return longest;
@@ -239,32 +307,12 @@ export function computeUndoStreakUpdate(
     };
   }
 
-  // Non-daily: recompute current streak from remaining completions' week walk.
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
-  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
-  let currentStreak = 0;
-  let weekStart = new Date(thisWeekMonday);
-
-  for (let i = 0; i < 104; i++) {
-    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
-    const count = remainingCompletions.filter(c => {
-      if (c.activityId !== activity.id) return false;
-      const d = new Date(c.completedAt);
-      return d >= weekStart && d < weekEnd;
-    }).length;
-
-    if (i === 0) { currentStreak += count; }
-    else { if (count < target) break; currentStreak += count; }
-
-    weekStart = new Date(weekStart.getTime() - msPerWeek);
-  }
-
+  // Non-daily: recompute the current streak by walking back period by period.
   return {
     activityId: activity.id,
-    currentStreak,
+    currentStreak: walkBackPeriodStreak(activity, remainingCompletions, weekStartDay),
     longestStreak: longestNxWeekStreak(activity, remainingCompletions, weekStartDay),
-    lastStreakCheckWeek: toDateStr(thisWeekMonday),
+    lastStreakCheckWeek: toDateStr(periodStart(new Date(), activity.cadence, weekStartDay)),
   };
 }
 
@@ -284,9 +332,6 @@ export function recomputeStreakFromHistory(
   if (activity.cadence === 'monthly') return null;
 
   const yesterday = getYesterdayStr();
-  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
-  const thisWeekStr = toDateStr(thisWeekMonday);
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
 
   if (activity.cadence === 'daily') {
     const uniqueDays = [...new Set(
@@ -319,35 +364,13 @@ export function recomputeStreakFromHistory(
     };
   }
 
-  // Nx/week: walk back from this week to compute currentStreak.
-  const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
-  let currentStreak = 0;
-  let weekStart = new Date(thisWeekMonday); // recomputeStreakFromHistory
-
-  for (let i = 0; i < 104; i++) {
-    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
-    const count = allCompletions.filter(c => {
-      if (c.activityId !== activity.id) return false;
-      const d = new Date(c.completedAt);
-      return d >= weekStart && d < weekEnd;
-    }).length;
-
-    if (i === 0) {
-      currentStreak += count;
-    } else {
-      if (count < target) break;
-      currentStreak += count;
-    }
-
-    weekStart = new Date(weekStart.getTime() - msPerWeek);
-  }
-
+  // Non-daily: walk back period by period (weeks, or months for 2x/month).
   return {
     activityId: activity.id,
-    currentStreak,
+    currentStreak: walkBackPeriodStreak(activity, allCompletions, weekStartDay),
     longestStreak: longestNxWeekStreak(activity, allCompletions, weekStartDay),
-    lastStreakCheckWeek: thisWeekStr,
-    streakVersion: STREAK_VERSION,
+    lastStreakCheckWeek: toDateStr(periodStart(new Date(), activity.cadence, weekStartDay)),
+    streakVersion: versionFor(activity.cadence),
   };
 }
 
@@ -366,9 +389,6 @@ export function computeStreakResets(
 ): StreakUpdate[] {
   const updates: StreakUpdate[] = [];
   const yesterday = getYesterdayStr();
-  const thisWeekMonday = getWeekStart(new Date(), weekStartDay);
-  const thisWeekStr = toDateStr(thisWeekMonday);
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
 
   for (const activity of activities) {
     if (activity.cadence === 'monthly') continue;
@@ -447,82 +467,51 @@ export function computeStreakResets(
       continue;
     }
 
-    // Non-daily: evaluate week boundaries
-    const lastCheckWeek = activity.lastStreakCheckWeek;
-    const needsMigrationNonDaily = (activity.streakVersion ?? 0) < STREAK_VERSION;
+    // Non-daily: evaluate period boundaries (weeks, or calendar months for 2x/month)
+    const lastCheck = activity.lastStreakCheckWeek;
+    const currentPeriod = periodStart(new Date(), activity.cadence, weekStartDay);
+    const currentPeriodStr = toDateStr(currentPeriod);
+    const needsMigrationNonDaily = (activity.streakVersion ?? 0) < versionFor(activity.cadence);
 
-    if (lastCheckWeek === thisWeekStr && !needsMigrationNonDaily) continue; // already evaluated this week
+    if (lastCheck === currentPeriodStr && !needsMigrationNonDaily) continue; // already evaluated
 
-    if (!lastCheckWeek || needsMigrationNonDaily) {
-      // Not yet initialized, or initialized by an older/buggy version — backfill from completions
-      const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
-      let backfillStreak = 0;
-      let weekStart = new Date(thisWeekMonday);
-
-      for (let i = 0; i < 104; i++) { // walk back up to 2 years
-        const weekEnd = new Date(weekStart.getTime() + msPerWeek);
-        const count = completions.filter(c => {
-          if (c.activityId !== activity.id) return false;
-          const d = new Date(c.completedAt);
-          return d >= weekStart && d < weekEnd;
-        }).length;
-
-        if (i === 0) {
-          // Current week isn't over yet — count completions but don't validate against target
-          backfillStreak += count;
-        } else {
-          if (count < target) break;
-          backfillStreak += count;
-        }
-
-        weekStart = new Date(weekStart.getTime() - msPerWeek);
-      }
-
+    if (!lastCheck || needsMigrationNonDaily) {
+      // Not yet initialized, or written by an older/buggy version: rebuild from completions
+      const backfillStreak = walkBackPeriodStreak(activity, completions, weekStartDay);
       const newLongest = Math.max(backfillStreak, longestNxWeekStreak(activity, completions, weekStartDay));
       updates.push({
         activityId: activity.id,
         currentStreak: backfillStreak,
         longestStreak: newLongest,
-        lastStreakCheckWeek: thisWeekStr,
-        streakVersion: STREAK_VERSION,
+        lastStreakCheckWeek: currentPeriodStr,
+        streakVersion: versionFor(activity.cadence),
       });
       continue;
     }
 
-    const lastCheckMonday = new Date(lastCheckWeek + 'T00:00:00');
-    const weeksPassed = Math.round(
-      (thisWeekMonday.getTime() - lastCheckMonday.getTime()) / msPerWeek
-    );
+    const lastPeriod = new Date(lastCheck + 'T00:00:00');
+    const periodsPassed = periodsBetween(lastPeriod, currentPeriod, activity.cadence);
 
-    if (weeksPassed > 1) {
-      // One or more full weeks skipped — streak broken
+    if (periodsPassed > 1) {
+      // One or more full periods skipped: streak broken
       updates.push({
         activityId: activity.id,
         currentStreak: 0,
         longestStreak,
-        lastStreakCheckWeek: thisWeekStr,
+        lastStreakCheckWeek: currentPeriodStr,
       });
       continue;
     }
 
-    // weeksPassed === 1: evaluate the week that just ended
-    const weekStart = lastCheckMonday;
-    const weekEnd = new Date(lastCheckMonday.getTime() + msPerWeek);
-    const target = CADENCE_CONFIG[activity.cadence].timesPerWeek;
-
-    const completionsInWeek = completions.filter(c => {
-      if (c.activityId !== activity.id) return false;
-      const d = new Date(c.completedAt);
-      return d >= weekStart && d < weekEnd;
-    }).length;
-
-    const newStreak = completionsInWeek >= target ? currentStreak : 0;
+    // periodsPassed === 1: evaluate the period that just ended
+    const countInLast = countInPeriod(activity.id, completions, lastPeriod, activity.cadence);
+    const newStreak = countInLast >= periodTarget(activity.cadence) ? currentStreak : 0;
 
     updates.push({
       activityId: activity.id,
       currentStreak: newStreak,
       longestStreak,
-      lastStreakCheckWeek: thisWeekStr,
+      lastStreakCheckWeek: currentPeriodStr,
     });
   }
 

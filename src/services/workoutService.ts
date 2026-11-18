@@ -82,7 +82,7 @@ export function subscribeToExercises(
   userId: string,
   templateId: string,
   callback: (exercises: TemplateExercise[]) => void,
-  onError?: () => void
+  onError?: (e: Error) => void
 ): Unsubscribe {
   const ref = collection(db, 'users', userId, 'workoutTemplates', templateId, 'exercises');
   const q = query(ref, orderBy('sortOrder', 'asc'));

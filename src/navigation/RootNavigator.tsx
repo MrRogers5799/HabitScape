@@ -8,20 +8,34 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image, View } from 'react-native';
+import { Image, ImageSourcePropType } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import { useAuth } from '../context/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 
-const TAB_ICONS = {
-  activities: require('../../assets/icons/tabs/Hardcore_ironman_chat_badge.png'),
-  skills:     require('../../assets/icons/tabs/skills.png'),
-  profile:    require('../../assets/icons/tabs/profile.png'),
-  settings:   require('../../assets/icons/tabs/settings.png'),
-  workout:    require('../../assets/icons/tabs/Jog emote icon.png'),
+// Generated from art/icons.json by scripts/render-icons.mjs (see the vault's Art bible).
+// Inactive tabs use the cream/gold variant; only the active tab is in full color.
+type TabIconPair = { active: ImageSourcePropType; inactive: ImageSourcePropType };
+const TAB_ICONS: Record<'activities' | 'skills' | 'profile' | 'workout' | 'settings', TabIconPair> = {
+  activities: { active: require('../../assets/icons/tabs/activities.png'), inactive: require('../../assets/icons/tabs/activities-inactive.png') },
+  skills:     { active: require('../../assets/icons/tabs/skills.png'),     inactive: require('../../assets/icons/tabs/skills-inactive.png') },
+  profile:    { active: require('../../assets/icons/tabs/profile.png'),    inactive: require('../../assets/icons/tabs/profile-inactive.png') },
+  workout:    { active: require('../../assets/icons/tabs/workout.png'),    inactive: require('../../assets/icons/tabs/workout-inactive.png') },
+  settings:   { active: require('../../assets/icons/tabs/settings.png'),   inactive: require('../../assets/icons/tabs/settings-inactive.png') },
 };
+
+function TabIcon({ icon, focused, size }: { icon: TabIconPair; focused: boolean; size: number }) {
+  return (
+    <Image
+      source={focused ? icon.active : icon.inactive}
+      style={{ width: size, height: size }}
+      resizeMode="contain"
+      accessibilityIgnoresInvertColors
+    />
+  );
+}
 
 // Screens
 import { AuthScreen } from '../screens/AuthScreen';
@@ -33,18 +47,6 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { WorkoutNavigator } from './WorkoutNavigator';
 
-const OUTLINE_OFFSETS = [-1, 0, 1].flatMap(x => [-1, 0, 1].map(y => [x, y])).filter(([x, y]) => x !== 0 || y !== 0);
-
-function OutlinedTabIcon({ source, size }: { source: any; size: number }) {
-  return (
-    <View style={{ width: size, height: size }}>
-      {OUTLINE_OFFSETS.map(([x, y], i) => (
-        <Image key={i} source={source} style={{ position: 'absolute', width: size, height: size, tintColor: 'black', left: x, top: y }} resizeMode="contain" />
-      ))}
-      <Image source={source} style={{ position: 'absolute', width: size, height: size, opacity: 1 }} resizeMode="contain" />
-    </View>
-  );
-}
 
 // Navigation instances
 const Stack = createNativeStackNavigator();
@@ -100,9 +102,7 @@ function TabNavigator() {
         options={{
           title: 'Activities',
           tabBarLabel: 'Activities',
-          tabBarIcon: ({ size }) => (
-            <OutlinedTabIcon source={TAB_ICONS.activities} size={size} />
-          ),
+          tabBarIcon: ({ focused, size }) => <TabIcon icon={TAB_ICONS.activities} focused={focused} size={size} />,
         }}
       />
 
@@ -113,9 +113,7 @@ function TabNavigator() {
         options={{
           title: 'Skills',
           tabBarLabel: 'Skills',
-          tabBarIcon: ({ size }) => (
-            <Image source={TAB_ICONS.skills} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
-          ),
+          tabBarIcon: ({ focused, size }) => <TabIcon icon={TAB_ICONS.skills} focused={focused} size={size} />,
         }}
       />
 
@@ -126,9 +124,7 @@ function TabNavigator() {
         options={{
           title: 'Profile',
           tabBarLabel: 'Profile',
-          tabBarIcon: ({ size }) => (
-            <Image source={TAB_ICONS.profile} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
-          ),
+          tabBarIcon: ({ focused, size }) => <TabIcon icon={TAB_ICONS.profile} focused={focused} size={size} />,
         }}
       />
 
@@ -139,9 +135,7 @@ function TabNavigator() {
         options={{
           title: 'Workout',
           tabBarLabel: 'Workout',
-          tabBarIcon: ({ size }) => (
-            <Image source={TAB_ICONS.workout} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
-          ),
+          tabBarIcon: ({ focused, size }) => <TabIcon icon={TAB_ICONS.workout} focused={focused} size={size} />,
         }}
       />
 
@@ -152,9 +146,7 @@ function TabNavigator() {
         options={{
           title: 'Settings',
           tabBarLabel: 'Settings',
-          tabBarIcon: ({ size }) => (
-            <Image source={TAB_ICONS.settings} style={{ width: size, height: size, opacity: 1 }} resizeMode="contain" />
-          ),
+          tabBarIcon: ({ focused, size }) => <TabIcon icon={TAB_ICONS.settings} focused={focused} size={size} />,
         }}
       />
     </Tab.Navigator>

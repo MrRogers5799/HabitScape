@@ -335,7 +335,7 @@ export function ActivitySelectionWizard({
 
   const renderAddBrowse = () => (
     <View style={styles.stepContainer}>
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.filterBar}
@@ -372,7 +372,7 @@ export function ActivitySelectionWizard({
           </Text>
         </View>
       ) : (
-        <ScrollView style={styles.browseList} showsVerticalScrollIndicator={false}>
+        <ScrollView keyboardShouldPersistTaps="handled" style={styles.browseList} showsVerticalScrollIndicator={false}>
           {addBrowseItems.map(item => {
             if (item.type === 'header') {
               return (
@@ -417,7 +417,7 @@ export function ActivitySelectionWizard({
         </View>
       )}
       <Text style={styles.stepSectionLabel}>HOW OFTEN?</Text>
-      <ScrollView style={styles.optionsList} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.optionsList} showsVerticalScrollIndicator={false}>
         {activityTemplate?.availableCadences.map(cadence => {
           const isSelected = selectedCadence === cadence;
           return (
@@ -475,11 +475,11 @@ export function ActivitySelectionWizard({
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>📋</Text>
           <Text style={styles.emptyTitle}>No activities</Text>
-          <Text style={styles.emptyText}>Head to "+ Add Activity" to get started.</Text>
+          <Text style={styles.emptyText}>Head to &quot;+ Add Activity&quot; to get started.</Text>
         </View>
       ) : (
         <>
-          <ScrollView style={styles.removeList} showsVerticalScrollIndicator={false}>
+          <ScrollView keyboardShouldPersistTaps="handled" style={styles.removeList} showsVerticalScrollIndicator={false}>
             {selectedActivities.map(activity => {
               const template = ACTIVITY_TEMPLATES.find(a => a.id === activity.activityTemplateId);
               return (
@@ -544,7 +544,7 @@ export function ActivitySelectionWizard({
       </View>
 
       {/* Skill filter chips */}
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.filterBar}
@@ -579,7 +579,7 @@ export function ActivitySelectionWizard({
       </ScrollView>
 
       {/* Activity list with checkboxes */}
-      <ScrollView style={styles.browseList} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.browseList} showsVerticalScrollIndicator={false}>
         {manageBrowseItems.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>🔍</Text>
@@ -637,7 +637,7 @@ export function ActivitySelectionWizard({
           <Text style={styles.cadenceStepSubtitle}>How often will you train each new activity?</Text>
         </View>
 
-        <ScrollView contentContainerStyle={styles.cadenceCardList}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.cadenceCardList}>
           {newActivities.map(activity => {
             const chosen = pendingCadences[activity.id] ?? activity.defaultCadence ?? activity.availableCadences[0];
             const skillColor = SKILL_COLORS[activity.skillId] ?? colors.gold;
@@ -647,7 +647,7 @@ export function ActivitySelectionWizard({
                   <Image source={SKILL_ICONS[activity.skillId]} style={styles.cadenceSkillIcon} resizeMode="contain" />
                   <Text style={styles.cadenceCardName}>{activity.activityName}</Text>
                 </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cadencePills}>
+                <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cadencePills}>
                   {activity.availableCadences.map(cadence => {
                     const active = cadence === chosen;
                     return (

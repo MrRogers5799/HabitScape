@@ -29,6 +29,7 @@ import { useSkills } from '../context/SkillsContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { Skill } from '../types';
 import { calculateLevel, calculateProgress } from '../utils/xpCalculations';
+import { getTotalLevel } from '../utils/stats';
 import { ProgressBar } from '../components/ProgressBar';
 import { SkillGuideModal } from '../components/SkillGuideModal';
 import { ActivitySelectionWizard } from '../components/ActivitySelectionWizard';
@@ -47,7 +48,7 @@ import { fonts } from '../constants/typography';
 export function SkillsHubScreen() {
   const insets = useSafeAreaInsets();
   const { skills, loading, error } = useSkills();
-  const { userActivities } = useActivities();
+  const { userActivities, addActivity, removeActivity } = useActivities();
   const [gridHeight, setGridHeight] = useState(0);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [wizardSkill, setWizardSkill] = useState<string | null>(null);
@@ -88,9 +89,7 @@ export function SkillsHubScreen() {
     });
   }, [skills]);
 
-  const totalLevel = useMemo(() => {
-    return visibleSkills.reduce((sum, skill) => sum + calculateLevel(skill.totalXP), 0);
-  }, [visibleSkills]);
+  const totalLevel = useMemo(() => getTotalLevel(skills, OSRS_SKILLS), [skills]);
 
   /**
    * Render a single skill cell in the grid

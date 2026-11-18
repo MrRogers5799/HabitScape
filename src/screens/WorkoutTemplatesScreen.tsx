@@ -318,7 +318,7 @@ export function WorkoutTemplatesScreen({ navigation }: Props) {
         )}
       </View>
 
-      <FlatList
+      <FlatList keyboardShouldPersistTaps="handled"
         data={templates}
         keyExtractor={t => t.id}
         renderItem={({ item }) => (
@@ -415,7 +415,7 @@ export function WorkoutTemplatesScreen({ navigation }: Props) {
       {/* Create modal */}
       <TemplateModal
         visible={createModalVisible}
-        onSave={(name, skillId) => createTemplate(name, skillId)}
+        onSave={async (name, skillId) => { await createTemplate(name, skillId); }}
         onClose={() => setCreateModalVisible(false)}
       />
 
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
   generateBtnText: { fontFamily: fonts.display, fontSize: 15, fontWeight: '700', color: colors.background },
   shareCheckbox: {
     width: 22, height: 22, marginRight: 10,
-    borderWidth: 2, borderColor: colors.textSecondary,
+    borderColor: colors.textSecondary,
     justifyContent: 'center', alignItems: 'center',
     ...bevel.inset,
   },
@@ -555,7 +555,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceSunken,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderWidth: 1,
     borderColor: colors.border,
     ...bevel.inset,
   },

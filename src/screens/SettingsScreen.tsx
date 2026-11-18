@@ -161,7 +161,7 @@ export function SettingsScreen() {
       </View>
 
       {/* Scrollable content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
 
         {/* Activity Management Section */}
         <View style={styles.section}>
@@ -254,7 +254,7 @@ export function SettingsScreen() {
                   <Text style={styles.modalClose}>✕</Text>
                 </Pressable>
               </View>
-              <ScrollView style={styles.timezoneList}>
+              <ScrollView keyboardShouldPersistTaps="handled" style={styles.timezoneList}>
                 {COMMON_TIMEZONES.map(tz => (
                   <TouchableOpacity
                     key={tz.value}
@@ -325,10 +325,10 @@ export function SettingsScreen() {
           </Pressable>
 
           <View style={[styles.settingItem, { marginTop: 4 }]}>
-            <Text style={styles.settingLabel}>Game Assets</Text>
+            <Text style={styles.settingLabel}>Inspired By</Text>
             <Text style={styles.settingValue}>Old School RuneScape</Text>
             <Text style={[styles.settingValue, { fontSize: 14, marginTop: 2 }]}>
-              © Jagex Ltd. All OSRS assets (icons, fonts, and visual style) are the property of Jagex Ltd. HabitScape is a fan-made app and is not affiliated with or endorsed by Jagex.
+              HabitScape is a fan-made app inspired by Old School RuneScape and is not affiliated with or endorsed by Jagex Ltd. Old School RuneScape is a trademark of Jagex Ltd. All HabitScape artwork is original. Fonts: Press Start 2P and VT323 (SIL Open Font License).
             </Text>
           </View>
 
@@ -452,7 +452,7 @@ export function SettingsScreen() {
                 <Text style={styles.modalClose}>✕</Text>
               </Pressable>
             </View>
-            <ScrollView style={{ padding: 16 }} contentContainerStyle={{ paddingBottom: 24 }}>
+            <ScrollView keyboardShouldPersistTaps="handled" style={{ padding: 16 }} contentContainerStyle={{ paddingBottom: 24 }}>
               <Text style={styles.policyUpdated}>Last updated: April 30, 2026</Text>
 
               <Text style={styles.policyHeading}>Information We Collect</Text>
@@ -467,7 +467,7 @@ export function SettingsScreen() {
 
               <Text style={styles.policyHeading}>Data Storage</Text>
               <Text style={styles.policyBody}>
-                All data is stored securely using Google Firebase (Firestore and Authentication). Firebase's privacy policy is available at firebase.google.com/support/privacy.
+                All data is stored securely using Google Firebase (Firestore and Authentication). Firebase&apos;s privacy policy is available at firebase.google.com/support/privacy.
               </Text>
 
               <Text style={styles.policyHeading}>Data Sharing</Text>
@@ -480,7 +480,7 @@ export function SettingsScreen() {
                 You may request deletion of your account and all associated data at any time by contacting us at the email below. Data will be permanently deleted within 30 days.
               </Text>
 
-              <Text style={styles.policyHeading}>Children's Privacy</Text>
+              <Text style={styles.policyHeading}>Children&apos;s Privacy</Text>
               <Text style={styles.policyBody}>
                 HabitScape is not intended for children under 13. We do not knowingly collect data from children under 13.
               </Text>

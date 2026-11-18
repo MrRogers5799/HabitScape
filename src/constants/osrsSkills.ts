@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from 'react-native';
+
 export const OSRS_SKILLS = [
   'Attack',       'Hitpoints',  'Mining',
   'Strength',     'Agility',    'Smithing',
@@ -66,7 +68,7 @@ export const SKILL_COLORS: Record<string, string> = {
 };
 
 // Static requires are mandatory for React Native's Metro bundler
-export const SKILL_ICONS: Record<string, ReturnType<typeof require>> = {
+export const SKILL_ICONS: Record<string, ImageSourcePropType> = {
   Attack:       require('../../assets/icons/skills/attack.png'),
   Strength:     require('../../assets/icons/skills/strength.png'),
   Defence:      require('../../assets/icons/skills/defence.png'),

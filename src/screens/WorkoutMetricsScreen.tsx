@@ -487,7 +487,7 @@ export function WorkoutMetricsScreen({ route, navigation }: Props) {
                   <Text style={styles.datePickerClose}>✕</Text>
                 </Pressable>
               </View>
-              <ScrollView>
+              <ScrollView keyboardShouldPersistTaps="handled">
                 {backdateDays.map((date, i) => {
                   const isToday = i === 0;
                   const label = isToday
