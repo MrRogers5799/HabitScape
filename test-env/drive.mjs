@@ -86,8 +86,11 @@ switch (cmd) {
   case 'launch':
     sh(`am force-stop ${PKG}`);
     // am start brings the app to the front even right after a cold boot (monkey sometimes didn't).
-    sh(`am start -n ${PKG}/.MainActivity >/dev/null 2>&1`);
-    console.log('launched');
+    // -W waits until Android reports the first frame drawn. Right after a cold boot that
+    // took 23 s on 2 cores; tapping before it lands on the home screen.
+    const out = sh(`am start -W -n ${PKG}/.MainActivity 2>&1`);
+    const ms = (out.match(/TotalTime: (\d+)/) || [])[1];
+    console.log(ms ? `launched (first frame after ${(ms / 1000).toFixed(1)} s)` : 'launched');
     break;
   case 'reload':
     // Metro tells every connected app to reload; no device input needed.

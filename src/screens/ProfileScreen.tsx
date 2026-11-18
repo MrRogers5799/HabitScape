@@ -127,7 +127,7 @@ export function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
         {/* ── Hero card ── */}
         <View style={styles.heroCard}>
           <View style={styles.avatarContainer}>

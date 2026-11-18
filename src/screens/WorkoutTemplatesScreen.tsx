@@ -318,7 +318,7 @@ export function WorkoutTemplatesScreen({ navigation }: Props) {
         )}
       </View>
 
-      <FlatList
+      <FlatList keyboardShouldPersistTaps="handled"
         data={templates}
         keyExtractor={t => t.id}
         renderItem={({ item }) => (

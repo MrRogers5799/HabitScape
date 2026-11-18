@@ -161,7 +161,7 @@ export function SettingsScreen() {
       </View>
 
       {/* Scrollable content */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
 
         {/* Activity Management Section */}
         <View style={styles.section}>
@@ -254,7 +254,7 @@ export function SettingsScreen() {
                   <Text style={styles.modalClose}>✕</Text>
                 </Pressable>
               </View>
-              <ScrollView style={styles.timezoneList}>
+              <ScrollView keyboardShouldPersistTaps="handled" style={styles.timezoneList}>
                 {COMMON_TIMEZONES.map(tz => (
                   <TouchableOpacity
                     key={tz.value}
@@ -452,7 +452,7 @@ export function SettingsScreen() {
                 <Text style={styles.modalClose}>✕</Text>
               </Pressable>
             </View>
-            <ScrollView style={{ padding: 16 }} contentContainerStyle={{ paddingBottom: 24 }}>
+            <ScrollView keyboardShouldPersistTaps="handled" style={{ padding: 16 }} contentContainerStyle={{ paddingBottom: 24 }}>
               <Text style={styles.policyUpdated}>Last updated: April 30, 2026</Text>
 
               <Text style={styles.policyHeading}>Information We Collect</Text>

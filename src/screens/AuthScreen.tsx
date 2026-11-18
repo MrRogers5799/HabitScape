@@ -760,7 +760,7 @@ export function AuthScreen({ onAuthSuccess }: AuthScreenProps) {
                 <Text style={s.modalClose}>✕</Text>
               </TouchableOpacity>
             </View>
-            <ScrollView>
+            <ScrollView keyboardShouldPersistTaps="handled">
               {COMMON_TIMEZONES.map(tz => (
                 <TouchableOpacity
                   key={tz.value}

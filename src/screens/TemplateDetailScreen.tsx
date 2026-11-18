@@ -287,7 +287,7 @@ export function TemplateDetailScreen({ route, navigation }: Props) {
           <ActivityIndicator color={colors.gold} size="large" />
         </View>
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={exercises}
           keyExtractor={ex => ex.id}
           renderItem={({ item, index }) => (
