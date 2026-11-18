@@ -28,6 +28,7 @@ import {
   deleteDoc,
   QueryConstraint,
   limit as firestoreLimit,
+  arrayUnion,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import {
@@ -42,6 +43,7 @@ import {
   calculateNextResetTime,
 } from '../constants/cadences';
 import { OSRS_SKILLS } from '../constants/osrsSkills';
+import { WELCOME_NOTE_ID } from '../constants/links';
 import { calculateLevel } from '../utils/xpCalculations';
 
 /**
@@ -701,6 +703,8 @@ export async function completeOnboarding(
     batch.update(userRef, {
       profileComplete: true,
       displayName: displayName.trim(),
+      // New players read the welcome note in onboarding, so skip the 1.0 card.
+      seenNotes: arrayUnion(WELCOME_NOTE_ID),
     });
 
     for (const { templateId, cadence, skillId, baseXP } of activities) {

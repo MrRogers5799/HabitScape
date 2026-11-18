@@ -22,6 +22,7 @@ import { Cadence } from '../types';
 import { OSRS_SKILLS, SKILL_COLORS, SKILL_ICONS } from '../constants/osrsSkills';
 import { colors, bevel } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { DevNote } from '../components/WelcomeNote';
 
 // ─── Cadence display helpers ──────────────────────────────────────────────────
 
@@ -538,9 +539,10 @@ export function OnboardingScreen() {
 
             <View style={styles.welcomeModalDivider} />
 
-            <Text style={styles.welcomeSecurityTitle}>Security Notice</Text>
+            <DevNote />
+
             <Text style={styles.welcomeSecurityBody}>
-              HabitScape is not affiliated with Jagex. Staff will never ask for your password, bank PIN, or OSRS credentials.
+              Not affiliated with Jagex. We&apos;ll never ask for your password or OSRS login.
             </Text>
 
             <TouchableOpacity style={styles.welcomeModalBtn} onPress={() => setWelcomeVisible(false)}>
@@ -1057,19 +1059,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bevelDark,
     marginBottom: 16,
   },
-  welcomeSecurityTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 8,
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    marginBottom: 6,
-  },
   welcomeSecurityBody: {
     fontFamily: fonts.display,
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textMuted,
-    lineHeight: 22,
-    marginBottom: 24,
+    lineHeight: 20,
+    marginTop: 16,
+    marginBottom: 20,
   },
   welcomeModalBtn: {
     backgroundColor: colors.gold,

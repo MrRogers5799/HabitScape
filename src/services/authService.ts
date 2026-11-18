@@ -278,6 +278,11 @@ export async function updateUserWeekStartDay(uid: string, weekStartDay: 0 | 1): 
  * @param currentPassword - The user's existing password (for reauthentication)
  * @param newPassword - The desired new password
  */
+export async function markNoteSeen(uid: string, noteId: string): Promise<void> {
+  const { updateDoc, doc, arrayUnion } = await import('firebase/firestore');
+  await updateDoc(doc(db, 'users', uid), { seenNotes: arrayUnion(noteId) });
+}
+
 export async function setProfileComplete(uid: string): Promise<void> {
   const { updateDoc, doc } = await import('firebase/firestore');
   const userRef = doc(db, 'users', uid);

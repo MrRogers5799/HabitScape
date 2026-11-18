@@ -25,6 +25,7 @@ import { useActivities } from '../context/ActivitiesContext';
 import { ActivitySelectionWizard } from '../components/ActivitySelectionWizard';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { colors, bevel } from '../constants/colors';
+import { DISCORD_URL, ROADMAP_URL } from '../constants/links';
 import { fonts } from '../constants/typography';
 import { Cadence } from '../types';
 import { COMMON_TIMEZONES } from '../constants/timezones';
@@ -100,7 +101,7 @@ export function SettingsScreen() {
   };
 
   const handleOpenDiscord = () => {
-    Linking.openURL('https://discord.gg/6DQxHyEspZ');
+    Linking.openURL(DISCORD_URL);
   };
 
   const handleSelectWeekStartDay = async (day: 0 | 1) => {
@@ -314,6 +315,14 @@ export function SettingsScreen() {
           >
             <Text style={styles.settingLabel}>Community</Text>
             <Text style={[styles.settingValue, { color: colors.gold }]}>Join the Discord Server →</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.settingItem, { marginTop: 4 }, pressed && { opacity: 0.7 }]}
+            onPress={() => Linking.openURL(ROADMAP_URL)}
+          >
+            <Text style={styles.settingLabel}>Roadmap</Text>
+            <Text style={[styles.settingValue, { color: colors.gold }]}>See what&apos;s coming →</Text>
           </Pressable>
 
           <Pressable

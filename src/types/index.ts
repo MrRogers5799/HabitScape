@@ -35,6 +35,8 @@ export interface User {
   profileComplete: boolean;
   /** Whether the user's email address has been verified via Firebase */
   emailVerified?: boolean;
+  /** One-time notes already shown to this account (e.g. 'welcome-1.0'); see constants/links.ts */
+  seenNotes?: string[];
 }
 
 /**
@@ -196,6 +198,8 @@ export interface AuthContextType {
   sendVerificationEmail: () => Promise<void>;
   /** Reload the Firebase Auth user and update emailVerified state; returns true if now verified */
   refreshEmailVerification: () => Promise<boolean>;
+  /** Record that a one-time note was shown, so it never shows again on any device */
+  markNoteSeen: (noteId: string) => Promise<void>;
 }
 
 /**
