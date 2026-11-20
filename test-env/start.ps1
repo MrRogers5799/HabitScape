@@ -4,7 +4,11 @@
 #   3. adb reverse for Metro and the Firebase ports
 #   4. Metro bundler pointed at the emulators
 # Usage: powershell -File test-env\start.ps1
-param([switch]$Wipe)   # -Wipe: reset emulator data (after a crash or hard power-off)
+#        add -Window to show the emulator so a person can play it (default is headless)
+param(
+  [switch]$Wipe,   # -Wipe: reset emulator data (after a crash or hard power-off)
+  [switch]$Window  # -Window: show the emulator window (only when the user asks to use it themselves)
+)
 . "$PSScriptRoot\common.ps1"
 
 # 1. Firebase emulators
@@ -25,12 +29,13 @@ if (Test-EmulatorRunning) {
   Wait-Until { Get-EmulatorSerial } 900 'emulator to come online in adb'
 } else {
   $emuArgs = @(
-    '-avd', $Avd, '-no-window', '-no-audio', '-no-boot-anim',
+    '-avd', $Avd, '-no-audio', '-no-boot-anim',
     '-gpu', 'swiftshader_indirect', '-cores', '2', '-memory', '3072', '-no-snapshot-save'
   )
+  if (-not $Window) { $emuArgs += '-no-window' }
   if ($Wipe) { $emuArgs += '-wipe-data' }
   Start-Background 'emulator' $EmulatorExe $emuArgs | Out-Null
-  Write-Host 'Android emulator: booting headless...'
+  if ($Window) { Write-Host 'Android emulator: booting with a window...' } else { Write-Host 'Android emulator: booting headless...' }
   Wait-Until { Get-EmulatorSerial } 180 'emulator to appear in adb'
 }
 $serial = Get-EmulatorSerial
