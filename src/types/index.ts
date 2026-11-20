@@ -39,6 +39,8 @@ export interface User {
   seenNotes?: string[];
   /** Opted in to the Adventure (beta) game layer (PROD-018); game data lives in users/{uid}/game and trips */
   adventureBeta?: boolean;
+  /** May see the unreleased game layer (PROD-020). Set by hand in the Firebase console, for the owner only. */
+  adventureAccess?: boolean;
 }
 
 /**

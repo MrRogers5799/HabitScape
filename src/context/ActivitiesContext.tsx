@@ -32,6 +32,7 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { earnHoursForCompletion, untickHoursForCompletion } from '../services/gameService';
+import { adventureActive } from '../constants/features';
 
 /**
  * Create the activities context
@@ -155,7 +156,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
       try {
         setError(null);
         const completionId = await completeActivity(user.uid, activityId);
-        if (user.adventureBeta) {
+        if (adventureActive(user)) {
           const now = Date.now();
           await earnHoursForCompletion(user.uid, user.weekStartDay ?? 1, activityId, completionId, now, now);
         }
@@ -186,7 +187,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
       try {
         setError(null);
         const completionId = await completeActivityForDateService(user.uid, activityId, date);
-        if (user.adventureBeta) {
+        if (adventureActive(user)) {
           await earnHoursForCompletion(user.uid, user.weekStartDay ?? 1, activityId, completionId, date.getTime(), Date.now());
         }
 
@@ -322,7 +323,7 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
 
         await undoActivityCompletion(user.uid, completionId);
         console.log('✅ Undo context: Completion deleted successfully');
-        if (user.adventureBeta) {
+        if (adventureActive(user)) {
           await untickHoursForCompletion(user.uid, user.weekStartDay ?? 1, undoneCompletion?.timeGrant, Date.now());
         }
 

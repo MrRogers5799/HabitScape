@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { SKILL_ICONS } from '../constants/osrsSkills';
+import { adventureActive } from '../constants/features';
 import { AdventureNavigator } from './AdventureNavigator';
 
 // Generated from art/icons.json by scripts/render-icons.mjs (see the vault's Art bible).
@@ -81,7 +82,7 @@ function TabNavigator() {
         tabBarLabelStyle: {
           fontFamily: fonts.display,
           // Six tabs with the Adventure beta: a touch smaller so 'Activities' fits.
-          fontSize: user?.adventureBeta ? 13 : 15,
+          fontSize: adventureActive(user) ? 13 : 15,
         },
         tabBarButton: (props) => {
           const focused = (props as any).accessibilityState?.selected;
@@ -112,8 +113,8 @@ function TabNavigator() {
         }}
       />
 
-      {/* Adventure (beta) tab: only for players who opted in (PROD-018). Placeholder icon. */}
-      {user?.adventureBeta && (
+      {/* Adventure (beta) tab: hidden from players until launch (PROD-020); dev builds and the owner only. Placeholder icon. */}
+      {adventureActive(user) && (
         <Tab.Screen
           name="AdventureTab"
           component={AdventureNavigator}

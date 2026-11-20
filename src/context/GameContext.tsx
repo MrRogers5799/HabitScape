@@ -10,6 +10,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { AppState } from 'react-native';
 import { useAuth } from './AuthContext';
 import { useActivities } from './ActivitiesContext';
+import { adventureActive } from '../constants/features';
 import { GameSkill, GameState, LegPlan } from '../game';
 import { weekIdFor } from '../game/persistence';
 import {
@@ -48,7 +49,7 @@ const dayKey = (ms: number) => {
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const { user, setAdventureBeta } = useAuth();
   const { completions } = useActivities();
-  const enabled = !!user?.adventureBeta;
+  const enabled = adventureActive(user);
   const weekStart = user?.weekStartDay ?? 1;
 
   const [state, setState] = useState<GameState | null>(null);
