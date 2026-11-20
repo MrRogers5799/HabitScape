@@ -266,7 +266,7 @@ export async function createActivity(
 export async function completeActivity(
   userId: string,
   activityId: string
-): Promise<void> {
+): Promise<string> {
   try {
     // Read the userActivity first (outside the transaction — it doesn't change during completion)
     const userActivityRef = doc(db, 'users', userId, 'userActivities', activityId);
@@ -306,6 +306,7 @@ export async function completeActivity(
     });
 
     console.log(`✅ Activity "${activityId}" completed! +${xpPerCompletion} XP to ${skillId}`);
+    return completionRef.id;
   } catch (error) {
     console.error('❌ Error completing activity:', error);
     throw error;
@@ -320,7 +321,7 @@ export async function completeActivityForDate(
   userId: string,
   activityId: string,
   date: Date
-): Promise<void> {
+): Promise<string> {
   try {
     const userActivityRef = doc(db, 'users', userId, 'userActivities', activityId);
     const userActivitySnap = await getDoc(userActivityRef);
@@ -357,10 +358,23 @@ export async function completeActivityForDate(
     });
 
     console.log(`✅ Backfill: "${activityId}" for ${date.toDateString()} +${xpPerCompletion} XP to ${skillId}`);
+    return completionRef.id;
   } catch (error) {
     console.error('❌ Error backfilling activity:', error);
     throw error;
   }
+}
+
+/**
+ * Records the adventure time a completion earned (Adventure beta, PROG-022), so
+ * undoing it takes back exactly that (PROG-025).
+ */
+export async function setCompletionTimeGrant(
+  userId: string,
+  completionId: string,
+  timeGrant: { weekHours: number; bankHours: number; weekId: string }
+): Promise<void> {
+  await updateDoc(doc(db, 'users', userId, 'activity_completions', completionId), { timeGrant });
 }
 
 /**
@@ -401,6 +415,7 @@ export async function getActivityCompletions(
         xpEarned: data.xpEarned,
         completedAt: data.completedAt?.toDate?.() || new Date(),
         metadata: data.metadata,
+        ...(data.timeGrant ? { timeGrant: data.timeGrant } : {}),
       });
     });
 
@@ -443,6 +458,7 @@ export function subscribeToActivityCompletions(
         xpEarned: data.xpEarned,
         completedAt: data.completedAt?.toDate?.() || new Date(),
         metadata: data.metadata,
+        ...(data.timeGrant ? { timeGrant: data.timeGrant } : {}),
       });
     });
     callback(completions);

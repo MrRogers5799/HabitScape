@@ -31,6 +31,7 @@ import { computeCompletionStreakUpdate, computeStreakResets, computeUndoStreakUp
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
+import { earnHoursForCompletion, untickHoursForCompletion } from '../services/gameService';
 
 /**
  * Create the activities context
@@ -153,7 +154,11 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
 
       try {
         setError(null);
-        await completeActivity(user.uid, activityId);
+        const completionId = await completeActivity(user.uid, activityId);
+        if (user.adventureBeta) {
+          const now = Date.now();
+          await earnHoursForCompletion(user.uid, user.weekStartDay ?? 1, activityId, completionId, now, now);
+        }
 
         const activity = userActivities.find(a => a.id === activityId);
         if (activity) {
@@ -180,7 +185,10 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
       if (!user) return;
       try {
         setError(null);
-        await completeActivityForDateService(user.uid, activityId, date);
+        const completionId = await completeActivityForDateService(user.uid, activityId, date);
+        if (user.adventureBeta) {
+          await earnHoursForCompletion(user.uid, user.weekStartDay ?? 1, activityId, completionId, date.getTime(), Date.now());
+        }
 
         const activity = userActivities.find(a => a.id === activityId);
         if (activity) {
@@ -314,6 +322,9 @@ export function ActivitiesProvider({ children }: { children: React.ReactNode }) 
 
         await undoActivityCompletion(user.uid, completionId);
         console.log('✅ Undo context: Completion deleted successfully');
+        if (user.adventureBeta) {
+          await untickHoursForCompletion(user.uid, user.weekStartDay ?? 1, undoneCompletion?.timeGrant, Date.now());
+        }
 
         if (undoneCompletion) {
           const activity = userActivities.find(a => a.id === undoneCompletion.activityId);

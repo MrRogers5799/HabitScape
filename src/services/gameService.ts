@@ -12,9 +12,11 @@ import { collection, doc, onSnapshot, runTransaction, serverTimestamp, Unsubscri
 import { db } from './firebase';
 import {
   advanceTrip, callBack, clawBackForDebt, earnFromHabit, emptyReport, GameState, LegPlan, newAdventurer,
-  sendTrip, TimeGrant, Trip, TripReport, untickHabit,
+  sendTrip, TimeGrant, Trip, TripReport, untickHabit, applyLamp,
 } from '../game';
-import { ADVENTURER_DOC, fromAdventurerDoc, fromTripDoc, mergeReports, toAdventurerDoc, toTripDoc } from '../game/persistence';
+import { ADVENTURER_DOC, fromAdventurerDoc, fromTripDoc, mergeReports, toAdventurerDoc, toTripDoc, weekIdFor } from '../game/persistence';
+import { habitAdventureXP } from '../game/content/habitTiers';
+import { setCompletionTimeGrant } from './firestoreService';
 
 const adventurerRef = (uid: string) => doc(db, 'users', uid, 'game', ADVENTURER_DOC);
 const tripRef = (uid: string, tripId: string) => doc(db, 'users', uid, 'trips', tripId);
@@ -146,4 +148,46 @@ export function dismissReturn(uid: string, weekId: string, nowMs: number) {
     if (!g.activeTrip || !g.activeTrip.trip.done) return { state: g.state, activeTrip: g.activeTrip, result: undefined };
     return { state: g.state, activeTrip: { ...g.activeTrip, seenMs: nowMs }, result: undefined };
   });
+}
+
+// ---------- Habits → adventure time (PROG-022, PROG-025, PROG-041) ----------
+
+/**
+ * Earns adventure time for a habit completion and stores the grant on the completion.
+ * Backfills into an earlier week earn nothing in the beta (that week's cap is closed).
+ * Never throws: a failure here mustn't undo the habit itself.
+ */
+export async function earnHoursForCompletion(
+  uid: string, weekStartDay: 0 | 1, activityId: string, completionId: string, completedAtMs: number, nowMs: number,
+): Promise<void> {
+  try {
+    const weekId = weekIdFor(nowMs, weekStartDay);
+    if (weekIdFor(completedAtMs, weekStartDay) !== weekId) return;
+    const grant = await earnHours(uid, weekId, habitAdventureXP(activityId));
+    await setCompletionTimeGrant(uid, completionId, { weekHours: grant.weekHours, bankHours: grant.bankHours, weekId: grant.weekId });
+  } catch (err) {
+    console.error('Adventure time not earned:', err);
+  }
+}
+
+/** Takes back a completion's adventure time when the habit is unticked. Never throws. */
+export async function untickHoursForCompletion(
+  uid: string, weekStartDay: 0 | 1, grant: { weekHours: number; bankHours: number; weekId: string } | undefined, nowMs: number,
+): Promise<void> {
+  if (!grant) return;
+  try {
+    await untickHours(uid, weekIdFor(nowMs, weekStartDay), grant);
+  } catch (err) {
+    console.error('Adventure time not taken back:', err);
+  }
+}
+
+/** Live updates of one trip document. */
+export function subscribeToTrip(uid: string, tripId: string, onChange: (t: ActiveTrip | null) => void): Unsubscribe {
+  return onSnapshot(tripRef(uid, tripId), (snap) => onChange(snap.exists() ? fromTripDoc(tripId, snap.data()) : null));
+}
+
+/** Puts a quest's XP lamp into a skill of the player's choice. */
+export function applyLampOn(uid: string, weekId: string, lampIndex: number, skill: Parameters<typeof applyLamp>[2]) {
+  return updateGame(uid, weekId, (g) => ({ state: applyLamp(g.state, lampIndex, skill), activeTrip: g.activeTrip, result: undefined }));
 }

@@ -43,7 +43,7 @@ export function bestTool(state: GameState, type: ToolType, skillLevel: number): 
 export const toolMultiplier = (tier: number): number => Math.pow(TOOL_TIER_STEP, tier - 1);
 
 /** Uses an XP lamp from a quest: its XP goes into any skill the player picks. */
-export function useLamp(state: GameState, lampIndex: number, skill: GameSkill): GameState {
+export function applyLamp(state: GameState, lampIndex: number, skill: GameSkill): GameState {
   const amount = state.lamps[lampIndex];
   if (amount === undefined) throw new Error('No such lamp');
   return {

@@ -200,6 +200,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await firebaseMarkNoteSeen(user.uid, noteId).catch(() => {});
   }
 
+  function handleSetAdventureBeta(on: boolean): void {
+    setUser(prev => prev ? { ...prev, adventureBeta: on } : prev);
+  }
+
   /**
    * Handle user logout
    */
@@ -237,6 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sendVerificationEmail: handleSendVerificationEmail,
     refreshEmailVerification: handleRefreshEmailVerification,
     markNoteSeen: handleMarkNoteSeen,
+    setAdventureBeta: handleSetAdventureBeta,
   };
 
   return (
