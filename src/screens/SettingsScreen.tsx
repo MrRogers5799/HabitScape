@@ -22,6 +22,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../context/ActivitiesContext';
+import { useGame } from '../context/GameContext';
 import { ActivitySelectionWizard } from '../components/ActivitySelectionWizard';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { colors, bevel } from '../constants/colors';
@@ -39,6 +40,8 @@ export function SettingsScreen() {
   const { user, updateTimezone, updateWeekStartDay, deleteAccount } = useAuth();
   const [savingWeekStart, setSavingWeekStart] = useState(false);
   const { userActivities, addActivity, removeActivity } = useActivities();
+  const game = useGame();
+  const [joiningBeta, setJoiningBeta] = useState(false);
   const [wizardVisible, setWizardVisible] = useState(false);
   const [addingActivity, setAddingActivity] = useState(false);
 
@@ -189,6 +192,30 @@ export function SettingsScreen() {
           >
             <Text style={styles.manageButtonText}>Manage Activities</Text>
           </Pressable>
+        </View>
+
+        {/* Adventure (beta) — PROD-018 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Adventure (beta)</Text>
+          <View style={styles.settingItem}>
+            <Text style={styles.settingValue}>
+              {game.enabled
+                ? 'You\x27re in. Your habits now earn adventure time: find your adventurer in the Adventure tab.'
+                : 'Try the early version of the game layer: your habits earn adventure time, and you send an adventurer to mine, fish, smith, cook and fight. Your habits, streaks and levels stay exactly as they are.'}
+            </Text>
+          </View>
+          {!game.enabled && (
+            <Pressable
+              style={({ pressed }) => [styles.manageButton, { marginTop: 8 }, pressed && styles.manageButtonPressed]}
+              disabled={joiningBeta}
+              onPress={async () => {
+                setJoiningBeta(true);
+                try { await game.join(); } catch { Alert.alert('Couldn\x27t join', 'Please try again in a moment.'); } finally { setJoiningBeta(false); }
+              }}
+            >
+              <Text style={styles.manageButtonText}>{joiningBeta ? 'Joining…' : 'Join the adventure beta'}</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Account Section */}

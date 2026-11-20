@@ -14,6 +14,8 @@ import { useAuth } from '../context/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
+import { SKILL_ICONS } from '../constants/osrsSkills';
+import { AdventureNavigator } from './AdventureNavigator';
 
 // Generated from art/icons.json by scripts/render-icons.mjs (see the vault's Art bible).
 // Inactive tabs use the cream/gold variant; only the active tab is in full color.
@@ -61,6 +63,7 @@ const Tab = createBottomTabNavigator();
  */
 function TabNavigator() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   return (
     <>
     <Tab.Navigator
@@ -77,7 +80,8 @@ function TabNavigator() {
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontFamily: fonts.display,
-          fontSize: 15,
+          // Six tabs with the Adventure beta: a touch smaller so 'Activities' fits.
+          fontSize: user?.adventureBeta ? 13 : 15,
         },
         tabBarButton: (props) => {
           const focused = (props as any).accessibilityState?.selected;
@@ -107,6 +111,21 @@ function TabNavigator() {
           tabBarIcon: ({ focused, size }) => <TabIcon icon={TAB_ICONS.activities} focused={focused} size={size} />,
         }}
       />
+
+      {/* Adventure (beta) tab: only for players who opted in (PROD-018). Placeholder icon. */}
+      {user?.adventureBeta && (
+        <Tab.Screen
+          name="AdventureTab"
+          component={AdventureNavigator}
+          options={{
+            title: 'Adventure',
+            tabBarLabel: 'Adventure',
+            tabBarIcon: ({ focused, size }) => (
+              <Image source={SKILL_ICONS.Slayer} style={{ width: size, height: size, opacity: focused ? 1 : 0.55 }} resizeMode="contain" />
+            ),
+          }}
+        />
+      )}
 
       {/* Skills Tab */}
       <Tab.Screen

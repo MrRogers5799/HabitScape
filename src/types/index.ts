@@ -207,6 +207,8 @@ export interface AuthContextType {
   refreshEmailVerification: () => Promise<boolean>;
   /** Record that a one-time note was shown, so it never shows again on any device */
   markNoteSeen: (noteId: string) => Promise<void>;
+  /** Marks the signed-in user as opted in to the Adventure beta (after joinAdventureBeta saved it). */
+  setAdventureBeta: (on: boolean) => void;
 }
 
 /**

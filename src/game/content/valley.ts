@@ -136,9 +136,9 @@ export const METHODS: Record<string, Method> = Object.fromEntries(
 
 export const CREATURES: Record<string, Creature> = Object.fromEntries(
   ([
-    { id: 'chicken', name: 'Chicken', level: 1, hp: 3, region: 'millbrook', baseKph: 60, refPower: 10, attack: 0, foodPerAttempt: 0, bones: 'bones',
+    { id: 'chicken', name: 'Chicken', level: 1, hp: 3, region: 'millbrook', baseKph: 60, refPower: 10, attack: -15, foodPerAttempt: 0, bones: 'bones',
       drops: [{ item: 'raw_chicken', chance: 1, min: 1, max: 1 }] },
-    { id: 'goblin', name: 'Goblin', level: 5, hp: 10, region: 'millbrook', weakness: 'stab', baseKph: 30, refPower: 20, attack: 1, foodPerAttempt: 0, bones: 'bones',
+    { id: 'goblin', name: 'Goblin', level: 5, hp: 10, region: 'millbrook', weakness: 'stab', baseKph: 30, refPower: 20, attack: -10, foodPerAttempt: 0, bones: 'bones',
       drops: [{ item: 'copper_ore', chance: 0.3, min: 1, max: 3 }, { item: 'tin_ore', chance: 0.3, min: 1, max: 3 }, { item: 'bronze_sword', chance: 1 / 64, min: 1, max: 1 }] },
     { id: 'wolf', name: 'Wolf', level: 15, hp: 30, region: 'greywood', weakness: 'slash', baseKph: 16, refPower: 48, attack: 20, foodPerAttempt: 0, bones: 'wolf_bones',
       drops: [{ item: 'wolf_pelt', chance: 0.5, min: 1, max: 1 }] },

@@ -1,5 +1,5 @@
 import { XP_TABLE } from '../../constants/xpTable';
-import { newAdventurer, useLamp } from '../adventurer';
+import { newAdventurer, applyLamp } from '../adventurer';
 import { fightPreview, pickLoadout } from '../combat';
 import { CREATURES } from '../content/valley';
 import { CHUNK_MS } from '../rules';
@@ -130,7 +130,7 @@ describe('quests', () => {
     expect(state.lamps).toEqual([500]);
     expect(checkPlan(state, [leg(questId('supper-for-the-smith'), 1)])).toBe('quest-done');
 
-    const lit = useLamp(state, 0, 'Mining');
+    const lit = applyLamp(state, 0, 'Mining');
     expect(lit.xp.Mining).toBe(500);
     expect(lit.lamps).toEqual([]);
   });

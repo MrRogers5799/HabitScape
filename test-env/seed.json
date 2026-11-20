@@ -10,6 +10,12 @@
       "email": "tester2@habitscape.test",
       "password": "Hs-4c0a04c3cfa7",
       "displayName": "Tester Two"
+    },
+    {
+      "email": "beta1@habitscape.test",
+      "password": "Hs-b3ta-7f21c9",
+      "displayName": "Beta Tester",
+      "note": "Seeded already onboarded with 4 habits; used for the Adventure beta"
     }
   ]
 }
