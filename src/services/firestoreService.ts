@@ -744,6 +744,7 @@ export async function completeOnboarding(
  *
  * Subcollections deleted:
  *   skills, userActivities, activity_completions,
+ *   game, trips (Adventure beta),
  *   workoutTemplates (+ exercises sub-sub-collection),
  *   workoutSessions  (+ sets sub-sub-collection)
  */
@@ -752,6 +753,8 @@ export async function deleteAllUserData(userId: string): Promise<void> {
     'skills',
     'userActivities',
     'activity_completions',
+    'game',
+    'trips',
   ];
 
   const batch = writeBatch(db);

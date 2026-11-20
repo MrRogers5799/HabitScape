@@ -1,0 +1,149 @@
+/**
+ * Adventure (beta) game layer: Firestore reads and writes (PROD-018, PLAT-008).
+ *
+ * The rules live in src/game (pure, tested); this file only loads and saves them.
+ * Every change runs in a transaction that reads the adventurer and its active trip,
+ * applies a pure function, and saves with `rev` raised by one (the security rules
+ * require that, so a stale device can't overwrite newer progress).
+ *
+ * Layout: users/{uid}/game/adventurer and users/{uid}/trips/{tripId}.
+ */
+import { collection, doc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe, updateDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import {
+  advanceTrip, callBack, clawBackForDebt, earnFromHabit, emptyReport, GameState, LegPlan, newAdventurer,
+  sendTrip, TimeGrant, Trip, TripReport, untickHabit,
+} from '../game';
+import { ADVENTURER_DOC, fromAdventurerDoc, fromTripDoc, mergeReports, toAdventurerDoc, toTripDoc } from '../game/persistence';
+
+const adventurerRef = (uid: string) => doc(db, 'users', uid, 'game', ADVENTURER_DOC);
+const tripRef = (uid: string, tripId: string) => doc(db, 'users', uid, 'trips', tripId);
+
+export interface ActiveTrip {
+  trip: Trip;
+  /** Everything the trip has produced so far (the "Welcome back" screen). */
+  report: TripReport;
+  /** When the player dismissed the return screen. */
+  seenMs: number | null;
+}
+
+export interface GameSnapshot {
+  state: GameState;
+  rev: number;
+  activeTrip: ActiveTrip | null;
+}
+
+/** What a change returns: the new state, and the active trip (or null to clear it). */
+export interface GameChange<T = void> {
+  state: GameState;
+  activeTrip: ActiveTrip | null;
+  result: T;
+}
+
+/**
+ * Runs a change against the latest saved game in a transaction and saves the result.
+ * `weekId` is the user's current week (see weekIdFor) so adventure time rolls over correctly.
+ */
+export async function updateGame<T>(uid: string, weekId: string, change: (g: GameSnapshot) => GameChange<T>): Promise<T> {
+  return runTransaction(db, async (tx) => {
+    const advSnap = await tx.get(adventurerRef(uid));
+    if (!advSnap.exists()) throw new Error('Adventure not started');
+    const loaded = fromAdventurerDoc(advSnap.data(), weekId);
+    let activeTrip: ActiveTrip | null = null;
+    if (loaded.activeTripId) {
+      const tripSnap = await tx.get(tripRef(uid, loaded.activeTripId));
+      if (tripSnap.exists()) activeTrip = fromTripDoc(loaded.activeTripId, tripSnap.data());
+    }
+    const out = change({ state: loaded.state, rev: loaded.rev, activeTrip });
+    const nextTripId = out.activeTrip?.trip.id ?? null;
+    tx.set(adventurerRef(uid), { ...toAdventurerDoc(out.state, nextTripId, loaded.rev + 1), updatedAt: serverTimestamp() });
+    if (out.activeTrip) {
+      tx.set(tripRef(uid, out.activeTrip.trip.id), {
+        ...toTripDoc(out.activeTrip.trip, out.activeTrip.report, out.activeTrip.seenMs),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    return out.result;
+  });
+}
+
+/** Opts the player in: creates a fresh adventurer if there isn't one and marks the profile. */
+export async function joinAdventureBeta(uid: string, weekId: string): Promise<void> {
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(adventurerRef(uid));
+    if (!snap.exists()) {
+      tx.set(adventurerRef(uid), { ...toAdventurerDoc(newAdventurer(weekId), null, 0), updatedAt: serverTimestamp() });
+    }
+  });
+  await updateDoc(doc(db, 'users', uid), { adventureBeta: true });
+}
+
+/** Live updates of the adventurer document (the active trip is read on demand). */
+export function subscribeToAdventurer(uid: string, weekId: string, onChange: (s: { state: GameState; activeTripId: string | null; rev: number } | null) => void): Unsubscribe {
+  return onSnapshot(adventurerRef(uid), (snap) => onChange(snap.exists() ? fromAdventurerDoc(snap.data(), weekId) : null));
+}
+
+/** A habit was completed: earn adventure time (PROG-022). Returns the grant to store on the completion. */
+export function earnHours(uid: string, weekId: string, habitXP: number) {
+  return updateGame(uid, weekId, (g) => {
+    const earned = earnFromHabit(g.state.time, habitXP, weekId);
+    return { state: { ...g.state, time: earned.time }, activeTrip: g.activeTrip, result: { ...earned.grant, weekId, spilledHours: earned.spilledHours } };
+  });
+}
+
+/** A habit was unticked: take its grant back, clawing unstarted trip time if that leaves debt (PROG-025). */
+export function untickHours(uid: string, weekId: string, grant: TimeGrant & { weekId: string }) {
+  return updateGame(uid, weekId, (g) => {
+    let state: GameState = { ...g.state, time: untickHabit(g.state.time, grant, grant.weekId) };
+    let activeTrip = g.activeTrip;
+    let clawedHours = 0;
+    if (state.time.bankHours < 0 && activeTrip && !activeTrip.trip.done) {
+      const res = clawBackForDebt(state, activeTrip.trip);
+      state = res.state;
+      clawedHours = res.clawedHours;
+      activeTrip = { ...activeTrip, trip: res.trip };
+    }
+    return { state, activeTrip, result: { clawedHours, debtHours: Math.min(0, state.time.bankHours) } };
+  });
+}
+
+/** Sends the adventurer on a new trip. Fails if the last trip hasn't been collected. */
+export function startTrip(uid: string, weekId: string, legs: LegPlan[], nowMs: number) {
+  const tripId = doc(collection(db, 'users', uid, 'trips')).id;
+  return updateGame(uid, weekId, (g) => {
+    if (g.activeTrip && (!g.activeTrip.trip.done || g.activeTrip.seenMs === null)) throw new Error('Your adventurer is still out');
+    const sent = sendTrip(g.state, legs, tripId, nowMs);
+    return { state: sent.state, activeTrip: { trip: sent.trip, report: emptyReport(), seenMs: null }, result: tripId };
+  });
+}
+
+/**
+ * Brings the active trip up to date (call when the app opens or comes to the foreground).
+ * `affinityAt` says which skills get the affinity bonus at a moment.
+ */
+export function resolveActiveTrip(uid: string, weekId: string, nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>) {
+  return updateGame(uid, weekId, (g) => {
+    if (!g.activeTrip || g.activeTrip.trip.done) return { state: g.state, activeTrip: g.activeTrip, result: g.activeTrip };
+    const res = advanceTrip(g.state, g.activeTrip.trip, nowMs, affinityAt);
+    const activeTrip = { ...g.activeTrip, trip: res.trip, report: mergeReports(g.activeTrip.report, res.report) };
+    return { state: res.state, activeTrip, result: activeTrip };
+  });
+}
+
+/** Calls the adventurer home early; unworked hours go back to the bank. */
+export function callBackTrip(uid: string, weekId: string, nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>) {
+  return updateGame(uid, weekId, (g) => {
+    if (!g.activeTrip || g.activeTrip.trip.done) return { state: g.state, activeTrip: g.activeTrip, result: g.activeTrip };
+    const res = callBack(g.state, g.activeTrip.trip, nowMs, affinityAt);
+    const activeTrip = { ...g.activeTrip, trip: res.trip, report: mergeReports(g.activeTrip.report, res.report) };
+    return { state: res.state, activeTrip, result: activeTrip };
+  });
+}
+
+/** The player closed the "Welcome back" screen: the trip stays in history, and they can send a new one. */
+export function dismissReturn(uid: string, weekId: string, nowMs: number) {
+  return updateGame(uid, weekId, (g) => {
+    if (!g.activeTrip || !g.activeTrip.trip.done) return { state: g.state, activeTrip: g.activeTrip, result: undefined };
+    return { state: g.state, activeTrip: { ...g.activeTrip, seenMs: nowMs }, result: undefined };
+  });
+}

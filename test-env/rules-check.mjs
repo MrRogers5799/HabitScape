@@ -53,6 +53,38 @@ await expect('B reads A skills', false, () => getDocs(collection(B.db, 'users', 
 await expect('B writes A skill XP', false, () => setDoc(doc(B.db, 'users', A.uid, 'skills', 'Magic'), { totalXP: 999999 }));
 await expect('signed-out reads A profile', false, () => getDoc(doc(anon.db, 'users', A.uid)));
 
+// Adventure (beta) game layer
+const adv = (rev, extra = {}) => ({
+  schemaVersion: 1, rev, xp: { Mining: 0 }, bank: { bronze_pickaxe: 1 },
+  time: { bankHours: 4, weekId: '2026-11-16', weekEarnedHours: 4 },
+  quests: {}, kills: {}, dryKills: {}, lamps: [], activeTripId: null, ...extra,
+});
+const advRef = (c, uid) => doc(c.db, 'users', uid, 'game', 'adventurer');
+const trip = (legs = 1, extra = {}) => ({
+  schemaVersion: 1, startMs: 1763539200000, nextChunk: 0, done: false, finishedMs: null, seenMs: null,
+  legs: Array.from({ length: legs }, () => ({ activityId: 'mine-copper', regionId: 'millbrook', hours: 1, chunksDone: 0, refundedHours: 0, ended: false })),
+  report: { xp: {}, gained: {} }, ...extra,
+});
+await expect('A opts in to the adventure beta on own profile', true, () => updateDoc(doc(A.db, 'users', A.uid), { adventureBeta: true }));
+await expect('A creates own adventurer at rev 0', true, () => setDoc(advRef(A, A.uid), adv(0)));
+await expect('A saves the next rev', true, () => setDoc(advRef(A, A.uid), adv(1, { activeTripId: 't1' })));
+await expect('A saves a stale rev (same number)', false, () => setDoc(advRef(A, A.uid), adv(1)));
+await expect('A skips a rev', false, () => setDoc(advRef(A, A.uid), adv(3)));
+await expect('A adds an unknown field', false, () => setDoc(advRef(A, A.uid), adv(2, { cheat: true })));
+await expect('A saves a bank that is not a map', false, () => setDoc(advRef(A, A.uid), adv(2, { bank: 'lots' })));
+await expect('A creates a second game document', false, () => setDoc(doc(A.db, 'users', A.uid, 'game', 'other'), adv(0)));
+await expect('B reads A adventurer', false, () => getDoc(advRef(B, A.uid)));
+await expect('B writes A adventurer', false, () => setDoc(advRef(B, A.uid), adv(2)));
+await expect('A writes own trip', true, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't1'), trip(3)));
+await expect('A updates own trip progress', true, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't1'), trip(3, { nextChunk: 2 })));
+await expect('A writes a trip with 4 legs', false, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't2'), trip(4)));
+await expect('A writes a trip with no legs', false, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't3'), trip(0)));
+await expect('B reads A trips', false, () => getDocs(collection(B.db, 'users', A.uid, 'trips')));
+await expect('A deletes own trip and adventurer (account deletion)', true, async () => {
+  await deleteDoc(doc(A.db, 'users', A.uid, 'trips', 't1'));
+  await deleteDoc(advRef(A, A.uid));
+});
+
 const share = { templates: [{ name: 'Push', exercises: [] }], createdBy: A.uid };
 await expect('A shares templates', true, () => setDoc(doc(A.db, 'sharedTemplates', 'ABC234'), share));
 await expect('B imports by code', true, () => getDoc(doc(B.db, 'sharedTemplates', 'ABC234')));

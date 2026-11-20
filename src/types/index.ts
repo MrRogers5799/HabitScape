@@ -37,6 +37,8 @@ export interface User {
   emailVerified?: boolean;
   /** One-time notes already shown to this account (e.g. 'welcome-1.0'); see constants/links.ts */
   seenNotes?: string[];
+  /** Opted in to the Adventure (beta) game layer (PROD-018); game data lives in users/{uid}/game and trips */
+  adventureBeta?: boolean;
 }
 
 /**
@@ -141,6 +143,11 @@ export interface ActivityCompletion {
     effortLevel?: 1 | 2 | 3; // 1 = easy, 2 = medium, 3 = hard
     notes?: string;
   };
+  /**
+   * Adventure time this completion earned (PROG-022), so unticking takes back exactly
+   * that (PROG-025). Only set for players in the Adventure beta.
+   */
+  timeGrant?: { weekHours: number; bankHours: number; weekId: string };
 }
 
 /**
