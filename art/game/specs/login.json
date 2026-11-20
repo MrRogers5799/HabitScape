@@ -1,0 +1,17 @@
+{
+  "note": "New-version login screen background (PROD-024/025).",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. No text, no letters, no watermark, no UI, no frame.",
+  "assets": [
+    {
+      "id": "scene_login",
+      "out": "art/game/scenes/login.png",
+      "size": "1024x1536",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook.png",
+        "art/game/adventurer/idle.png"
+      ],
+      "prompt": "A tall portrait game title-screen scene at dusk: the young adventurer from the reference (green hooded cloak with the hood down, messy brown hair, tan tunic, small backpack) seen small from behind, standing on a winding dirt path at the edge of a hill, looking out over a wide valley with a distant riverside village with warm lit windows, a far range of hills, and a violet-to-amber sky with the first stars. A lantern on a wooden post beside the path. The top third of the image is calm open sky with very little detail (space for a title), and the middle third is calm and fairly dark (a login panel will cover it). No text, no people other than the adventurer."
+    }
+  ]
+}

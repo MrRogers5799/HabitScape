@@ -1,0 +1,72 @@
+{
+  "note": "Bottom tab bar icons for the new version (PROD-024).",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "tab_activities",
+      "out": "art/game/ui/tabs/activities.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/concepts/chatgpt-2026-11-19/1-today.png"
+      ],
+      "prompt": "A single bold, simple navigation icon for a game's bottom tab bar: a rolled parchment scroll, partly open, with three check marks on it. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background."
+    },
+    {
+      "id": "tab_adventure",
+      "out": "art/game/ui/tabs/adventure.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/concepts/chatgpt-2026-11-19/1-today.png"
+      ],
+      "prompt": "A single bold, simple navigation icon for a game's bottom tab bar: a brass compass with a red needle. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background."
+    },
+    {
+      "id": "tab_skills",
+      "out": "art/game/ui/tabs/skills.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/concepts/chatgpt-2026-11-19/1-today.png"
+      ],
+      "prompt": "A single bold, simple navigation icon for a game's bottom tab bar: a green laurel wreath around a small gold star. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background."
+    },
+    {
+      "id": "tab_profile",
+      "out": "art/game/ui/tabs/profile.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/concepts/chatgpt-2026-11-19/1-today.png"
+      ],
+      "prompt": "A single bold, simple navigation icon for a game's bottom tab bar: a green hooded cloak's hood, empty and seen from the front, like a hooded adventurer silhouette with no face. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background."
+    },
+    {
+      "id": "tab_workout",
+      "out": "art/game/ui/tabs/workout.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/concepts/chatgpt-2026-11-19/1-today.png"
+      ],
+      "prompt": "A single bold, simple navigation icon for a game's bottom tab bar: a brass stopwatch with a white face. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background."
+    },
+    {
+      "id": "tab_settings",
+      "out": "art/game/ui/tabs/settings.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/concepts/chatgpt-2026-11-19/1-today.png"
+      ],
+      "prompt": "A single bold, simple navigation icon for a game's bottom tab bar: a single brass cog wheel. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background."
+    }
+  ]
+}

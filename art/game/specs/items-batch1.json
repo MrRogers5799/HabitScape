@@ -1,0 +1,116 @@
+{
+  "note": "Melee valley items, batch 1 (art bible §11 step 2): resources shown most often. Pattern: the approved iron ore anchor.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "copper_ore",
+      "out": "art/game/items/copper_ore.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of three chunks of copper ore: grey rock with bright orange-copper metallic veins and a few green verdigris flecks. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "tin_ore",
+      "out": "art/game/items/tin_ore.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of three chunks of tin ore: grey rock with pale silvery-white metallic flecks, cooler and lighter than iron. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "coal",
+      "out": "art/game/items/coal.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of a small heap of three lumps of coal: deep black with a subtle blue-grey sheen on the facets. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_bar",
+      "out": "art/game/items/bronze_bar.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of one metal ingot (a bar with sloped sides, like a small trapezoid block) made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "iron_bar",
+      "out": "art/game/items/iron_bar.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of one metal ingot (a bar with sloped sides, like a small trapezoid block) made of iron: dark grey with a faint warm rust tint in the shadows. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "steel_bar",
+      "out": "art/game/items/steel_bar.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of one metal ingot (a bar with sloped sides, like a small trapezoid block) made of steel: cool light blue-grey with a bright highlight edge. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "logs",
+      "out": "art/game/items/logs.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of two short cut logs stacked, with light round cut ends showing tree rings and brown bark. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "raw_shrimp",
+      "out": "art/game/items/raw_shrimp.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of two small raw shrimp, translucent grey-pink with long thin feelers, curled. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "shrimp",
+      "out": "art/game/items/shrimp.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of two small cooked shrimp, bright orange-pink and curled, glistening. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bones",
+      "out": "art/game/items/bones.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "A single game icon of a single plain off-white bone with knobbly ends (like a cartoon dog bone but natural), lying diagonally. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    }
+  ]
+}

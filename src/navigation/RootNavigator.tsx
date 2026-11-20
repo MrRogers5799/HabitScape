@@ -7,7 +7,8 @@
 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { KitTabBar } from '../game-ui/KitTabBar';
 import { Image, ImageSourcePropType } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import { useAuth } from '../context/AuthContext';
@@ -15,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
 import { SKILL_ICONS } from '../constants/osrsSkills';
-import { adventureActive } from '../constants/features';
+import { adventureActive, newLoginVisible } from '../constants/features';
 import { AdventureNavigator } from './AdventureNavigator';
 
 // Generated from art/icons.json by scripts/render-icons.mjs (see the vault's Art bible).
@@ -42,6 +43,7 @@ function TabIcon({ icon, focused, size }: { icon: TabIconPair; focused: boolean;
 
 // Screens
 import { AuthScreen } from '../screens/AuthScreen';
+import { KitAuthScreen } from '../screens/adventure/KitAuthScreen';
 import { VerifyEmailScreen } from '../screens/VerifyEmailScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { ActivitiesScreen } from '../screens/ActivitiesScreen';
@@ -68,6 +70,8 @@ function TabNavigator() {
   return (
     <>
     <Tab.Navigator
+      // The new version's tab bar (PROD-025), only where the new version shows (PROD-022).
+      tabBar={(props) => (adventureActive(user) ? <KitTabBar {...props} /> : <BottomTabBar {...props} />)}
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
@@ -203,7 +207,7 @@ export function RootNavigator() {
         // Not logged in → Auth
         <Stack.Screen
           name="Auth"
-          component={AuthScreen}
+          component={newLoginVisible() ? KitAuthScreen : AuthScreen}
           options={{ animationTypeForReplace: 'pop' }}
         />
       ) : !user.emailVerified && !__DEV__ ? (
