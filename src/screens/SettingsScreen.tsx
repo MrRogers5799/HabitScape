@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useActivities } from '../context/ActivitiesContext';
 import { useGame } from '../context/GameContext';
+import { adventureVisible } from '../constants/features';
 import { ActivitySelectionWizard } from '../components/ActivitySelectionWizard';
 import { ACTIVITY_TEMPLATES } from '../constants/activities';
 import { colors, bevel } from '../constants/colors';
@@ -194,7 +195,8 @@ export function SettingsScreen() {
           </Pressable>
         </View>
 
-        {/* Adventure (beta) — PROD-018 */}
+        {/* Adventure (beta): hidden from players until launch (PROD-020) */}
+        {adventureVisible(user) && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Adventure (beta)</Text>
           <View style={styles.settingItem}>
@@ -217,6 +219,7 @@ export function SettingsScreen() {
             </Pressable>
           )}
         </View>
+        )}
 
         {/* Account Section */}
         <View style={styles.section}>
