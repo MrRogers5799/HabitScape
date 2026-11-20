@@ -1,0 +1,292 @@
+{
+  "note": "The 24 skill icons in the illustrated style. Subjects from the art bible subject registry (16x16 set), which steers away from OSRS subjects.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "skill_attack",
+      "out": "art/game/skills/attack.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of an upright longsword, point down, with a ruby set in the crossguard. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_hitpoints",
+      "out": "art/game/skills/hitpoints.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a plump red heart with a bright highlight. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_mining",
+      "out": "art/game/skills/mining.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a crescent-headed pick resting in a chunk of purple amethyst ore. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_strength",
+      "out": "art/game/skills/strength.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a heavy iron kettlebell. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_agility",
+      "out": "art/game/skills/agility.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a leather boot with a small white wing on the heel. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_smithing",
+      "out": "art/game/skills/smithing.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of an iron anvil with a few bright orange sparks above it (no hammer). A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_defence",
+      "out": "art/game/skills/defence.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a round wooden shield with an iron rim and a central iron boss. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_herblore",
+      "out": "art/game/skills/herblore.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a round glass flask of glowing green potion with a cork. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_fishing",
+      "out": "art/game/skills/fishing.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a single fish facing right, blue-green scales. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_ranged",
+      "out": "art/game/skills/ranged.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a single arrow stuck in a small round red-and-white target. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_thieving",
+      "out": "art/game/skills/thieving.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of an open iron padlock with two thin lockpicks inserted in its keyhole. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_cooking",
+      "out": "art/game/skills/cooking.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a small iron cooking pot hanging over a little fire. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_prayer",
+      "out": "art/game/skills/prayer.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of two hands pressed together palm to palm in prayer, fingers pointing up, with a loop of simple wooden prayer beads draped over the hands, and a soft golden glow behind them (no cross or other religious symbol on the beads, no sleeves beyond the wrists, no text). A bold, simple silhouette that still reads at 24 pixels. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_crafting",
+      "out": "art/game/skills/crafting.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a ball of red yarn with two wooden knitting needles through it. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_firemaking",
+      "out": "art/game/skills/firemaking.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a small campfire on crossed logs. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_magic",
+      "out": "art/game/skills/magic.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of an open spellbook with a small glowing blue star above the pages. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_fletching",
+      "out": "art/game/skills/fletching.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a small whittling knife carving a straight wooden arrow shaft, with a curl of pale wood shaving peeling off (no bow, no feathers, no arrowhead). A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_woodcutting",
+      "out": "art/game/skills/woodcutting.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a wood axe buried in a tree stump. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_runecrafting",
+      "out": "art/game/skills/runecrafting.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a flat grey standing stone with a glowing teal spiral glyph carved into it (our own glyph, not a letter). A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_slayer",
+      "out": "art/game/skills/slayer.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a horned beast skull with glowing red eyes. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_farming",
+      "out": "art/game/skills/farming.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a green sprout with two leaves growing from a mound of dark soil. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_construction",
+      "out": "art/game/skills/construction.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a small cottage with a red roof and a chimney. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_hunter",
+      "out": "art/game/skills/hunter.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a curved hunting horn with a leather strap. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_sailing",
+      "out": "art/game/skills/sailing.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of a wooden ship's wheel with brass caps. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_prayer_hands",
+      "out": "art/game/skills-alt/prayer_hands.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of two hands pressed together palm to palm in prayer, fingers pointing up, warm skin tones with a soft golden glow behind them (no sleeves beyond the wrists, no symbol, no text). A bold, simple silhouette that still reads at 24 pixels. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    },
+    {
+      "id": "skill_prayer_hands_beads",
+      "out": "art/game/skills-alt/prayer_hands_beads.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/ui/tabs/settings.png"
+      ],
+      "prompt": "A single game skill icon of two hands pressed together palm to palm in prayer, fingers pointing up, with a loop of simple wooden prayer beads draped over the hands, and a soft golden glow behind them (no cross or other religious symbol on the beads, no sleeves beyond the wrists, no text). A bold, simple silhouette that still reads at 24 pixels. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background."
+    }
+  ]
+}

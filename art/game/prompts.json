@@ -1,0 +1,789 @@
+[
+  {
+    "id": "adventurer_idle",
+    "file": "art/game/adventurer/idle.png",
+    "generatedAt": "2026-11-20T18:07:40.513Z",
+    "seconds": 120,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/5-hero.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no watermark, no UI, no frame.\nA full-body game character: a young adult adventurer with a friendly face and messy brown hair, no helmet, wearing a green hooded cloak (hood down), a tan linen tunic, a brown leather belt with small pouches, brown trousers and sturdy brown boots, with a small leather backpack. Slightly chibi proportions (head about one fifth of the height), chunky readable hands. Relaxed idle stance, three-quarter view facing left, empty hands. Centred with a small margin on every side, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_ore",
+    "file": "art/game/items/iron_ore.png",
+    "generatedAt": "2026-11-20T18:09:24.891Z",
+    "seconds": 104,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/4-return.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no watermark, no UI, no frame.\nA single game inventory icon of three chunks of iron ore: grey rock with rusty orange-brown metallic streaks, three-quarter view from slightly above, centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_sword",
+    "file": "art/game/gear/bronze_sword.png",
+    "generatedAt": "2026-11-20T18:11:02.629Z",
+    "seconds": 98,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/5-hero.png",
+      "art/concepts/chatgpt-2026-11-19/4-return.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no watermark, no UI, no frame.\nA single game inventory icon of a simple one-handed sword with a straight double-edged blade, a plain crossguard, a leather-wrapped grip and a round pommel, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f, with a dark leather grip. Drawn diagonally, blade pointing up and to the right. Centred with a small margin on every side (about 75% of the square), on a plain transparent background. Not a scimitar, not curved.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "goblin",
+    "file": "art/game/creatures/goblin.png",
+    "generatedAt": "2026-11-20T18:12:35.679Z",
+    "seconds": 93,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/5-hero.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no watermark, no UI, no frame.\nA full-body creature for a cozy fantasy game: a small, scrappy goblin with olive-green skin, big pointed ears, a mischievous grin, wearing a patched brown tunic and a too-big dented pot as a helmet, holding a short wooden club. Friendly-scary at most, nothing gory. Three-quarter view facing left, standing. Centred with a small margin on every side, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "scene_millbrook",
+    "file": "art/game/scenes/millbrook.png",
+    "generatedAt": "2026-11-20T18:13:43.647Z",
+    "seconds": 68,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/1-today.png",
+      "art/concepts/chatgpt-2026-11-19/2-map.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no watermark, no UI, no frame.\nA wide landscape game scene of Millbrook, a small riverside village at dusk: a timber water mill with a turning wheel beside a calm millpond, a few cottages with warm lit windows and thatched roofs, a blacksmith's open forge with a glowing furnace and an anvil, an oak grove at the edge, lanterns on posts, a dirt path. Violet-to-amber dusk sky, warm lantern and firelight. Leave calm open sky at the top left. No people, no creatures, no text. Landscape format, wider than tall.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "ui_panel",
+    "file": "art/game/ui/panel.png",
+    "generatedAt": "2026-11-20T18:30:43.131Z",
+    "seconds": 105,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/1-today.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "UI texture for a cozy dusk fantasy mobile game, in the same crisp high-resolution pixel-art style as the references: chunky stepped shading, limited colours, a strong dark brown outline, light from the top left. Seen straight on, perfectly flat and symmetrical, no perspective, no tilt. No text, no letters, no icons, no watermark. Not stone; no grey castle-wall look.\nA square UI panel frame filling the whole image: a dark polished wooden border about 70 pixels thick with a thin lighter bevel on its inner and outer edges, and a small bronze corner bracket with one rivet at each of the four corners. The four straight sides between the corners must be plain, identical wood strips with the same thickness all the way along, with no decoration in the middle of any side. The inside of the frame is one completely flat, even dark brown colour (#2a2010) with no texture, no gradient and no pattern. Outside the frame is transparent.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "ui_slot",
+    "file": "art/game/ui/slot.png",
+    "generatedAt": "2026-11-20T18:32:56.286Z",
+    "seconds": 133,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "UI texture for a cozy dusk fantasy mobile game, in the same crisp high-resolution pixel-art style as the references: chunky stepped shading, limited colours, a strong dark brown outline, light from the top left. Seen straight on, perfectly flat and symmetrical, no perspective, no tilt. No text, no letters, no icons, no watermark. Not stone; no grey castle-wall look.\nA square UI slot (a recessed inset well, like a list row or inventory slot) filling the whole image: a thin dark carved-wood rim about 30 pixels thick, darker on the top and left inner edges and catching a faint warm highlight on the bottom and right inner edges, so the inside looks sunken. Small rounded corners, no ornaments anywhere. The four sides are plain and identical along their whole length. The inside is one completely flat, even very dark brown colour (#1a140a) with no texture or gradient. Outside the rim is transparent.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "ui_plate",
+    "file": "art/game/ui/plate.png",
+    "generatedAt": "2026-11-20T18:34:53.792Z",
+    "seconds": 117,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/1-today.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "UI texture for a cozy dusk fantasy mobile game, in the same crisp high-resolution pixel-art style as the references: chunky stepped shading, limited colours, a strong dark brown outline, light from the top left. Seen straight on, perfectly flat and symmetrical, no perspective, no tilt. No text, no letters, no icons, no watermark. Not stone; no grey castle-wall look.\nA horizontal title plaque for UI headings, spanning the full width of the image and about 300 pixels tall, vertically centred: a dark wooden plank face (#3a2c16) framed by a thin bronze trim, with a small bronze end cap with one rivet at the left end and a matching one at the right end. Between the two end caps the plaque must be perfectly plain and identical along its whole length: no decoration, no knots, no rivets in the middle. Above and below the plaque is transparent.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "ui_button",
+    "file": "art/game/ui/button.png",
+    "generatedAt": "2026-11-20T18:36:56.629Z",
+    "seconds": 123,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/3-trip-planner.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "UI texture for a cozy dusk fantasy mobile game, in the same crisp high-resolution pixel-art style as the references: chunky stepped shading, limited colours, a strong dark brown outline, light from the top left. Seen straight on, perfectly flat and symmetrical, no perspective, no tilt. No text, no letters, no icons, no watermark. Not stone; no grey castle-wall look.\nA wide horizontal game button spanning the full width of the image and about 260 pixels tall, vertically centred: a raised warm gold-bronze plate (base #c8894a, highlight #f2c28f along the top edge, shadow #8b5a2b along the bottom edge) with a dark brown outline and slightly rounded corners. Between the rounded ends the button must be perfectly plain and identical along its whole length, with flat even colour bands: no decoration, no texture, no rivets in the middle. Above and below the button is transparent.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "ui_scene_frame",
+    "file": "art/game/ui/scene_frame.png",
+    "generatedAt": "2026-11-20T18:38:04.591Z",
+    "seconds": 68,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/concepts/chatgpt-2026-11-19/1-today.png",
+      "art/game/scenes/millbrook.png"
+    ],
+    "prompt": "UI texture for a cozy dusk fantasy mobile game, in the same crisp high-resolution pixel-art style as the references: chunky stepped shading, limited colours, a strong dark brown outline, light from the top left. Seen straight on, perfectly flat and symmetrical, no perspective, no tilt. No text, no letters, no icons, no watermark. Not stone; no grey castle-wall look.\nA rectangular picture frame for a game scene banner, filling the whole image: a dark wooden border about 50 pixels thick with a thin bronze inner trim and a small bronze corner bracket at each of the four corners. The four straight sides between the corners must be plain and identical along their whole length, with no decoration in the middle of any side. The whole inside of the frame is fully transparent (empty, see-through), and so is everything outside it.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "tab_activities",
+    "file": "art/game/ui/tabs/activities.png",
+    "generatedAt": "2026-11-20T19:05:34.415Z",
+    "seconds": 89,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a rolled parchment scroll, partly open, with three check marks on it. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "copper_ore",
+    "file": "art/game/items/copper_ore.png",
+    "generatedAt": "2026-11-20T19:06:02.992Z",
+    "seconds": 118,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of three chunks of copper ore: grey rock with bright orange-copper metallic veins and a few green verdigris flecks. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "tab_adventure",
+    "file": "art/game/ui/tabs/adventure.png",
+    "generatedAt": "2026-11-20T19:07:14.523Z",
+    "seconds": 100,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a brass compass with a red needle. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "tin_ore",
+    "file": "art/game/items/tin_ore.png",
+    "generatedAt": "2026-11-20T19:07:40.843Z",
+    "seconds": 98,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of three chunks of tin ore: grey rock with pale silvery-white metallic flecks, cooler and lighter than iron. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "tab_skills",
+    "file": "art/game/ui/tabs/skills.png",
+    "generatedAt": "2026-11-20T19:08:39.689Z",
+    "seconds": 85,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a green laurel wreath around a small gold star. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "coal",
+    "file": "art/game/items/coal.png",
+    "generatedAt": "2026-11-20T19:09:25.332Z",
+    "seconds": 104,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of a small heap of three lumps of coal: deep black with a subtle blue-grey sheen on the facets. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "tab_profile",
+    "file": "art/game/ui/tabs/profile.png",
+    "generatedAt": "2026-11-20T19:09:59.860Z",
+    "seconds": 80,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a green hooded cloak's hood, empty and seen from the front, like a hooded adventurer silhouette with no face. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_bar",
+    "file": "art/game/items/bronze_bar.png",
+    "generatedAt": "2026-11-20T19:10:56.102Z",
+    "seconds": 91,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one metal ingot (a bar with sloped sides, like a small trapezoid block) made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "tab_workout",
+    "file": "art/game/ui/tabs/workout.png",
+    "generatedAt": "2026-11-20T19:11:27.237Z",
+    "seconds": 87,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a brass stopwatch with a white face. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "tab_settings",
+    "file": "art/game/ui/tabs/settings.png",
+    "generatedAt": "2026-11-20T19:12:54.507Z",
+    "seconds": 87,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/concepts/chatgpt-2026-11-19/1-today.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a single brass cog wheel. Very clear silhouette, few details, readable at 28 pixels. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_bar",
+    "file": "art/game/items/iron_bar.png",
+    "generatedAt": "2026-11-20T19:13:30.980Z",
+    "seconds": 155,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one metal ingot (a bar with sloped sides, like a small trapezoid block) made of iron: dark grey with a faint warm rust tint in the shadows. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_bar",
+    "file": "art/game/items/steel_bar.png",
+    "generatedAt": "2026-11-20T19:15:17.780Z",
+    "seconds": 107,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one metal ingot (a bar with sloped sides, like a small trapezoid block) made of steel: cool light blue-grey with a bright highlight edge. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "logs",
+    "file": "art/game/items/logs.png",
+    "generatedAt": "2026-11-20T19:16:50.029Z",
+    "seconds": 92,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of two short cut logs stacked, with light round cut ends showing tree rings and brown bark. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "scene_login",
+    "file": "art/game/scenes/login.png",
+    "generatedAt": "2026-11-20T19:17:15.061Z",
+    "seconds": 58,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook.png",
+      "art/game/adventurer/idle.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. No text, no letters, no watermark, no UI, no frame.\nA tall portrait game title-screen scene at dusk: the young adventurer from the reference (green hooded cloak with the hood down, messy brown hair, tan tunic, small backpack) seen small from behind, standing on a winding dirt path at the edge of a hill, looking out over a wide valley with a distant riverside village with warm lit windows, a far range of hills, and a violet-to-amber sky with the first stars. A lantern on a wooden post beside the path. The top third of the image is calm open sky with very little detail (space for a title), and the middle third is calm and fairly dark (a login panel will cover it). No text, no people other than the adventurer.\nImage size: 1024x1536.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "raw_shrimp",
+    "file": "art/game/items/raw_shrimp.png",
+    "generatedAt": "2026-11-20T19:18:18.075Z",
+    "seconds": 88,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of two small raw shrimp, translucent grey-pink with long thin feelers, curled. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "shrimp",
+    "file": "art/game/items/shrimp.png",
+    "generatedAt": "2026-11-20T19:19:45.522Z",
+    "seconds": 87,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of two small cooked shrimp, bright orange-pink and curled, glistening. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bones",
+    "file": "art/game/items/bones.png",
+    "generatedAt": "2026-11-20T19:21:09.564Z",
+    "seconds": 84,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of a single plain off-white bone with knobbly ends (like a cartoon dog bone but natural), lying diagonally. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "skill_attack",
+    "file": "art/game/skills/attack.png",
+    "generatedAt": "2026-11-20T21:18:02.594Z",
+    "seconds": 103,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of an upright longsword, point down, with a ruby set in the crossguard. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_prayer",
+    "file": "art/game/skills/prayer.png",
+    "generatedAt": "2026-11-20T21:18:11.839Z",
+    "seconds": 92,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a single lit white candle in a brass holder with a soft glow. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_crafting",
+    "file": "art/game/skills/crafting.png",
+    "generatedAt": "2026-11-20T21:19:31.385Z",
+    "seconds": 79,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a ball of red yarn with two wooden knitting needles through it. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_hitpoints",
+    "file": "art/game/skills/hitpoints.png",
+    "generatedAt": "2026-11-20T21:19:34.334Z",
+    "seconds": 92,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a plump red heart with a bright highlight. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_firemaking",
+    "file": "art/game/skills/firemaking.png",
+    "generatedAt": "2026-11-20T21:21:22.364Z",
+    "seconds": 111,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a small campfire on crossed logs. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_mining",
+    "file": "art/game/skills/mining.png",
+    "generatedAt": "2026-11-20T21:22:12.858Z",
+    "seconds": 158,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a crescent-headed pick resting in a chunk of purple amethyst ore. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_magic",
+    "file": "art/game/skills/magic.png",
+    "generatedAt": "2026-11-20T21:23:07.938Z",
+    "seconds": 106,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of an open spellbook with a small glowing blue star above the pages. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_strength",
+    "file": "art/game/skills/strength.png",
+    "generatedAt": "2026-11-20T21:23:56.973Z",
+    "seconds": 104,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a heavy iron kettlebell. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_fletching",
+    "file": "art/game/skills/fletching.png",
+    "generatedAt": "2026-11-20T21:24:48.308Z",
+    "seconds": 100,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a single white feather quill. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_agility",
+    "file": "art/game/skills/agility.png",
+    "generatedAt": "2026-11-20T21:25:32.018Z",
+    "seconds": 95,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a leather boot with a small white wing on the heel. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_woodcutting",
+    "file": "art/game/skills/woodcutting.png",
+    "generatedAt": "2026-11-20T21:26:25.078Z",
+    "seconds": 97,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a wood axe buried in a tree stump. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_smithing",
+    "file": "art/game/skills/smithing.png",
+    "generatedAt": "2026-11-20T21:27:08.963Z",
+    "seconds": 97,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of an iron anvil with a few bright orange sparks above it (no hammer). A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_runecrafting",
+    "file": "art/game/skills/runecrafting.png",
+    "generatedAt": "2026-11-20T21:28:00.422Z",
+    "seconds": 95,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a flat grey standing stone with a glowing teal spiral glyph carved into it (our own glyph, not a letter). A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_defence",
+    "file": "art/game/skills/defence.png",
+    "generatedAt": "2026-11-20T21:28:41.500Z",
+    "seconds": 93,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a round wooden shield with an iron rim and a central iron boss. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_slayer",
+    "file": "art/game/skills/slayer.png",
+    "generatedAt": "2026-11-20T21:29:39.949Z",
+    "seconds": 99,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a horned beast skull with glowing red eyes. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_herblore",
+    "file": "art/game/skills/herblore.png",
+    "generatedAt": "2026-11-20T21:30:27.883Z",
+    "seconds": 106,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a round glass flask of glowing green potion with a cork. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_farming",
+    "file": "art/game/skills/farming.png",
+    "generatedAt": "2026-11-20T21:31:03.778Z",
+    "seconds": 84,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a green sprout with two leaves growing from a mound of dark soil. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_construction",
+    "file": "art/game/skills/construction.png",
+    "generatedAt": "2026-11-20T21:32:17.674Z",
+    "seconds": 74,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a small cottage with a red roof and a chimney. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_fishing",
+    "file": "art/game/skills/fishing.png",
+    "generatedAt": "2026-11-20T21:32:19.088Z",
+    "seconds": 111,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a single fish facing right, blue-green scales. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_hunter",
+    "file": "art/game/skills/hunter.png",
+    "generatedAt": "2026-11-20T21:33:54.810Z",
+    "seconds": 97,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a curved hunting horn with a leather strap. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_ranged",
+    "file": "art/game/skills/ranged.png",
+    "generatedAt": "2026-11-20T21:34:13.066Z",
+    "seconds": 114,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a single arrow stuck in a small round red-and-white target. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_thieving",
+    "file": "art/game/skills/thieving.png",
+    "generatedAt": "2026-11-20T21:35:37.867Z",
+    "seconds": 85,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a small leather coin pouch tied with string, a few gold coins spilling out. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_sailing",
+    "file": "art/game/skills/sailing.png",
+    "generatedAt": "2026-11-20T21:35:44.140Z",
+    "seconds": 109,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a wooden ship's wheel with brass caps. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_cooking",
+    "file": "art/game/skills/cooking.png",
+    "generatedAt": "2026-11-20T21:37:07.583Z",
+    "seconds": 90,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a small iron cooking pot hanging over a little fire. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_thieving",
+    "file": "art/game/skills/thieving.png",
+    "generatedAt": "2026-11-20T22:04:43.092Z",
+    "seconds": 109,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of an open iron padlock with two thin lockpicks inserted in its keyhole. A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "skill_prayer",
+    "file": "art/game/skills/prayer.png",
+    "generatedAt": "2026-11-20T22:06:10.573Z",
+    "seconds": 87,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a small stone roadside shrine with a peaked roof and a soft warm golden glow in its little alcove (no figure, no symbol, no text). A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_fletching",
+    "file": "art/game/skills/fletching.png",
+    "generatedAt": "2026-11-20T22:07:52.438Z",
+    "seconds": 102,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of a small whittling knife carving a straight wooden arrow shaft, with a curl of pale wood shaving peeling off (no bow, no feathers, no arrowhead). A bold, simple silhouette that still reads at 24 pixels; one object, no extra props. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "skill_prayer_hands",
+    "file": "art/game/skills-alt/prayer_hands.png",
+    "generatedAt": "2026-11-20T22:18:08.971Z",
+    "seconds": 94,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of two hands pressed together palm to palm in prayer, fingers pointing up, warm skin tones with a soft golden glow behind them (no sleeves beyond the wrists, no symbol, no text). A bold, simple silhouette that still reads at 24 pixels. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "skill_prayer_hands_beads",
+    "file": "art/game/skills-alt/prayer_hands_beads.png",
+    "generatedAt": "2026-11-20T22:19:42.611Z",
+    "seconds": 94,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/ui/tabs/settings.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game skill icon of two hands pressed together palm to palm in prayer, fingers pointing up, with a loop of simple wooden prayer beads draped over the hands, and a soft golden glow behind them (no cross or other religious symbol on the beads, no sleeves beyond the wrists, no text). A bold, simple silhouette that still reads at 24 pixels. Three-quarter view from slightly above, centred, the object fills about 80% of the square, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20",
+    "usedAs": "art/game/skills/prayer.png"
+  }
+]

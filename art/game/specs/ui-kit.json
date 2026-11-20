@@ -1,0 +1,46 @@
+{
+  "note": "UI kit frame textures (PROD-024). Each is sliced by scripts/slice-ui.mjs into stretchable pieces for the app, so edges must be plain and uniform between the corners. Style refs are the approved anchors plus the owner's favourite concept mockup (style only).",
+  "masterStyle": "UI texture for a cozy dusk fantasy mobile game, in the same crisp high-resolution pixel-art style as the references: chunky stepped shading, limited colours, a strong dark brown outline, light from the top left. Seen straight on, perfectly flat and symmetrical, no perspective, no tilt. No text, no letters, no icons, no watermark. Not stone; no grey castle-wall look.",
+  "assets": [
+    {
+      "id": "ui_panel",
+      "out": "art/game/ui/panel.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": ["art/concepts/chatgpt-2026-11-19/1-today.png", "art/game/gear/bronze_sword.png"],
+      "prompt": "A square UI panel frame filling the whole image: a dark polished wooden border about 70 pixels thick with a thin lighter bevel on its inner and outer edges, and a small bronze corner bracket with one rivet at each of the four corners. The four straight sides between the corners must be plain, identical wood strips with the same thickness all the way along, with no decoration in the middle of any side. The inside of the frame is one completely flat, even dark brown colour (#2a2010) with no texture, no gradient and no pattern. Outside the frame is transparent."
+    },
+    {
+      "id": "ui_slot",
+      "out": "art/game/ui/slot.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": ["art/concepts/chatgpt-2026-11-19/1-today.png"],
+      "prompt": "A square UI slot (a recessed inset well, like a list row or inventory slot) filling the whole image: a thin dark carved-wood rim about 30 pixels thick, darker on the top and left inner edges and catching a faint warm highlight on the bottom and right inner edges, so the inside looks sunken. Small rounded corners, no ornaments anywhere. The four sides are plain and identical along their whole length. The inside is one completely flat, even very dark brown colour (#1a140a) with no texture or gradient. Outside the rim is transparent."
+    },
+    {
+      "id": "ui_plate",
+      "out": "art/game/ui/plate.png",
+      "size": "1536x1024",
+      "transparent": true,
+      "refs": ["art/concepts/chatgpt-2026-11-19/1-today.png", "art/game/gear/bronze_sword.png"],
+      "prompt": "A horizontal title plaque for UI headings, spanning the full width of the image and about 300 pixels tall, vertically centred: a dark wooden plank face (#3a2c16) framed by a thin bronze trim, with a small bronze end cap with one rivet at the left end and a matching one at the right end. Between the two end caps the plaque must be perfectly plain and identical along its whole length: no decoration, no knots, no rivets in the middle. Above and below the plaque is transparent."
+    },
+    {
+      "id": "ui_button",
+      "out": "art/game/ui/button.png",
+      "size": "1536x1024",
+      "transparent": true,
+      "refs": ["art/concepts/chatgpt-2026-11-19/3-trip-planner.png", "art/game/gear/bronze_sword.png"],
+      "prompt": "A wide horizontal game button spanning the full width of the image and about 260 pixels tall, vertically centred: a raised warm gold-bronze plate (base #c8894a, highlight #f2c28f along the top edge, shadow #8b5a2b along the bottom edge) with a dark brown outline and slightly rounded corners. Between the rounded ends the button must be perfectly plain and identical along its whole length, with flat even colour bands: no decoration, no texture, no rivets in the middle. Above and below the button is transparent."
+    },
+    {
+      "id": "ui_scene_frame",
+      "out": "art/game/ui/scene_frame.png",
+      "size": "1536x1024",
+      "transparent": true,
+      "refs": ["art/concepts/chatgpt-2026-11-19/1-today.png", "art/game/scenes/millbrook.png"],
+      "prompt": "A rectangular picture frame for a game scene banner, filling the whole image: a dark wooden border about 50 pixels thick with a thin bronze inner trim and a small bronze corner bracket at each of the four corners. The four straight sides between the corners must be plain and identical along their whole length, with no decoration in the middle of any side. The whole inside of the frame is fully transparent (empty, see-through), and so is everything outside it."
+    }
+  ]
+}

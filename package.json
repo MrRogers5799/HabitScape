@@ -20,6 +20,7 @@
     ]
   },
   "dependencies": {
+    "@expo-google-fonts/pixelify-sans": "^0.4.2",
     "@expo-google-fonts/press-start-2p": "^0.4.1",
     "@expo-google-fonts/vt323": "^0.4.1",
     "@expo/vector-icons": "^15.0.3",

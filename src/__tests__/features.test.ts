@@ -1,4 +1,4 @@
-import { adventureActive, adventureVisible } from '../constants/features';
+import { adventureActive, adventureVisible, newLoginVisible } from '../constants/features';
 
 describe('Adventure visibility (PROD-020)', () => {
   const g = globalThis as { __DEV__?: boolean };
@@ -24,5 +24,17 @@ describe('Adventure visibility (PROD-020)', () => {
     g.__DEV__ = true;
     expect(adventureVisible({})).toBe(true);
     expect(adventureActive({ adventureBeta: true })).toBe(true);
+  });
+});
+
+describe('New-version login (PROD-024)', () => {
+  const g = globalThis as { __DEV__?: boolean };
+  afterEach(() => { delete g.__DEV__; });
+
+  it('shows only in development builds until launch', () => {
+    g.__DEV__ = false;
+    expect(newLoginVisible()).toBe(false);
+    g.__DEV__ = true;
+    expect(newLoginVisible()).toBe(true);
   });
 });

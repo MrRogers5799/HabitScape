@@ -61,3 +61,6 @@ art/export/
 # Google Play service account key (eas submit). Never commit.
 google-play-service-account.json
 *service-account*.json
+
+# Previous versions kept by scripts/generate-art.mjs when an asset is regenerated
+art/game/**/*.prev.png

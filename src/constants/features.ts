@@ -19,3 +19,11 @@ export function adventureVisible(user: Pick<User, 'adventureAccess'> | null | un
 export function adventureActive(user: Pick<User, 'adventureAccess' | 'adventureBeta'> | null | undefined): boolean {
   return adventureVisible(user) && user?.adventureBeta === true;
 }
+
+/**
+ * The new version's login screen (PROD-024). Nobody is signed in there, so the
+ * per-account flag can't apply: until launch it shows only in development builds.
+ */
+export function newLoginVisible(): boolean {
+  return isDevBuild();
+}
