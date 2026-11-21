@@ -3,11 +3,11 @@
  * of these so spacing, type and frames stay consistent.
  */
 import React from 'react';
-import { Image, ImageSourcePropType, Pressable, ScrollView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Image, ImageSourcePropType, Modal, Pressable, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NineSlice } from './NineSlice';
 import { FRAMES } from './frames';
-import { kitColors, space, type } from './tokens';
+import { kitColors, kitFonts, space, type } from './tokens';
 
 /** A full screen: dark background, a title plate at the top, scrolling content with the standard gutter. */
 export function KitScreen({ title, right, onBack, children }: {
@@ -197,6 +197,51 @@ export function ButtonRow({ children }: { children: React.ReactNode }) {
   return <View style={styles.buttonRow}>{children}</View>;
 }
 
+
+/** A text field in a sunken slot. `right` holds an inline action (Show/Hide); `error` shows under it in red. */
+export function KitField({ error, right, style, ...input }: TextInputProps & { error?: string; right?: React.ReactNode }) {
+  return (
+    <View style={{ gap: space.xxs }}>
+      <NineSlice frame={FRAMES.slot} padding={space.xxs} style={[styles.field, style as StyleProp<ViewStyle>]}>
+        <TextInput
+          placeholderTextColor={kitColors.textFaint}
+          autoCorrect={false}
+          accessibilityLabel={input.placeholder}
+          {...input}
+          style={styles.fieldInput}
+        />
+        {right}
+      </NineSlice>
+      {!!error && <Text style={[type.caption, { color: kitColors.red }]}>{error}</Text>}
+    </View>
+  );
+}
+
+/** A centred kit panel over a dimmed screen. Tapping outside or Back closes it. */
+export function KitModal({ visible, title, onClose, children }: { visible: boolean; title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalBack}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Dismiss" accessibilityHint="Closes this panel" />
+        <Panel title={title} style={styles.modalPanel}>{children}</Panel>
+      </View>
+    </Modal>
+  );
+}
+
+/** Two or three choices side by side; the chosen one is the main button style. */
+export function Choice<T extends string | number>({ options, value, onChange, disabled }: {
+  options: { label: string; value: T }[]; value: T; onChange: (v: T) => void; disabled?: boolean;
+}) {
+  return (
+    <View style={styles.buttonRow} accessibilityRole="radiogroup">
+      {options.map((o) => (
+        <KitButton key={String(o.value)} label={o.label} kind={o.value === value ? 'primary' : 'secondary'} disabled={disabled} onPress={() => onChange(o.value)} />
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: kitColors.background },
   titleBar: { paddingHorizontal: space.gutter, paddingTop: space.sm, flexDirection: 'row', alignItems: 'center', gap: space.sm },
@@ -235,4 +280,8 @@ const styles = StyleSheet.create({
   back: { width: 48, height: 52, justifyContent: 'center' },
   buttonRow: { flexDirection: 'row', gap: space.sm },
   chip: { borderWidth: 2, paddingHorizontal: space.sm, paddingVertical: 1 },
+  field: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 52 },
+  fieldInput: { flex: 1, fontFamily: kitFonts.text, fontSize: 22, color: kitColors.text, paddingVertical: 0 },
+  modalBack: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: space.gutter },
+  modalPanel: { maxWidth: 460, alignSelf: 'center', width: '100%' },
 });
