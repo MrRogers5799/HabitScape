@@ -1,5 +1,5 @@
 /**
- * Hero: the player (name, account) with the Settings cog (PROD-026), then the adventurer's skills, gear, bank and XP lamps, as icons with numbers
+ * Hero: the player's name, with the cog that opens Settings and the account (PROD-026), then the adventurer's skills, gear, bank and XP lamps, as icons with numbers
  * (new-version kit, PROD-024/025).
  */
 import React, { useState } from 'react';
@@ -44,12 +44,9 @@ export function HeroScreen({ navigation }: Props) {
       )}
     >
       <Panel title={user?.displayName || 'Adventurer'} icon={TAB_ICONS.profile}>
-        <View style={styles.lampRow}>
-          <View style={[styles.flex, styles.tags]}>
-            <Tag label={`Total ${total}`} tone="gold" accessibilityLabel={`Total level ${total}`} />
-            <Tag label={`Quests ${questsDone}`} accessibilityLabel={`${questsDone} quests done`} />
-          </View>
-          <KitButton compact kind="secondary" label="Account" onPress={() => navigation.navigate('Account')} />
+        <View style={styles.tags}>
+          <Tag label={`Total ${total}`} tone="gold" accessibilityLabel={`Total level ${total}`} />
+          <Tag label={`Quests ${questsDone}`} accessibilityLabel={`${questsDone} quests done`} />
         </View>
       </Panel>
 

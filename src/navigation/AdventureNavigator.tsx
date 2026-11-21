@@ -7,15 +7,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator, NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { KitTabBar, kitColors, kitFonts } from '../game-ui';
+import { KitTabBar, kitColors } from '../game-ui';
 import { DraftPlanProvider } from '../screens/adventure/draftPlan';
 import { AdventureHomeScreen } from '../screens/adventure/AdventureHomeScreen';
 import { MapScreen } from '../screens/adventure/MapScreen';
 import { RegionScreen } from '../screens/adventure/RegionScreen';
 import { TripPlannerScreen } from '../screens/adventure/TripPlannerScreen';
 import { HeroScreen } from '../screens/adventure/HeroScreen';
-import { SettingsScreen } from '../screens/SettingsScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import { KitSettingsScreen } from '../screens/adventure/KitSettingsScreen';
 import { WorkoutNavigator } from './WorkoutNavigator';
 import { TABS } from './newVersionTabs';
 
@@ -27,7 +26,6 @@ export type AdventureStackParamList = {
   Planner: undefined;
   Hero: undefined;
   Settings: undefined;
-  Account: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -38,15 +36,6 @@ const HeroStack = createNativeStackNavigator<AdventureStackParamList>();
 const stackOptions: NativeStackNavigationOptions = {
   headerShown: false, animation: 'fade', contentStyle: { backgroundColor: kitColors.background },
 };
-/** Live-app screens opened from Hero (Settings, Account) keep their own look for now, under a plain kit header with a back arrow. */
-const legacyScreen: NativeStackNavigationOptions = {
-  headerShown: true,
-  headerStyle: { backgroundColor: kitColors.background },
-  headerTintColor: kitColors.gold,
-  headerTitleStyle: { fontFamily: kitFonts.bold },
-  headerShadowVisible: false,
-};
-
 function TodayTab() {
   return (
     <TodayStack.Navigator screenOptions={stackOptions}>
@@ -69,8 +58,7 @@ function HeroTab() {
   return (
     <HeroStack.Navigator screenOptions={stackOptions}>
       <HeroStack.Screen name="Hero" component={HeroScreen} />
-      <HeroStack.Screen name="Settings" component={SettingsScreen} options={{ ...legacyScreen, title: 'Settings' }} />
-      <HeroStack.Screen name="Account" component={ProfileScreen} options={{ ...legacyScreen, title: 'Account' }} />
+      <HeroStack.Screen name="Settings" component={KitSettingsScreen} />
     </HeroStack.Navigator>
   );
 }
