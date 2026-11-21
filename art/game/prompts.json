@@ -1627,5 +1627,170 @@
     "approved": true,
     "approvedBy": "owner",
     "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_mining",
+    "file": "art/game/adventurer/mining.png",
+    "generatedAt": "2026-11-21T00:08:59.449Z",
+    "seconds": 102,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: mid-swing with a pickaxe raised over one shoulder, about to strike, a few small rock chips at their feet.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "world_map",
+    "file": "art/game/map/valley.png",
+    "generatedAt": "2026-11-21T00:09:08.181Z",
+    "seconds": 91,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook.png",
+      "art/game/scenes/bog.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA painted fantasy world map of one valley, seen from above at a slight angle like an illustrated storybook map, portrait format. Dusk lighting with warm lantern points. Layout (keep these positions exactly): Stonecrest Hills, grey rocky hills with small mine entrances, fill the top third of the map. Greywood, a dense dark-green forest of oaks and willows, fills the left side of the middle third. Millbrook, a tiny village of thatched cottages with a water mill, sits in the centre of the middle third. A river flows from the top right down through Millbrook and the forest edge to the bottom. The Sunken Bog, murky green-brown wetland with dead trees and a tiny half-sunken bell tower, fills the bottom third, slightly to the right. A winding dirt road links Millbrook north up to the hills and south down to the bog. Parchment-coloured edges fading into the painting. No text, no labels, no compass letters, no characters.\nImage size: 1024x1536.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_chopping",
+    "file": "art/game/adventurer/chopping.png",
+    "generatedAt": "2026-11-21T00:10:33.450Z",
+    "seconds": 94,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: swinging a wood axe sideways at waist height as if chopping a tree, feet planted.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_cooking",
+    "file": "art/game/adventurer/cooking.png",
+    "generatedAt": "2026-11-21T00:10:50.455Z",
+    "seconds": 102,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: crouching beside a small campfire and holding a skewer with a fish over the flames, a soft warm glow on their face.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_fishing_net",
+    "file": "art/game/adventurer/fishing_net.png",
+    "generatedAt": "2026-11-21T00:12:02.922Z",
+    "seconds": 89,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: crouching and scooping with a small round hand net held out in front, focused.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_burying",
+    "file": "art/game/adventurer/burying.png",
+    "generatedAt": "2026-11-21T00:12:33.756Z",
+    "seconds": 103,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: kneeling and pressing a bone into a small mound of earth with both hands, head slightly bowed, calm.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_fishing_rod",
+    "file": "art/game/adventurer/fishing_rod.png",
+    "generatedAt": "2026-11-21T00:13:44.520Z",
+    "seconds": 102,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: standing and holding a fishing rod with both hands, the rod angled up and out to the left with the line curving down, patient.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_sparring",
+    "file": "art/game/adventurer/sparring.png",
+    "generatedAt": "2026-11-21T00:14:40.269Z",
+    "seconds": 126,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: in a ready fighting stance with a plain sword held forward and a small round wooden shield raised.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_smithing",
+    "file": "art/game/adventurer/smithing.png",
+    "generatedAt": "2026-11-21T00:15:18.328Z",
+    "seconds": 94,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: striking with a smithing hammer raised high, the other hand holding tongs with a glowing orange bar, a small anvil in front of them.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_walking_home",
+    "file": "art/game/adventurer/walking_home.png",
+    "generatedAt": "2026-11-21T00:16:36.332Z",
+    "seconds": 116,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: walking with a big stuffed backpack and a bulging sack over one shoulder, smiling, mid-step.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "adventurer_victorious",
+    "file": "art/game/adventurer/victorious.png",
+    "generatedAt": "2026-11-21T00:18:45.926Z",
+    "seconds": 130,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/adventurer/idle.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nThe same adventurer as the reference image: young adult, friendly face, messy brown hair, no helmet, green hooded cloak (hood down), tan linen tunic, brown leather belt with small pouches, brown trousers, sturdy brown boots, small leather backpack, slightly chibi proportions (head about one fifth of the height). Full body, three-quarter view facing left, centred with a small margin on every side, on a plain transparent background. Any tools or weapons are drawn plain neutral grey metal with wooden handles. No ground, no scenery, no other characters. Pose: cheering with a plain sword raised high overhead in one hand, the other fist pumped, big grin.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
   }
 ]

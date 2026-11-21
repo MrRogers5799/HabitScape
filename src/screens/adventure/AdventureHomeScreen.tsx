@@ -8,11 +8,11 @@ import { ActivityIndicator, ImageSourcePropType, Text, View } from 'react-native
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activityName, BANK_HOURS_CAP, CREATURES, CHUNK_HOURS, CHUNK_MS, clockTime, formatHours, itemName, regionName, TripReport, WEEKLY_HOURS_CAP,
+  activityName, activityOf, BANK_HOURS_CAP, CREATURES, CHUNK_HOURS, CHUNK_MS, clockTime, formatHours, itemName, regionName, TripReport, WEEKLY_HOURS_CAP,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
-  Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, SceneBanner, SkillIcon, SkillSlot, StatReadout, type, XpChip,
+  ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, SceneBanner, SkillIcon, SkillSlot, StatReadout, type, XpChip,
 } from '../../game-ui';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'AdventureHome'>;
@@ -24,6 +24,24 @@ const SCENES: Record<string, ImageSourcePropType> = {
   stonecrest: require('../../../assets/game-ui/scenes/stonecrest.png'),
   bog: require('../../../assets/game-ui/scenes/bog.png'),
 };
+
+/** Which adventurer pose fits an activity (art bible §6); file ids in ADVENTURER_POSES. */
+function poseFor(activityId: string): string {
+  const act = activityOf(activityId);
+  if (!act) return 'idle';
+  if (act.kind === 'fight') return 'sparring';
+  if (act.kind === 'quest') return 'walking_home';
+  const m = act.method;
+  switch (m.skill) {
+    case 'Mining': return 'mining';
+    case 'Woodcutting': return 'chopping';
+    case 'Fishing': return m.kind === 'gather' && m.tool === 'small_net' ? 'fishing_net' : 'fishing_rod';
+    case 'Smithing': return 'smithing';
+    case 'Cooking': return 'cooking';
+    case 'Prayer': return 'burying';
+    default: return 'idle';
+  }
+}
 
 function ReturnCard({ report, onDone }: { report: TripReport; onDone: () => void }) {
   const items = Object.entries(report.gained).filter(([, n]) => n > 0) as [string, number][];
@@ -85,6 +103,7 @@ export function AdventureHomeScreen({ navigation }: Props) {
   let progressLabel: string | undefined;
   let soFar: [string, number][] = [];
   let sceneRegion = 'millbrook';
+  let pose = 'idle';
   if (out) {
     const leg = trip.legs.find((l) => !l.ended) ?? trip.legs[trip.legs.length - 1];
     const plannedHours = trip.legs.reduce((s, l) => s + l.hours - l.refundedHours, 0);
@@ -94,13 +113,17 @@ export function AdventureHomeScreen({ navigation }: Props) {
     progressLabel = `${formatHours(Math.max(0, (backMs - nowMs) / 3600000))} left`;
     status = `Currently at ${regionName(leg.regionId)}`;
     sceneRegion = leg.regionId;
+    pose = poseFor(leg.activityId);
     sub = `${activityName(leg.activityId)} · back at ${clockTime(backMs)}`;
     soFar = (Object.entries(activeTrip!.report.gained) as [string, number][]).filter(([, n]) => n > 0).sort(([, x], [, y]) => y - x);
   }
 
+  // Back home with loot: cheering after a level-up, otherwise walking in with the pack.
+  if (showReturn) pose = activeTrip!.report.levelUps.length > 0 ? 'victorious' : 'walking_home';
+
   return (
     <KitScreen title="Adventure">
-      <SceneBanner source={SCENES[sceneRegion] ?? SCENES.millbrook} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
+      <SceneBanner source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
       {showReturn && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} />}
 
