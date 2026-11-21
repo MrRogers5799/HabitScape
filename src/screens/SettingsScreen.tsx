@@ -202,7 +202,7 @@ export function SettingsScreen() {
           <View style={styles.settingItem}>
             <Text style={styles.settingValue}>
               {game.enabled
-                ? 'You\x27re in. Your habits now earn adventure time: find your adventurer in the Adventure tab.'
+                ? 'You\x27re in. Your habits now earn adventure time: find your adventurer on the Today tab.'
                 : 'Try the early version of the game layer: your habits earn adventure time, and you send an adventurer to mine, fish, smith, cook and fight. Your habits, streaks and levels stay exactly as they are.'}
             </Text>
           </View>

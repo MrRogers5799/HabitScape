@@ -1,7 +1,6 @@
 /**
- * Adventure home (the "Today" hub of the beta): where the adventurer is, the
- * "Welcome back" moment when a trip ends, and adventure time (PROD-012, PROG-022).
- * First screen built with the new-version UI kit (PROD-024).
+ * Today (PROD-019, PROD-026): where the adventurer is and what they're doing, the
+ * "Welcome back" moment when a trip ends, today's habits, and adventure time (PROG-022).
  */
 import React from 'react';
 import { ActivityIndicator, ImageSourcePropType, Text, View } from 'react-native';
@@ -11,6 +10,8 @@ import {
   activityName, activityOf, BANK_HOURS_CAP, CREATURES, CHUNK_HOURS, CHUNK_MS, clockTime, formatHours, itemName, regionName, TripReport, WEEKLY_HOURS_CAP,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
+import { TABS } from '../../navigation/newVersionTabs';
+import { TodayHabits } from './TodayHabits';
 import {
   ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, SceneBanner, SkillIcon, SkillSlot, StatReadout, type, XpChip,
 } from '../../game-ui';
@@ -122,7 +123,7 @@ export function AdventureHomeScreen({ navigation }: Props) {
   if (showReturn) pose = activeTrip!.report.levelUps.length > 0 ? 'victorious' : 'walking_home';
 
   return (
-    <KitScreen title="Adventure">
+    <KitScreen title="Today">
       <SceneBanner source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
       {showReturn && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} />}
@@ -131,12 +132,14 @@ export function AdventureHomeScreen({ navigation }: Props) {
         {out ? (
           <KitButton label="Call back early" kind="secondary" onPress={callBack} />
         ) : (
-          <KitButton label="Plan a trip" onPress={() => navigation.navigate('Map')} disabled={showReturn || time.bankHours < CHUNK_HOURS} />
+          // Trips are planned on the Map tab.
+          <KitButton label="Plan a trip" onPress={() => navigation.getParent()?.navigate(TABS.map)} disabled={showReturn || time.bankHours < CHUNK_HOURS} />
         )}
-        <KitButton label="Hero" kind="secondary" onPress={() => navigation.navigate('Hero')} />
       </ButtonRow>
 
       {out && soFar.length > 0 && <Panel title="So far"><LootGrid items={soFar} nameOf={itemName} /></Panel>}
+
+      <TodayHabits />
 
       <Panel title="Adventure time">
         {time.bankHours < 0 ? (

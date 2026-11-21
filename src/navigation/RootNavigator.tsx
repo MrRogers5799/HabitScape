@@ -7,15 +7,13 @@
 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { KitTabBar } from '../game-ui/KitTabBar';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image, ImageSourcePropType } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import { useAuth } from '../context/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/colors';
 import { fonts } from '../constants/typography';
-import { SKILL_ICONS } from '../constants/osrsSkills';
 import { adventureActive, newLoginVisible } from '../constants/features';
 import { AdventureNavigator } from './AdventureNavigator';
 
@@ -66,12 +64,9 @@ const Tab = createBottomTabNavigator();
  */
 function TabNavigator() {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
   return (
     <>
     <Tab.Navigator
-      // The new version's tab bar (PROD-025), only where the new version shows (PROD-022).
-      tabBar={(props) => (adventureActive(user) ? <KitTabBar {...props} /> : <BottomTabBar {...props} />)}
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
@@ -85,8 +80,7 @@ function TabNavigator() {
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           fontFamily: fonts.display,
-          // Six tabs with the Adventure beta: a touch smaller so 'Activities' fits.
-          fontSize: adventureActive(user) ? 13 : 15,
+          fontSize: 15,
         },
         tabBarButton: (props) => {
           const focused = (props as any).accessibilityState?.selected;
@@ -116,21 +110,6 @@ function TabNavigator() {
           tabBarIcon: ({ focused, size }) => <TabIcon icon={TAB_ICONS.activities} focused={focused} size={size} />,
         }}
       />
-
-      {/* Adventure (beta) tab: hidden from players until launch (PROD-020); dev builds and the owner only. Placeholder icon. */}
-      {adventureActive(user) && (
-        <Tab.Screen
-          name="AdventureTab"
-          component={AdventureNavigator}
-          options={{
-            title: 'Adventure',
-            tabBarLabel: 'Adventure',
-            tabBarIcon: ({ focused, size }) => (
-              <Image source={SKILL_ICONS.Slayer} style={{ width: size, height: size, opacity: focused ? 1 : 0.55 }} resizeMode="contain" />
-            ),
-          }}
-        />
-      )}
 
       {/* Skills Tab */}
       <Tab.Screen
@@ -183,6 +162,15 @@ function TabNavigator() {
 }
 
 /**
+ * The signed-in app: the new version's tabs where it is active (PROD-022, PROD-024),
+ * otherwise the live app's tabs, which stay as they are until launch.
+ */
+function AppTabs() {
+  const { user } = useAuth();
+  return adventureActive(user) ? <AdventureNavigator /> : <TabNavigator />;
+}
+
+/**
  * Root Navigation Component
  * 
  * Handles switching between Auth stack and App stack based on login status
@@ -228,7 +216,7 @@ export function RootNavigator() {
         // Fully set up → main app
         <Stack.Screen
           name="App"
-          component={TabNavigator}
+          component={AppTabs}
           options={{ animationTypeForReplace: 'pop' }}
         />
       )}

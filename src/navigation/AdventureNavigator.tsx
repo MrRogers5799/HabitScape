@@ -1,37 +1,89 @@
 /**
- * Adventure (beta) tab (PROD-018): home, map, region, trip planner and hero screens,
- * sharing one draft trip plan while the player builds it.
+ * The new version's tabs (PROD-019, PROD-026): Today, Map, Hero, Workout, under the kit
+ * tab bar. Shown in place of the live app's tabs where the new version is active
+ * (development builds and the owner's account until launch, PROD-022). One draft trip
+ * plan is shared across the tabs while the player builds it.
  */
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { colors } from '../constants/colors';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator, NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { KitTabBar, kitColors, kitFonts } from '../game-ui';
 import { DraftPlanProvider } from '../screens/adventure/draftPlan';
 import { AdventureHomeScreen } from '../screens/adventure/AdventureHomeScreen';
 import { MapScreen } from '../screens/adventure/MapScreen';
 import { RegionScreen } from '../screens/adventure/RegionScreen';
 import { TripPlannerScreen } from '../screens/adventure/TripPlannerScreen';
 import { HeroScreen } from '../screens/adventure/HeroScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
+import { WorkoutNavigator } from './WorkoutNavigator';
+import { TABS } from './newVersionTabs';
 
+/** Every screen in the new version's stacks. Each tab's stack holds only the ones it can reach. */
 export type AdventureStackParamList = {
   AdventureHome: undefined;
   Map: undefined;
   Region: { regionId: string };
   Planner: undefined;
   Hero: undefined;
+  Settings: undefined;
+  Account: undefined;
 };
 
-const Stack = createNativeStackNavigator<AdventureStackParamList>();
+const Tab = createBottomTabNavigator();
+const TodayStack = createNativeStackNavigator<AdventureStackParamList>();
+const MapStack = createNativeStackNavigator<AdventureStackParamList>();
+const HeroStack = createNativeStackNavigator<AdventureStackParamList>();
+
+const stackOptions: NativeStackNavigationOptions = {
+  headerShown: false, animation: 'fade', contentStyle: { backgroundColor: kitColors.background },
+};
+/** Live-app screens opened from Hero (Settings, Account) keep their own look for now, under a plain kit header with a back arrow. */
+const legacyScreen: NativeStackNavigationOptions = {
+  headerShown: true,
+  headerStyle: { backgroundColor: kitColors.background },
+  headerTintColor: kitColors.gold,
+  headerTitleStyle: { fontFamily: kitFonts.bold },
+  headerShadowVisible: false,
+};
+
+function TodayTab() {
+  return (
+    <TodayStack.Navigator screenOptions={stackOptions}>
+      <TodayStack.Screen name="AdventureHome" component={AdventureHomeScreen} />
+    </TodayStack.Navigator>
+  );
+}
+
+function MapTab() {
+  return (
+    <MapStack.Navigator screenOptions={stackOptions}>
+      <MapStack.Screen name="Map" component={MapScreen} />
+      <MapStack.Screen name="Region" component={RegionScreen} />
+      <MapStack.Screen name="Planner" component={TripPlannerScreen} />
+    </MapStack.Navigator>
+  );
+}
+
+function HeroTab() {
+  return (
+    <HeroStack.Navigator screenOptions={stackOptions}>
+      <HeroStack.Screen name="Hero" component={HeroScreen} />
+      <HeroStack.Screen name="Settings" component={SettingsScreen} options={{ ...legacyScreen, title: 'Settings' }} />
+      <HeroStack.Screen name="Account" component={ProfileScreen} options={{ ...legacyScreen, title: 'Account' }} />
+    </HeroStack.Navigator>
+  );
+}
 
 export function AdventureNavigator() {
   return (
     <DraftPlanProvider>
-      <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade', contentStyle: { backgroundColor: colors.background } }}>
-        <Stack.Screen name="AdventureHome" component={AdventureHomeScreen} />
-        <Stack.Screen name="Map" component={MapScreen} />
-        <Stack.Screen name="Region" component={RegionScreen} />
-        <Stack.Screen name="Planner" component={TripPlannerScreen} />
-        <Stack.Screen name="Hero" component={HeroScreen} />
-      </Stack.Navigator>
+      <Tab.Navigator tabBar={(props) => <KitTabBar {...props} />} screenOptions={{ headerShown: false }}>
+        <Tab.Screen name={TABS.today} component={TodayTab} options={{ title: 'Today' }} />
+        <Tab.Screen name={TABS.map} component={MapTab} options={{ title: 'Map' }} />
+        <Tab.Screen name={TABS.hero} component={HeroTab} options={{ title: 'Hero' }} />
+        <Tab.Screen name={TABS.workout} component={WorkoutNavigator} options={{ title: 'Workout' }} />
+      </Tab.Navigator>
     </DraftPlanProvider>
   );
 }
