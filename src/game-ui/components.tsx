@@ -123,14 +123,22 @@ export function ProgressBar({ fraction, color = kitColors.green }: { fraction: n
   );
 }
 
-/** The illustrated scene at the top of a screen, framed, with a label plate and an optional progress strip. */
-export function SceneBanner({ source, label, sublabel, progress, progressLabel }: {
-  source: ImageSourcePropType; label: string; sublabel?: string; progress?: number; progressLabel?: string;
+/**
+ * The illustrated scene at the top of a screen, framed, with a label plate and an optional progress strip.
+ * `figure` (the adventurer's pose) stands on the right, over the scene: scenes have no characters baked in.
+ */
+export function SceneBanner({ source, label, sublabel, progress, progressLabel, figure }: {
+  source: ImageSourcePropType; label: string; sublabel?: string; progress?: number; progressLabel?: string; figure?: ImageSourcePropType;
 }) {
   return (
     <View style={styles.scene}>
       <View style={[StyleSheet.absoluteFill, styles.sceneClip]}>
         <Image source={source} style={styles.sceneImage} resizeMode="cover" />
+        {figure && (
+          <View style={[styles.sceneFigureBox, progress !== undefined && styles.sceneFigureRaised]} pointerEvents="none">
+            <Image source={figure} style={styles.sceneFigure} resizeMode="contain" accessibilityIgnoresInvertColors />
+          </View>
+        )}
       </View>
       <NineSlice frame={FRAMES.sceneFrame} hollow style={StyleSheet.absoluteFill} />
       <View style={styles.sceneContent}>
@@ -215,6 +223,10 @@ const styles = StyleSheet.create({
   scene: { aspectRatio: 3 / 2, justifyContent: 'space-between' },
   sceneClip: { overflow: 'hidden', margin: 6 },
   sceneImage: { width: '100%', height: '100%' },
+  // Right-aligned box over the lower scene; the figure keeps its square shape inside it.
+  sceneFigureBox: { ...StyleSheet.absoluteFillObject, top: '34%', bottom: '3%', right: '3%', alignItems: 'flex-end', justifyContent: 'flex-end' },
+  sceneFigureRaised: { top: '30%', bottom: '27%' },
+  sceneFigure: { height: '100%', aspectRatio: 1 },
   sceneContent: { flex: 1, justifyContent: 'space-between', padding: space.lg + space.xs },
   sceneLabel: { alignSelf: 'flex-start', maxWidth: '85%', backgroundColor: 'rgba(20,14,7,0.82)', borderWidth: 2, borderColor: kitColors.goldDeep, paddingHorizontal: space.md, paddingVertical: space.xs },
   sceneStrip: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: 'rgba(20,14,7,0.82)', borderWidth: 2, borderColor: kitColors.goldDeep, paddingHorizontal: space.md, paddingVertical: space.sm },

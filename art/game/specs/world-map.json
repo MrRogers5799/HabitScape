@@ -1,0 +1,17 @@
+{
+  "note": "The world map (art bible §5, §11 step 3): one painted portrait map, no labels; region positions are fixed in the prompt so the app can place markers on it.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "world_map",
+      "out": "art/game/map/valley.png",
+      "size": "1024x1536",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook.png",
+        "art/game/scenes/bog.png"
+      ],
+      "prompt": "A painted fantasy world map of one valley, seen from above at a slight angle like an illustrated storybook map, portrait format. Dusk lighting with warm lantern points. Layout (keep these positions exactly): Stonecrest Hills, grey rocky hills with small mine entrances, fill the top third of the map. Greywood, a dense dark-green forest of oaks and willows, fills the left side of the middle third. Millbrook, a tiny village of thatched cottages with a water mill, sits in the centre of the middle third. A river flows from the top right down through Millbrook and the forest edge to the bottom. The Sunken Bog, murky green-brown wetland with dead trees and a tiny half-sunken bell tower, fills the bottom third, slightly to the right. A winding dirt road links Millbrook north up to the hills and south down to the bog. Parchment-coloured edges fading into the painting. No text, no labels, no compass letters, no characters."
+    }
+  ]
+}

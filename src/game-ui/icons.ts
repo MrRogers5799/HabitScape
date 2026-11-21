@@ -112,3 +112,17 @@ export const GEAR_ICONS: Record<string, ImageSourcePropType> = {
   steel_sword: require('../../assets/game-ui/gear/steel_sword.png'),
   wardens_maul: require('../../assets/game-ui/gear/wardens_maul.png'),
 };
+
+export const ADVENTURER_POSES: Record<string, ImageSourcePropType> = {
+  burying: require('../../assets/game-ui/adventurer/burying.png'),
+  chopping: require('../../assets/game-ui/adventurer/chopping.png'),
+  cooking: require('../../assets/game-ui/adventurer/cooking.png'),
+  fishing_net: require('../../assets/game-ui/adventurer/fishing_net.png'),
+  fishing_rod: require('../../assets/game-ui/adventurer/fishing_rod.png'),
+  idle: require('../../assets/game-ui/adventurer/idle.png'),
+  mining: require('../../assets/game-ui/adventurer/mining.png'),
+  smithing: require('../../assets/game-ui/adventurer/smithing.png'),
+  sparring: require('../../assets/game-ui/adventurer/sparring.png'),
+  victorious: require('../../assets/game-ui/adventurer/victorious.png'),
+  walking_home: require('../../assets/game-ui/adventurer/walking_home.png'),
+};

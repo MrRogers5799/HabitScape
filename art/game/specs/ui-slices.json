@@ -109,6 +109,10 @@
     "scenes/bog": {
       "src": "art/game/scenes/bog.png",
       "width": 960
+    },
+    "map/valley": {
+      "src": "art/game/map/valley.png",
+      "width": 900
     }
   },
   "iconSets": {
@@ -141,6 +145,12 @@
       "out": "gear",
       "size": 144,
       "margin": 0.06
+    },
+    "ADVENTURER_POSES": {
+      "src": "art/game/adventurer",
+      "out": "adventurer",
+      "size": 384,
+      "margin": 0.03
     }
   }
 }
