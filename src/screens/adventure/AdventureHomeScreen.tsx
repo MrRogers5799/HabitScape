@@ -4,7 +4,7 @@
  * First screen built with the new-version UI kit (PROD-024).
  */
 import React from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, ImageSourcePropType, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
@@ -17,7 +17,13 @@ import {
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'AdventureHome'>;
 
-const MILLBROOK = require('../../../assets/game-ui/scenes/millbrook.png');
+/** Region id → its scene; the banner shows where the adventurer is (home in Millbrook between trips). */
+const SCENES: Record<string, ImageSourcePropType> = {
+  millbrook: require('../../../assets/game-ui/scenes/millbrook.png'),
+  greywood: require('../../../assets/game-ui/scenes/greywood.png'),
+  stonecrest: require('../../../assets/game-ui/scenes/stonecrest.png'),
+  bog: require('../../../assets/game-ui/scenes/bog.png'),
+};
 
 function ReturnCard({ report, onDone }: { report: TripReport; onDone: () => void }) {
   const items = Object.entries(report.gained).filter(([, n]) => n > 0) as [string, number][];
@@ -78,6 +84,7 @@ export function AdventureHomeScreen({ navigation }: Props) {
   let progress: number | undefined;
   let progressLabel: string | undefined;
   let soFar: [string, number][] = [];
+  let sceneRegion = 'millbrook';
   if (out) {
     const leg = trip.legs.find((l) => !l.ended) ?? trip.legs[trip.legs.length - 1];
     const plannedHours = trip.legs.reduce((s, l) => s + l.hours - l.refundedHours, 0);
@@ -86,13 +93,14 @@ export function AdventureHomeScreen({ navigation }: Props) {
     progress = plannedHours ? doneHours / plannedHours : 0;
     progressLabel = `${formatHours(Math.max(0, (backMs - nowMs) / 3600000))} left`;
     status = `Currently at ${regionName(leg.regionId)}`;
+    sceneRegion = leg.regionId;
     sub = `${activityName(leg.activityId)} · back at ${clockTime(backMs)}`;
     soFar = (Object.entries(activeTrip!.report.gained) as [string, number][]).filter(([, n]) => n > 0).sort(([, x], [, y]) => y - x);
   }
 
   return (
     <KitScreen title="Adventure">
-      <SceneBanner source={MILLBROOK} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
+      <SceneBanner source={SCENES[sceneRegion] ?? SCENES.millbrook} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
       {showReturn && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} />}
 

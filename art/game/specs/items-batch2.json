@@ -1,0 +1,204 @@
+{
+  "note": "Melee valley batch 2 (art bible §11 step 2): the non-gear items and the three regular creatures. Gear comes in batch 3 (bronze first, then tier recolours per §9). Bog Warden, Bogling, maul and bog-iron helm come with the bog set.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "oak_logs",
+      "out": "art/game/items/oak_logs.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/logs.png"
+      ],
+      "prompt": "A single game icon of two stacked oak logs, thicker than plain logs, with darker rough bark and pale tan end grain with clear rings. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "willow_logs",
+      "out": "art/game/items/willow_logs.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/logs.png"
+      ],
+      "prompt": "A single game icon of two stacked willow logs, slimmer and paler, with smooth grey-green bark and creamy end grain. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "raw_trout",
+      "out": "art/game/items/raw_trout.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of one raw trout lying on its side, olive-green back with dark speckles and a faint pink stripe, glossy and uncooked. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "raw_salmon",
+      "out": "art/game/items/raw_salmon.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of one raw salmon lying on its side, silvery blue-grey scales with a pale belly, glossy and uncooked. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "trout",
+      "out": "art/game/items/trout.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of one cooked trout lying on its side, golden-brown crisp skin with darker grill marks. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "salmon",
+      "out": "art/game/items/salmon.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of one cooked salmon lying on its side, browned skin with flaky pink-orange flesh showing at a cut. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "raw_chicken",
+      "out": "art/game/items/raw_chicken.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of one raw chicken drumstick and thigh, pale pink uncooked skin. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "cooked_chicken",
+      "out": "art/game/items/cooked_chicken.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of one roasted chicken drumstick and thigh, glossy golden-brown skin. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "burnt_food",
+      "out": "art/game/items/burnt_food.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of a small charred black lump of burnt food with a few glowing embers and a thin wisp of grey smoke. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "wolf_bones",
+      "out": "art/game/items/wolf_bones.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/bones.png"
+      ],
+      "prompt": "A single game icon of two long grey-white animal bones crossed, slightly larger and rougher than plain bones, with a canine jaw fang beside them. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "big_bones",
+      "out": "art/game/items/big_bones.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/bones.png"
+      ],
+      "prompt": "A single game icon of one very large thick bone, chunky and heavy, off-white with darker knobbly ends. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "warden_remains",
+      "out": "art/game/items/warden_remains.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/bones.png"
+      ],
+      "prompt": "A single game icon of a mossy, swamp-stained horned skull fragment with a strand of dripping green bog weed, eerie and ancient. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "wolf_pelt",
+      "out": "art/game/items/wolf_pelt.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/shrimp.png"
+      ],
+      "prompt": "A single game icon of a folded grey wolf pelt with soft fur and a darker stripe down the back. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "small_net",
+      "out": "art/game/items/small_net.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/logs.png"
+      ],
+      "prompt": "A single game icon of a small round hand fishing net with a short wooden handle and loose rope mesh. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "fishing_rod",
+      "out": "art/game/items/fishing_rod.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png",
+        "art/game/items/logs.png"
+      ],
+      "prompt": "A single game icon of a simple wooden fishing rod with a cork grip, a small reel and a coiled line, pointing diagonally up to the right. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "chicken",
+      "out": "art/game/creatures/chicken.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/creatures/goblin.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game creature portrait of a plump farmyard chicken with white-and-brown feathers and a red comb. Full body, standing, three-quarter view facing left, centred, filling about 80% of the square, on a plain transparent background. Friendly cozy style, readable at small sizes."
+    },
+    {
+      "id": "wolf",
+      "out": "art/game/creatures/wolf.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/creatures/goblin.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game creature portrait of a lean grey forest wolf with amber eyes, mid-stride, alert but not gory. Full body, standing, three-quarter view facing left, centred, filling about 80% of the square, on a plain transparent background. Friendly cozy style, readable at small sizes."
+    },
+    {
+      "id": "bandit",
+      "out": "art/game/creatures/bandit.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/creatures/goblin.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game creature portrait of a roadside bandit in a patched brown hooded cloak and a cloth scarf over the lower face, holding a short club, scruffy but not menacing. Full body, standing, three-quarter view facing left, centred, filling about 80% of the square, on a plain transparent background. Friendly cozy style, readable at small sizes."
+    }
+  ]
+}

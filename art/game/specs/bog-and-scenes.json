@@ -1,0 +1,80 @@
+{
+  "note": "Melee valley: the bog set (boss, pet, two uniques; the Warden's lantern is its signature, art bible §5) and the three remaining region scenes, matched to the approved Millbrook scene.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "bog_warden",
+      "out": "art/game/creatures/bog_warden.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/creatures/goblin.png",
+        "art/game/creatures/wolf.png"
+      ],
+      "prompt": "A boss creature for a cozy fantasy game: the Bog Warden, a tall hunched guardian of a sunken bog, its body made of dark peat, roots and moss over old rusted iron armour plates, a horned mossy skull for a head with two small glowing green eyes, holding up an old iron lantern with a soft green-gold flame (its signature feature) in one hand and a heavy stone-headed maul in the other. Eerie and imposing but not gory. Full body, standing, three-quarter view facing left, larger and more detailed than regular creatures, a faint green lantern glow on its body. Centred with a small margin on every side, on a plain transparent background."
+    },
+    {
+      "id": "bogling",
+      "out": "art/game/items/bogling.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/creatures/goblin.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game icon of the Bogling, a tiny cute pet: a round little blob of mossy peat with two small root-like legs, a sprout of bog grass on its head and two shiny dark eyes, a tiny green-gold glow like a firefly beside it. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "wardens_maul",
+      "out": "art/game/gear/wardens_maul.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_mace.png",
+        "art/game/gear/iron_sword.png"
+      ],
+      "prompt": "A single game inventory icon of the Warden's maul: a heavy two-handed maul with a big block of dark mossy stone bound with rusted iron bands, on a gnarled root-wood haft wrapped with bog weed, a faint green glow in the stone's cracks. Drawn diagonally, pointing up and to the right. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bog_iron_helm",
+      "out": "art/game/gear/bog_iron_helm.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_helm.png",
+        "art/game/gear/iron_sword.png"
+      ],
+      "prompt": "A single game inventory icon of the bog-iron helm: an open-faced helmet of dark, rust-flecked bog iron with a tint of deep green, small curling horns of old root, and a band of moss along the brim. Same shape family as the reference helm. Three-quarter view from slightly above, centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "scene_greywood",
+      "out": "art/game/scenes/greywood.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook.png"
+      ],
+      "prompt": "A wide landscape game scene of Greywood, a quiet old forest at dusk: tall oaks and drooping willows along a slow river with a small wooden fishing jetty, a woodcutter's stump with an axe and a stack of logs, a dark wolf den under rocks in the background, fireflies. Violet-to-amber dusk sky through the canopy, warm lantern light on the jetty. Leave calm open sky at the top left. No people, no creatures, no text. Landscape format, wider than tall."
+    },
+    {
+      "id": "scene_stonecrest",
+      "out": "art/game/scenes/stonecrest.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook.png"
+      ],
+      "prompt": "A wide landscape game scene of Stonecrest Hills at dusk: rocky grey hills with mine entrances braced by timber, ore veins glinting copper, silver and black in the rocks, a mine cart on rails, and a small bandit camp with a tattered tent and a campfire on a ridge in the background. Violet-to-amber dusk sky, warm firelight. Leave calm open sky at the top left. No people, no creatures, no text. Landscape format, wider than tall."
+    },
+    {
+      "id": "scene_bog",
+      "out": "art/game/scenes/bog.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook.png"
+      ],
+      "prompt": "A wide landscape game scene of The Sunken Bog at dusk: dark still water with reeds and lily pads, twisted dead trees draped in moss, a half-sunken stone bell tower in the middle of the water, a wooden boardwalk leading in, drifting low mist and faint green-gold will-o'-wisp lights. Violet-to-teal dusk sky. Eerie but cozy, not scary. Leave calm open sky at the top left. No people, no creatures, no text. Landscape format, wider than tall."
+    }
+  ]
+}

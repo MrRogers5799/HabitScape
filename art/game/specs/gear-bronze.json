@@ -1,0 +1,116 @@
+{
+  "note": "Melee valley batch 3: the bronze tier of every smithed piece (art bible §5, §9). Iron and steel follow as recolours of these once approved.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "bronze_dagger",
+      "out": "art/game/gear/bronze_dagger.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a short straight double-edged dagger with a small crossguard and a dark leather-wrapped grip, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_mace",
+      "out": "art/game/gear/bronze_mace.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a one-handed mace with a flanged round head on a short shaft and a dark leather grip, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_hatchet",
+      "out": "art/game/gear/bronze_hatchet.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a small wood-chopping hatchet with a bronze axe head on a wooden handle, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_pickaxe",
+      "out": "art/game/gear/bronze_pickaxe.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a mining pickaxe with a slightly curved two-pointed bronze head on a wooden handle, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_helm",
+      "out": "art/game/gear/bronze_helm.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of an open-faced round metal helmet with a nose guard and a few rivets, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_shield",
+      "out": "art/game/gear/bronze_shield.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a round metal shield with a raised central boss and a riveted rim, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_chestplate",
+      "out": "art/game/gear/bronze_chestplate.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a metal chest plate armour piece with shoulder plates and rivets, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_platelegs",
+      "out": "art/game/gear/bronze_platelegs.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a pair of metal leg armour plates (greaves and thigh plates) joined at a belt, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_boots",
+      "out": "art/game/gear/bronze_boots.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a pair of armoured boots with metal plates over leather, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "bronze_gloves",
+      "out": "art/game/gear/bronze_gloves.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png",
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game inventory icon of a pair of armoured gauntlets with metal plates over leather, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    }
+  ]
+}

@@ -8,10 +8,15 @@ import { activityOf } from './trips';
 export const itemName = (id: string): string => ITEMS[id]?.name ?? id;
 export const regionName = (id: string): string => REGIONS[id]?.name ?? id;
 
+/** English plural for creature names: Wolf → Wolves, Goblin → Goblins. */
+function plural(name: string): string {
+  return /f$/.test(name) ? `${name.slice(0, -1)}ves` : `${name}s`;
+}
+
 export function activityName(id: string): string {
   if (METHODS[id]) return METHODS[id].name;
   const act = activityOf(id);
-  if (act?.kind === 'fight') return `Fight ${act.creature.name.toLowerCase().startsWith('the ') ? act.creature.name : act.creature.name + 's'}`;
+  if (act?.kind === 'fight') return `Fight ${act.creature.name.toLowerCase().startsWith('the ') ? act.creature.name : plural(act.creature.name)}`;
   if (act?.kind === 'quest') return `Quest: ${act.quest.name}`;
   return id;
 }

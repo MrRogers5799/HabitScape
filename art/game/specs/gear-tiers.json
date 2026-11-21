@@ -1,0 +1,248 @@
+{
+  "note": "Iron and steel tiers as recolours of the approved bronze gear (art bible §3 palettes, §9 tier-variant prompt).",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "iron_sword",
+      "out": "art/game/gear/iron_sword.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "Recolour this exact sword into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_dagger",
+      "out": "art/game/gear/iron_dagger.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_dagger.png"
+      ],
+      "prompt": "Recolour this exact dagger into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_mace",
+      "out": "art/game/gear/iron_mace.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_mace.png"
+      ],
+      "prompt": "Recolour this exact mace into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_hatchet",
+      "out": "art/game/gear/iron_hatchet.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_hatchet.png"
+      ],
+      "prompt": "Recolour this exact hatchet into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_pickaxe",
+      "out": "art/game/gear/iron_pickaxe.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_pickaxe.png"
+      ],
+      "prompt": "Recolour this exact pickaxe into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_helm",
+      "out": "art/game/gear/iron_helm.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_helm.png"
+      ],
+      "prompt": "Recolour this exact helmet into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_shield",
+      "out": "art/game/gear/iron_shield.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_shield.png"
+      ],
+      "prompt": "Recolour this exact shield into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). The whole shield is metal: the round face, the rim, the rivets and the central boss all become iron; no orange or bronze may remain. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_chestplate",
+      "out": "art/game/gear/iron_chestplate.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_chestplate.png"
+      ],
+      "prompt": "Recolour this exact chest plate into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_platelegs",
+      "out": "art/game/gear/iron_platelegs.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_platelegs.png"
+      ],
+      "prompt": "Recolour this exact plate legs into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_boots",
+      "out": "art/game/gear/iron_boots.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_boots.png"
+      ],
+      "prompt": "Recolour this exact armoured boots into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "iron_gloves",
+      "out": "art/game/gear/iron_gloves.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_gloves.png"
+      ],
+      "prompt": "Recolour this exact armoured gauntlets into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_sword",
+      "out": "art/game/gear/steel_sword.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_sword.png"
+      ],
+      "prompt": "Recolour this exact sword into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_dagger",
+      "out": "art/game/gear/steel_dagger.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_dagger.png"
+      ],
+      "prompt": "Recolour this exact dagger into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_mace",
+      "out": "art/game/gear/steel_mace.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_mace.png"
+      ],
+      "prompt": "Recolour this exact mace into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_hatchet",
+      "out": "art/game/gear/steel_hatchet.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_hatchet.png"
+      ],
+      "prompt": "Recolour this exact hatchet into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_pickaxe",
+      "out": "art/game/gear/steel_pickaxe.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_pickaxe.png"
+      ],
+      "prompt": "Recolour this exact pickaxe into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_helm",
+      "out": "art/game/gear/steel_helm.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_helm.png"
+      ],
+      "prompt": "Recolour this exact helmet into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_shield",
+      "out": "art/game/gear/steel_shield.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_shield.png"
+      ],
+      "prompt": "Recolour this exact shield into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_chestplate",
+      "out": "art/game/gear/steel_chestplate.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_chestplate.png"
+      ],
+      "prompt": "Recolour this exact chest plate into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_platelegs",
+      "out": "art/game/gear/steel_platelegs.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_platelegs.png"
+      ],
+      "prompt": "Recolour this exact plate legs into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_boots",
+      "out": "art/game/gear/steel_boots.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_boots.png"
+      ],
+      "prompt": "Recolour this exact armoured boots into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    },
+    {
+      "id": "steel_gloves",
+      "out": "art/game/gear/steel_gloves.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "editOf": true,
+      "refs": [
+        "art/game/gear/bronze_gloves.png"
+      ],
+      "prompt": "Recolour this exact armoured gauntlets into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background."
+    }
+  ]
+}

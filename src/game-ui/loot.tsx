@@ -5,12 +5,14 @@ import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { NineSlice } from './NineSlice';
 import { FRAMES } from './frames';
-import { CREATURE_ICONS, ITEM_ICONS } from './icons';
+import { CREATURE_ICONS, GEAR_ICONS, ITEM_ICONS } from './icons';
 import { kitColors, kitFonts, space } from './tokens';
 
 /** An item's (or creature's) icon, or (until its art exists) its initials on a dark tile. */
 export function ItemIcon({ id, name, size = 40 }: { id: string; name: string; size?: number }) {
-  const src = ITEM_ICONS[id] ?? CREATURE_ICONS[id];
+  // Art files use underscores; some game ids use hyphens (creature 'bog-warden').
+  const key = id.replace(/-/g, '_');
+  const src = ITEM_ICONS[key] ?? GEAR_ICONS[key] ?? CREATURE_ICONS[key];
   if (src) return <Image source={src} style={{ width: size, height: size }} accessibilityIgnoresInvertColors />;
   const initials = name.split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   return (
