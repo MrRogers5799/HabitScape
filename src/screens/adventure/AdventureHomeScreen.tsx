@@ -12,6 +12,7 @@ import {
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { TABS } from '../../navigation/newVersionTabs';
 import { TodayHabits } from './TodayHabits';
+import { ActiveWorkoutBanner, useActiveWorkout } from '../workout-kit/ActiveWorkoutBanner';
 import {
   ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, SceneBanner, SkillIcon, SkillSlot, StatReadout, type, XpChip,
 } from '../../game-ui';
@@ -84,6 +85,7 @@ function ReturnCard({ report, onDone }: { report: TripReport; onDone: () => void
 
 export function AdventureHomeScreen({ navigation }: Props) {
   const { loading, state, activeTrip, nowMs, error, callBack, dismissReturn } = useGame();
+  const { active: liveWorkout, discard: discardWorkout } = useActiveWorkout();
 
   if (loading || !state) {
     return (
@@ -127,6 +129,19 @@ export function AdventureHomeScreen({ navigation }: Props) {
       <SceneBanner source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
       {showReturn && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} />}
+
+      {liveWorkout && (
+        <ActiveWorkoutBanner
+          active={liveWorkout}
+          onDiscard={discardWorkout}
+          onResume={() => navigation.getParent()?.navigate(TABS.workout, {
+            // initial: false keeps the Workout list under the session, so Back has somewhere to go.
+            initial: false,
+            screen: 'ActiveSession',
+            params: { templateId: liveWorkout.templateId, templateName: liveWorkout.templateName, backdateDate: liveWorkout.backdateDate },
+          })}
+        />
+      )}
 
       <ButtonRow>
         {out ? (

@@ -10,8 +10,11 @@ import { FRAMES } from './frames';
 import { kitColors, kitFonts, space, type } from './tokens';
 
 /** A full screen: dark background, a title plate at the top, scrolling content with the standard gutter. */
-export function KitScreen({ title, right, onBack, children }: {
-  title?: string; right?: React.ReactNode; onBack?: () => void; children: React.ReactNode;
+export function KitScreen({ title, right, onBack, footer, children }: {
+  title?: string; right?: React.ReactNode; onBack?: () => void;
+  /** Pinned under the scrolling content (e.g. a session's timer and Finish button). */
+  footer?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -29,7 +32,9 @@ export function KitScreen({ title, right, onBack, children }: {
           {right}
         </View>
       )}
-      <ScrollView contentContainerStyle={styles.scroll}>{children}</ScrollView>
+      {/* 'handled': a tap on a button while the keyboard is up presses it instead of only closing the keyboard. */}
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+      {footer !== undefined && <View style={styles.footer}>{footer}</View>}
     </View>
   );
 }
@@ -199,7 +204,9 @@ export function ButtonRow({ children }: { children: React.ReactNode }) {
 
 
 /** A text field in a sunken slot. `right` holds an inline action (Show/Hide); `error` shows under it in red. */
-export function KitField({ error, right, style, ...input }: TextInputProps & { error?: string; right?: React.ReactNode }) {
+export function KitField({ error, right, style, inputStyle, ...input }: TextInputProps & {
+  error?: string; right?: React.ReactNode; inputStyle?: TextInputProps['style'];
+}) {
   return (
     <View style={{ gap: space.xxs }}>
       <NineSlice frame={FRAMES.slot} padding={space.xxs} style={[styles.field, style as StyleProp<ViewStyle>]}>
@@ -208,7 +215,7 @@ export function KitField({ error, right, style, ...input }: TextInputProps & { e
           autoCorrect={false}
           accessibilityLabel={input.placeholder}
           {...input}
-          style={styles.fieldInput}
+          style={[styles.fieldInput, inputStyle]}
         />
         {right}
       </NineSlice>
@@ -247,6 +254,7 @@ const styles = StyleSheet.create({
   titleBar: { paddingHorizontal: space.gutter, paddingTop: space.sm, flexDirection: 'row', alignItems: 'center', gap: space.sm },
   plate: { flex: 1, minHeight: 52, justifyContent: 'center' },
   scroll: { padding: space.gutter, gap: space.gap, paddingBottom: space.xl * 2 },
+  footer: { paddingHorizontal: space.gutter, paddingVertical: space.sm, borderTopWidth: 2, borderTopColor: kitColors.divider, backgroundColor: kitColors.background },
   center: { textAlign: 'center' },
   flex: { flex: 1 },
   panelBody: { gap: space.sm },
