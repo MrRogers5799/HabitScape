@@ -12,6 +12,7 @@ import {
   QuestRequirement, regionName,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
+import { TABS } from '../../navigation/newVersionTabs';
 import {
   Body, ButtonRow, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, Panel, space, StatReadout, Tag, type, XpChip,
 } from '../../game-ui';
@@ -108,6 +109,8 @@ export function TripPlannerScreen({ navigation }: Props) {
       await send(plan.legs);
       plan.clear();
       navigation.popToTop();
+      // Back to Today to watch the trip.
+      navigation.getParent()?.navigate(TABS.today);
     } catch {
       // the error shows below
     } finally {

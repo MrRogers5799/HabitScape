@@ -27,7 +27,8 @@ export function MapScreen({ navigation }: Props) {
   const { state } = useGame();
   if (!state) return null;
   return (
-    <KitScreen title="The valley" onBack={() => navigation.goBack()}>
+    // A tab root: no back button.
+    <KitScreen title="The valley">
       <View style={styles.map}>
         <View style={[StyleSheet.absoluteFill, styles.mapClip]}>
           <Image source={MAP} style={styles.mapImage} resizeMode="cover" accessibilityIgnoresInvertColors />

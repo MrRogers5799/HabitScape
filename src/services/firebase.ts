@@ -22,6 +22,7 @@
  */
 
 import { initializeApp } from 'firebase/app';
+import { LogBox } from 'react-native';
 import { initializeAuth, connectAuthEmulator } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
@@ -99,6 +100,9 @@ if (usingFirebaseEmulator) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
   console.warn('[firebase] Using local Firebase emulators (test backend)');
+  // Test backend only: no LogBox toasts on screen. They cover the tab bar in screenshots, and tapping
+  // one opens a React Native DevTools window on the desktop. Warnings still print to Metro's log.
+  LogBox.ignoreAllLogs(true);
 }
 
 /**

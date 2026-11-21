@@ -1,15 +1,16 @@
 /**
- * Hero: the adventurer's skills, gear, bank and XP lamps, as icons with numbers
+ * Hero: the player (name, account) with the Settings cog (PROD-026), then the adventurer's skills, gear, bank and XP lamps, as icons with numbers
  * (new-version kit, PROD-024/025).
  */
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import { GAME_SKILLS, GameSkill, ITEMS, itemName, levelOf, ToolType } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
-  Body, ItemSlot, KitButton, KitScreen, LootGrid, NeedsTag, Panel, Row, SkillIcon, SkillSlot, space, kitColors, Tag, type,
+  Body, ItemSlot, KitButton, KitScreen, LootGrid, NeedsTag, Panel, FRAMES, NineSlice, Row, SkillIcon, SkillSlot, space, kitColors, TAB_ICONS, Tag, type,
 } from '../../game-ui';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'Hero'>;
@@ -21,15 +22,37 @@ const TOOL_SKILL: Record<ToolType, GameSkill> = { pickaxe: 'Mining', hatchet: 'W
 
 export function HeroScreen({ navigation }: Props) {
   const { state, applyLamp } = useGame();
+  const { user } = useAuth();
   const [lampSkill, setLampSkill] = useState<GameSkill>('Mining');
   if (!state) return null;
 
   const owned = (Object.entries(state.bank) as [string, number][]).filter(([, n]) => n > 0).sort(([, x], [, y]) => y - x);
   const gear = owned.filter(([id]) => ITEMS[id]?.equip || ITEMS[id]?.tool);
   const total = GAME_SKILLS.reduce((sum, s) => sum + levelOf(state, s), 0);
+  const questsDone = Object.values(state.quests).filter(Boolean).length;
 
   return (
-    <KitScreen title="Hero" onBack={() => navigation.goBack()}>
+    <KitScreen
+      title="Hero"
+      right={(
+        // Settings opens from here (PROD-026).
+        <Pressable onPress={() => navigation.navigate('Settings')} accessibilityRole="button" accessibilityLabel="Settings" hitSlop={8} style={({ pressed }) => pressed && styles.pressed}>
+          <NineSlice frame={FRAMES.slot} style={styles.cog}>
+            <Image source={TAB_ICONS.settings} style={styles.cogIcon} accessibilityIgnoresInvertColors />
+          </NineSlice>
+        </Pressable>
+      )}
+    >
+      <Panel title={user?.displayName || 'Adventurer'} icon={TAB_ICONS.profile}>
+        <View style={styles.lampRow}>
+          <View style={[styles.flex, styles.tags]}>
+            <Tag label={`Total ${total}`} tone="gold" accessibilityLabel={`Total level ${total}`} />
+            <Tag label={`Quests ${questsDone}`} accessibilityLabel={`${questsDone} quests done`} />
+          </View>
+          <KitButton compact kind="secondary" label="Account" onPress={() => navigation.navigate('Account')} />
+        </View>
+      </Panel>
+
       {state.lamps.length > 0 && (
         <Panel title="XP lamps" right={<Tag label={String(state.lamps.length)} tone="gold" accessibilityLabel={`${state.lamps.length} lamps`} />}>
           <Body muted>{"Pick a skill for the lamp's XP."}</Body>
@@ -53,7 +76,7 @@ export function HeroScreen({ navigation }: Props) {
         </Panel>
       )}
 
-      <Panel title="Skills" right={<Tag label={`Total ${total}`} tone="gold" />}>
+      <Panel title="Skills">
         <View style={styles.grid}>
           {GAME_SKILLS.map((s) => <SkillSlot key={s} skill={s} level={levelOf(state, s)} size={SKILL_SLOT} />)}
         </View>
@@ -96,5 +119,9 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   lampRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   flex: { flex: 1 },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
+  cog: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center' },
+  cogIcon: { width: 30, height: 30 },
+  pressed: { opacity: 0.8 },
   lampAmount: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });
