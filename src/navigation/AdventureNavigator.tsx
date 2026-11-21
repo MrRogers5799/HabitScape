@@ -15,7 +15,7 @@ import { RegionScreen } from '../screens/adventure/RegionScreen';
 import { TripPlannerScreen } from '../screens/adventure/TripPlannerScreen';
 import { HeroScreen } from '../screens/adventure/HeroScreen';
 import { KitSettingsScreen } from '../screens/adventure/KitSettingsScreen';
-import { WorkoutNavigator } from './WorkoutNavigator';
+import { KitWorkoutNavigator } from './KitWorkoutNavigator';
 import { TABS } from './newVersionTabs';
 
 /** Every screen in the new version's stacks. Each tab's stack holds only the ones it can reach. */
@@ -70,7 +70,7 @@ export function AdventureNavigator() {
         <Tab.Screen name={TABS.today} component={TodayTab} options={{ title: 'Today' }} />
         <Tab.Screen name={TABS.map} component={MapTab} options={{ title: 'Map' }} />
         <Tab.Screen name={TABS.hero} component={HeroTab} options={{ title: 'Hero' }} />
-        <Tab.Screen name={TABS.workout} component={WorkoutNavigator} options={{ title: 'Workout' }} />
+        <Tab.Screen name={TABS.workout} component={KitWorkoutNavigator} options={{ title: 'Workout' }} />
       </Tab.Navigator>
     </DraftPlanProvider>
   );
