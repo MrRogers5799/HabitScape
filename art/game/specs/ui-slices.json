@@ -97,6 +97,18 @@
     "scenes/login": {
       "src": "art/game/scenes/login.png",
       "width": 768
+    },
+    "scenes/greywood": {
+      "src": "art/game/scenes/greywood.png",
+      "width": 960
+    },
+    "scenes/stonecrest": {
+      "src": "art/game/scenes/stonecrest.png",
+      "width": 960
+    },
+    "scenes/bog": {
+      "src": "art/game/scenes/bog.png",
+      "width": 960
     }
   },
   "iconSets": {
@@ -121,6 +133,12 @@
     "CREATURE_ICONS": {
       "src": "art/game/creatures",
       "out": "creatures",
+      "size": 144,
+      "margin": 0.06
+    },
+    "GEAR_ICONS": {
+      "src": "art/game/gear",
+      "out": "gear",
       "size": 144,
       "margin": 0.06
     }

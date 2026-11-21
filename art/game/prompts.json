@@ -785,5 +785,847 @@
     "approvedBy": "owner",
     "approvedAt": "2026-11-20",
     "usedAs": "art/game/skills/prayer.png"
+  },
+  {
+    "id": "oak_logs",
+    "file": "art/game/items/oak_logs.png",
+    "generatedAt": "2026-11-20T22:31:53.604Z",
+    "seconds": 115,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/logs.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of two stacked oak logs, thicker than plain logs, with darker rough bark and pale tan end grain with clear rings. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "wolf_bones",
+    "file": "art/game/items/wolf_bones.png",
+    "generatedAt": "2026-11-20T22:32:08.425Z",
+    "seconds": 109,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/bones.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of two long grey-white animal bones crossed, slightly larger and rougher than plain bones, with a canine jaw fang beside them. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "willow_logs",
+    "file": "art/game/items/willow_logs.png",
+    "generatedAt": "2026-11-20T22:33:20.646Z",
+    "seconds": 87,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/logs.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of two stacked willow logs, slimmer and paler, with smooth grey-green bark and creamy end grain. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "big_bones",
+    "file": "art/game/items/big_bones.png",
+    "generatedAt": "2026-11-20T22:33:50.439Z",
+    "seconds": 102,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/bones.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one very large thick bone, chunky and heavy, off-white with darker knobbly ends. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "raw_trout",
+    "file": "art/game/items/raw_trout.png",
+    "generatedAt": "2026-11-20T22:34:50.781Z",
+    "seconds": 90,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one raw trout lying on its side, olive-green back with dark speckles and a faint pink stripe, glossy and uncooked. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "warden_remains",
+    "file": "art/game/items/warden_remains.png",
+    "generatedAt": "2026-11-20T22:35:29.822Z",
+    "seconds": 99,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/bones.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of a mossy, swamp-stained horned skull fragment with a strand of dripping green bog weed, eerie and ancient. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "raw_salmon",
+    "file": "art/game/items/raw_salmon.png",
+    "generatedAt": "2026-11-20T22:36:39.216Z",
+    "seconds": 108,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one raw salmon lying on its side, silvery blue-grey scales with a pale belly, glossy and uncooked. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "wolf_pelt",
+    "file": "art/game/items/wolf_pelt.png",
+    "generatedAt": "2026-11-20T22:37:08.850Z",
+    "seconds": 99,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of a folded grey wolf pelt with soft fur and a darker stripe down the back. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "trout",
+    "file": "art/game/items/trout.png",
+    "generatedAt": "2026-11-20T22:38:13.683Z",
+    "seconds": 94,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one cooked trout lying on its side, golden-brown crisp skin with darker grill marks. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "small_net",
+    "file": "art/game/items/small_net.png",
+    "generatedAt": "2026-11-20T22:38:53.531Z",
+    "seconds": 105,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/logs.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of a small round hand fishing net with a short wooden handle and loose rope mesh. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "salmon",
+    "file": "art/game/items/salmon.png",
+    "generatedAt": "2026-11-20T22:39:48.635Z",
+    "seconds": 95,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one cooked salmon lying on its side, browned skin with flaky pink-orange flesh showing at a cut. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "fishing_rod",
+    "file": "art/game/items/fishing_rod.png",
+    "generatedAt": "2026-11-20T22:40:33.970Z",
+    "seconds": 100,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/logs.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of a simple wooden fishing rod with a cork grip, a small reel and a coiled line, pointing diagonally up to the right. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "raw_chicken",
+    "file": "art/game/items/raw_chicken.png",
+    "generatedAt": "2026-11-20T22:41:25.396Z",
+    "seconds": 97,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one raw chicken drumstick and thigh, pale pink uncooked skin. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "chicken",
+    "file": "art/game/creatures/chicken.png",
+    "generatedAt": "2026-11-20T22:41:53.501Z",
+    "seconds": 79,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/creatures/goblin.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game creature portrait of a plump farmyard chicken with white-and-brown feathers and a red comb. Full body, standing, three-quarter view facing left, centred, filling about 80% of the square, on a plain transparent background. Friendly cozy style, readable at small sizes.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "cooked_chicken",
+    "file": "art/game/items/cooked_chicken.png",
+    "generatedAt": "2026-11-20T22:42:55.396Z",
+    "seconds": 90,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of one roasted chicken drumstick and thigh, glossy golden-brown skin. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "wolf",
+    "file": "art/game/creatures/wolf.png",
+    "generatedAt": "2026-11-20T22:43:40.143Z",
+    "seconds": 107,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/creatures/goblin.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game creature portrait of a lean grey forest wolf with amber eyes, mid-stride, alert but not gory. Full body, standing, three-quarter view facing left, centred, filling about 80% of the square, on a plain transparent background. Friendly cozy style, readable at small sizes.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "burnt_food",
+    "file": "art/game/items/burnt_food.png",
+    "generatedAt": "2026-11-20T22:44:29.611Z",
+    "seconds": 94,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/iron_ore.png",
+      "art/game/items/shrimp.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of a small charred black lump of burnt food with a few glowing embers and a thin wisp of grey smoke. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bandit",
+    "file": "art/game/creatures/bandit.png",
+    "generatedAt": "2026-11-20T22:45:04.013Z",
+    "seconds": 84,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/creatures/goblin.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game creature portrait of a roadside bandit in a patched brown hooded cloak and a cloth scarf over the lower face, holding a short club, scruffy but not menacing. Full body, standing, three-quarter view facing left, centred, filling about 80% of the square, on a plain transparent background. Friendly cozy style, readable at small sizes.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_dagger",
+    "file": "art/game/gear/bronze_dagger.png",
+    "generatedAt": "2026-11-20T22:48:07.065Z",
+    "seconds": 93,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a short straight double-edged dagger with a small crossguard and a dark leather-wrapped grip, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_shield",
+    "file": "art/game/gear/bronze_shield.png",
+    "generatedAt": "2026-11-20T22:48:19.033Z",
+    "seconds": 85,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a round metal shield with a raised central boss and a riveted rim, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_mace",
+    "file": "art/game/gear/bronze_mace.png",
+    "generatedAt": "2026-11-20T22:49:28.880Z",
+    "seconds": 82,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a one-handed mace with a flanged round head on a short shaft and a dark leather grip, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_chestplate",
+    "file": "art/game/gear/bronze_chestplate.png",
+    "generatedAt": "2026-11-20T22:49:46.327Z",
+    "seconds": 87,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a metal chest plate armour piece with shoulder plates and rivets, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_hatchet",
+    "file": "art/game/gear/bronze_hatchet.png",
+    "generatedAt": "2026-11-20T22:51:04.104Z",
+    "seconds": 95,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a small wood-chopping hatchet with a bronze axe head on a wooden handle, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_platelegs",
+    "file": "art/game/gear/bronze_platelegs.png",
+    "generatedAt": "2026-11-20T22:51:46.092Z",
+    "seconds": 120,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a pair of metal leg armour plates (greaves and thigh plates) joined at a belt, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_boots",
+    "file": "art/game/gear/bronze_boots.png",
+    "generatedAt": "2026-11-20T22:53:19.272Z",
+    "seconds": 93,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a pair of armoured boots with metal plates over leather, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_pickaxe",
+    "file": "art/game/gear/bronze_pickaxe.png",
+    "generatedAt": "2026-11-20T22:53:38.606Z",
+    "seconds": 154,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a mining pickaxe with a slightly curved two-pointed bronze head on a wooden handle, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Drawn diagonally, pointing up and to the right. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_gloves",
+    "file": "art/game/gear/bronze_gloves.png",
+    "generatedAt": "2026-11-20T22:54:38.486Z",
+    "seconds": 79,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of a pair of armoured gauntlets with metal plates over leather, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bronze_helm",
+    "file": "art/game/gear/bronze_helm.png",
+    "generatedAt": "2026-11-20T22:55:22.617Z",
+    "seconds": 104,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of an open-faced round metal helmet with a nose guard and a few rivets, made of bronze: base colour #c8894a, shadow #8b5a2b, highlight #f2c28f. Three-quarter view from slightly above. Same outline weight and lighting as the reference sword. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_sword",
+    "file": "art/game/gear/iron_sword.png",
+    "generatedAt": "2026-11-20T23:25:43.531Z",
+    "seconds": 84,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact sword into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_dagger",
+    "file": "art/game/gear/iron_dagger.png",
+    "generatedAt": "2026-11-20T23:27:20.782Z",
+    "seconds": 90,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_dagger.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact dagger into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_sword",
+    "file": "art/game/gear/steel_sword.png",
+    "generatedAt": "2026-11-20T23:27:33.749Z",
+    "seconds": 83,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact sword into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_mace",
+    "file": "art/game/gear/iron_mace.png",
+    "generatedAt": "2026-11-20T23:28:42.654Z",
+    "seconds": 82,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_mace.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact mace into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_dagger",
+    "file": "art/game/gear/steel_dagger.png",
+    "generatedAt": "2026-11-20T23:29:25.505Z",
+    "seconds": 112,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_dagger.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact dagger into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_hatchet",
+    "file": "art/game/gear/iron_hatchet.png",
+    "generatedAt": "2026-11-20T23:30:06.000Z",
+    "seconds": 83,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_hatchet.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact hatchet into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_mace",
+    "file": "art/game/gear/steel_mace.png",
+    "generatedAt": "2026-11-20T23:30:54.635Z",
+    "seconds": 89,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_mace.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact mace into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_pickaxe",
+    "file": "art/game/gear/iron_pickaxe.png",
+    "generatedAt": "2026-11-20T23:31:36.992Z",
+    "seconds": 91,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_pickaxe.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact pickaxe into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_hatchet",
+    "file": "art/game/gear/steel_hatchet.png",
+    "generatedAt": "2026-11-20T23:32:35.473Z",
+    "seconds": 101,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_hatchet.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact hatchet into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_helm",
+    "file": "art/game/gear/iron_helm.png",
+    "generatedAt": "2026-11-20T23:33:02.388Z",
+    "seconds": 85,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_helm.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact helmet into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_pickaxe",
+    "file": "art/game/gear/steel_pickaxe.png",
+    "generatedAt": "2026-11-20T23:34:03.768Z",
+    "seconds": 88,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_pickaxe.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact pickaxe into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_shield",
+    "file": "art/game/gear/iron_shield.png",
+    "generatedAt": "2026-11-20T23:34:42.356Z",
+    "seconds": 100,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_shield.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact shield into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": false
+  },
+  {
+    "id": "steel_helm",
+    "file": "art/game/gear/steel_helm.png",
+    "generatedAt": "2026-11-20T23:35:43.402Z",
+    "seconds": 100,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_helm.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact helmet into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_chestplate",
+    "file": "art/game/gear/iron_chestplate.png",
+    "generatedAt": "2026-11-20T23:35:56.805Z",
+    "seconds": 74,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_chestplate.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact chest plate into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_shield",
+    "file": "art/game/gear/steel_shield.png",
+    "generatedAt": "2026-11-20T23:37:17.969Z",
+    "seconds": 95,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_shield.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact shield into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_platelegs",
+    "file": "art/game/gear/iron_platelegs.png",
+    "generatedAt": "2026-11-20T23:37:35.504Z",
+    "seconds": 99,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_platelegs.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact plate legs into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_chestplate",
+    "file": "art/game/gear/steel_chestplate.png",
+    "generatedAt": "2026-11-20T23:38:47.719Z",
+    "seconds": 90,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_chestplate.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact chest plate into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_boots",
+    "file": "art/game/gear/iron_boots.png",
+    "generatedAt": "2026-11-20T23:38:57.122Z",
+    "seconds": 82,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_boots.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact armoured boots into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_platelegs",
+    "file": "art/game/gear/steel_platelegs.png",
+    "generatedAt": "2026-11-20T23:40:16.019Z",
+    "seconds": 88,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_platelegs.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact plate legs into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_gloves",
+    "file": "art/game/gear/iron_gloves.png",
+    "generatedAt": "2026-11-20T23:40:34.343Z",
+    "seconds": 97,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_gloves.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact armoured gauntlets into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_boots",
+    "file": "art/game/gear/steel_boots.png",
+    "generatedAt": "2026-11-20T23:41:28.675Z",
+    "seconds": 73,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_boots.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact armoured boots into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "steel_gloves",
+    "file": "art/game/gear/steel_gloves.png",
+    "generatedAt": "2026-11-20T23:42:48.367Z",
+    "seconds": 80,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_gloves.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact armoured gauntlets into the steel tier: metal base #b8c4cf, shadow #6e7c88, highlight #f2f6fa (bright, polished, cool white). Only the metal parts change colour; leather, wood and cloth parts keep their colours. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bog_warden",
+    "file": "art/game/creatures/bog_warden.png",
+    "generatedAt": "2026-11-20T23:45:32.092Z",
+    "seconds": 75,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/creatures/goblin.png",
+      "art/game/creatures/wolf.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA boss creature for a cozy fantasy game: the Bog Warden, a tall hunched guardian of a sunken bog, its body made of dark peat, roots and moss over old rusted iron armour plates, a horned mossy skull for a head with two small glowing green eyes, holding up an old iron lantern with a soft green-gold flame (its signature feature) in one hand and a heavy stone-headed maul in the other. Eerie and imposing but not gory. Full body, standing, three-quarter view facing left, larger and more detailed than regular creatures, a faint green lantern glow on its body. Centred with a small margin on every side, on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "scene_greywood",
+    "file": "art/game/scenes/greywood.png",
+    "generatedAt": "2026-11-20T23:46:01.162Z",
+    "seconds": 84,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA wide landscape game scene of Greywood, a quiet old forest at dusk: tall oaks and drooping willows along a slow river with a small wooden fishing jetty, a woodcutter's stump with an axe and a stack of logs, a dark wolf den under rocks in the background, fireflies. Violet-to-amber dusk sky through the canopy, warm lantern light on the jetty. Leave calm open sky at the top left. No people, no creatures, no text. Landscape format, wider than tall.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "scene_stonecrest",
+    "file": "art/game/scenes/stonecrest.png",
+    "generatedAt": "2026-11-20T23:46:52.846Z",
+    "seconds": 52,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA wide landscape game scene of Stonecrest Hills at dusk: rocky grey hills with mine entrances braced by timber, ore veins glinting copper, silver and black in the rocks, a mine cart on rails, and a small bandit camp with a tattered tent and a campfire on a ridge in the background. Violet-to-amber dusk sky, warm firelight. Leave calm open sky at the top left. No people, no creatures, no text. Landscape format, wider than tall.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bogling",
+    "file": "art/game/items/bogling.png",
+    "generatedAt": "2026-11-20T23:47:01.163Z",
+    "seconds": 89,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/creatures/goblin.png",
+      "art/game/items/iron_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of the Bogling, a tiny cute pet: a round little blob of mossy peat with two small root-like legs, a sprout of bog grass on its head and two shiny dark eyes, a tiny green-gold glow like a firefly beside it. Three-quarter view from slightly above, centred with a small margin on every side (the object fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "scene_bog",
+    "file": "art/game/scenes/bog.png",
+    "generatedAt": "2026-11-20T23:48:02.193Z",
+    "seconds": 69,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA wide landscape game scene of The Sunken Bog at dusk: dark still water with reeds and lily pads, twisted dead trees draped in moss, a half-sunken stone bell tower in the middle of the water, a wooden boardwalk leading in, drifting low mist and faint green-gold will-o'-wisp lights. Violet-to-teal dusk sky. Eerie but cozy, not scary. Leave calm open sky at the top left. No people, no creatures, no text. Landscape format, wider than tall.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "wardens_maul",
+    "file": "art/game/gear/wardens_maul.png",
+    "generatedAt": "2026-11-20T23:48:25.481Z",
+    "seconds": 84,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_mace.png",
+      "art/game/gear/iron_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of the Warden's maul: a heavy two-handed maul with a big block of dark mossy stone bound with rusted iron bands, on a gnarled root-wood haft wrapped with bog weed, a faint green glow in the stone's cracks. Drawn diagonally, pointing up and to the right. Centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "bog_iron_helm",
+    "file": "art/game/gear/bog_iron_helm.png",
+    "generatedAt": "2026-11-20T23:50:26.867Z",
+    "seconds": 121,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_helm.png",
+      "art/game/gear/iron_sword.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game inventory icon of the bog-iron helm: an open-faced helmet of dark, rust-flecked bog iron with a tint of deep green, small curling horns of old root, and a band of moss along the brim. Same shape family as the reference helm. Three-quarter view from slightly above, centred with a small margin on every side (about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "iron_shield",
+    "file": "art/game/gear/iron_shield.png",
+    "generatedAt": "2026-11-20T23:53:09.201Z",
+    "seconds": 92,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/gear/bronze_shield.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nRecolour this exact shield into the iron tier: metal base #7d8288, shadow #4a4e53, highlight #b9bec4 (dull grey, slightly rough). The whole shield is metal: the round face, the rim, the rivets and the central boss all become iron; no orange or bronze may remain. Keep the shape, outline, pose and lighting identical. Transparent background.\nImage size: 1024x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-20"
   }
 ]

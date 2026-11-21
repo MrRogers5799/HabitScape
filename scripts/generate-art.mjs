@@ -9,6 +9,7 @@
  * asks Codex to generate one image and save it, copies the result to the asset's
  * `out` path (keeping any previous version as `<name>.prev.png`), and appends an
  * entry to art/game/prompts.json. Windows only (the CLI ships inside the Codex app).
+ * An asset with `editOf: true` is a recolour: its first ref is the image to reproduce.
  */
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -53,7 +54,10 @@ for (const asset of spec.assets) {
     asset.transparent ? 'The background must be transparent (alpha), not white or checkered.' : 'The image has an opaque background.',
     `Make the saved file exactly ${asset.size} pixels.`,
     'Do not write any other files and do not modify the reference images.',
-    refNames.length ? `Style references in this folder: ${refNames.join(', ')}. Match their art style only; do not copy their content, layout or any text.` : '',
+    // `editOf` (a recolour, art bible §9): the first reference is the image to reproduce, not just a style guide.
+    asset.editOf && refNames.length
+      ? `Source image: ${refNames[0]}. Reproduce this exact object with the same shape, outline, pose, framing and lighting, changing only what the prompt says.${refNames.length > 1 ? ` Other references (${refNames.slice(1).join(', ')}) are for style only.` : ''}`
+      : refNames.length ? `Style references in this folder: ${refNames.join(', ')}. Match their art style only; do not copy their content, layout or any text.` : '',
     '',
     'Image prompt:',
     imagePrompt,
