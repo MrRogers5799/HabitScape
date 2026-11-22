@@ -11,6 +11,7 @@ import { useGame } from '../../context/GameContext';
 import {
   ADVENTURER_POSES, Body, ButtonRow, CREATURE_ICONS, FRAMES, ItemIcon, KitButton, kitColors, NineSlice, Panel, space, Tag, type,
 } from '../../game-ui';
+import { RoadMap } from './RoadMap';
 
 export function JourneyCard({ onGo }: { onGo: (target: JourneyTarget) => void }) {
   const { state, activeTrip, claimJourney } = useGame();
@@ -28,6 +29,8 @@ export function JourneyCard({ onGo }: { onGo: (target: JourneyTarget) => void })
 
   return (
     <Panel title="The road to the Bog Warden" right={<Tag label={`${index + 1}/${JOURNEY.length}`} tone="gold" accessibilityLabel={`Step ${index + 1} of ${JOURNEY.length}`} />}>
+      {/* The road as a parchment map, the current stop lit (PROD-038). */}
+      <RoadMap index={index} total={JOURNEY.length} done={done} />
       <Text style={[type.bodyBold, done && { color: kitColors.green }]}>{done ? `Done: ${step.title}` : step.title}</Text>
       {!done && <Body muted>{step.hint}</Body>}
       {reward.length > 0 && (

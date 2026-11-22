@@ -3,7 +3,7 @@
  * it holds by skill or kind, so the popup shows the same rows as the region's list. The
  * spots and their labels are drawn by the app over the image (never painted in), as
  * fractions of the image's width and height, so they can move without new art.
- * Millbrook first; the other regions keep their list until the owner has played it.
+ * Millbrook first (owner, 2026-11-22), then Greywood, Stonecrest and the Bog the same day.
  * A spot that holds a lot (the forge) has a painted scene of its own inside, with its own
  * spots (owner, 2026-11-22: "1 more layer, where you are inside the forge").
  */
@@ -56,6 +56,33 @@ export const REGION_SCENES: Record<string, RegionScene> = {
       { id: 'pier', label: 'Fishing pier', x: 0.3, y: 0.62, gather: ['Fishing'] },
       { id: 'cairn', label: 'Cairn', x: 0.5, y: 0.87, make: ['Prayer'] },
       { id: 'yard', label: 'Fights', x: 0.77, y: 0.69, fights: ['chicken', 'goblin'] },
+    ],
+  },
+  // Layouts fixed by art/game/specs/menu-art.json (greywood_place, stonecrest_place, bog_place).
+  greywood: {
+    image: require('../../../assets/game-ui/scenes/greywood_place.png'),
+    aspect: 2 / 3,
+    spots: [
+      { id: 'trees', label: 'Trees', x: 0.3, y: 0.31, gather: ['Woodcutting'] },
+      { id: 'river', label: 'River', x: 0.66, y: 0.6, gather: ['Fishing'] },
+      { id: 'board', label: 'Order board', x: 0.42, y: 0.85, orders: true },
+      { id: 'den', label: 'Wolf den', x: 0.82, y: 0.88, fights: ['wolf'] },
+    ],
+  },
+  stonecrest: {
+    image: require('../../../assets/game-ui/scenes/stonecrest_place.png'),
+    aspect: 2 / 3,
+    spots: [
+      { id: 'mine', label: 'Mine', x: 0.52, y: 0.31, gather: ['Mining'] },
+      { id: 'board', label: 'Order board', x: 0.67, y: 0.59, orders: true },
+      { id: 'camp', label: 'Bandit camp', x: 0.45, y: 0.88, fights: ['bandit'] },
+    ],
+  },
+  bog: {
+    image: require('../../../assets/game-ui/scenes/bog_place.png'),
+    aspect: 2 / 3,
+    spots: [
+      { id: 'lair', label: "Warden's lair", x: 0.62, y: 0.78, fights: ['bog-warden'] },
     ],
   },
 };

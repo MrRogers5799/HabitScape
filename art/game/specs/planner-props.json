@@ -1,0 +1,37 @@
+{
+  "note": "Planner props (PROD-038): the parchment for the road to the Bog Warden (the app draws the steps on it), the adventure-time hourglass and the loot satchel.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame.",
+  "assets": [
+    {
+      "id": "road_parchment",
+      "out": "art/game/ui/road_parchment.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/bog_place.png",
+        "art/game/map/valley.png"
+      ],
+      "prompt": "An old parchment map sheet filling the whole image, slightly torn and curled edges, warm cream paper with soft brown stains. Painted lightly on it in faded ink-and-watercolour: rolling hills on the left fading to a misty bog with dead trees, reeds and sunken stone arches on the right, as if seen from far away. Leave the middle band of the parchment fairly plain and light so a dotted path and markers can be drawn over it. No path, no dots, no text, no compass rose."
+    },
+    {
+      "id": "hourglass",
+      "out": "art/game/ui/hourglass.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game icon of an ornate brass hourglass with turned wooden end caps, standing upright, glass bulbs EMPTY of sand (the app draws the sand), clear glass with a soft highlight. Front view, centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    },
+    {
+      "id": "satchel",
+      "out": "art/game/ui/satchel.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/items/iron_ore.png"
+      ],
+      "prompt": "A single game icon of a worn brown leather messenger satchel lying on its side with the flap open and empty, a brass buckle, a small embossed leaf on the flap, a shoulder strap curling around. Three-quarter view from slightly above, centred with a small margin on every side (about 75% of the square), on a plain transparent background."
+    }
+  ]
+}

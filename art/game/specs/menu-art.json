@@ -34,6 +34,39 @@
         "art/game/scenes/hero_room.png"
       ],
       "prompt": "A tall portrait view of the inside of Millbrook's village blacksmith forge at night, seen from slightly above like a cozy game room, warm orange firelight, timber beams and stone walls. Three clearly separate work places, each on its own patch of floor with space between them so they are easy to tap on a phone: TOP, a big stone smelting furnace built into the back wall with a glowing orange mouth, a leather bellows beside it and a small heap of copper-orange and grey ore lumps in front, a few finished metal bars cooling on a stone ledge. MIDDLE, a heavy iron anvil on a thick tree stump in the centre of the floor with a hammer and tongs resting on it, a few sparks. BOTTOM, a melting corner: a squat clay crucible pot sitting on glowing coals in a low brick hearth, beside it a wooden bin piled with old dented helmets, shields and blades waiting to be melted down. A tool rack with tongs and hammers on one wall and a water barrel fill the gaps but never cover the three places. No people, no characters, no text, no letters."
+    },
+    {
+      "id": "greywood_place",
+      "out": "art/game/scenes/greywood_place.png",
+      "size": "1024x1536",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook_town.png",
+        "art/game/scenes/greywood.png"
+      ],
+      "prompt": "A tall portrait bird's-eye view (high three-quarter angle, looking down) at dusk, laid out like a game town map where each place is clearly separate, on its own patch of ground, easy to tap on a phone, matching the viewpoint and style of the first reference. A path connects the places. Greywood, an old misty forest of grey-barked trees. Exact layout: TOP, a grove with several big oak trees and one droopy willow tree beside a little pond, a chopping stump with an axe mark and stacked logs. MIDDLE, a clear winding forest river crossing the scene with a wooden plank bridge, a fishing rod propped on a forked stick on the bank, a few fish jumping. BOTTOM LEFT, a woodcutter's small log cabin with a wooden notice board on two posts by its door, blank parchment notes pinned on it. BOTTOM RIGHT, a dark rocky wolf den under twisted roots with a few gnawed bones and glowing eyes in the dark mouth of the den (no visible wolf body). Grey-green mist between the trees, fireflies. Violet-to-amber dusk sky only in a thin strip at the very top. No people, no characters, no text, no letters."
+    },
+    {
+      "id": "stonecrest_place",
+      "out": "art/game/scenes/stonecrest_place.png",
+      "size": "1024x1536",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook_town.png",
+        "art/game/scenes/stonecrest.png"
+      ],
+      "prompt": "A tall portrait bird's-eye view (high three-quarter angle, looking down) at dusk, laid out like a game town map where each place is clearly separate, on its own patch of ground, easy to tap on a phone, matching the viewpoint and style of the first reference. A path connects the places. Stonecrest, a windy rocky highland of grey cliffs. Exact layout: TOP, a big mine entrance cut into the cliff with timber supports, a lantern, rail tracks and a mine cart, and around it large boulders with clearly different veins: copper-orange, pale blue-grey tin, rusty red-brown iron and black coal. MIDDLE, a small stone miners' hut with a wooden notice board on two posts beside the path, blank parchment notes pinned on it. BOTTOM, a rough bandit camp behind a crude wooden palisade: a ragged tent, a campfire, crates and a stolen cart (no people). Sparse heather and pines between the places. Violet-to-amber dusk sky only in a thin strip at the very top. No people, no characters, no text, no letters."
+    },
+    {
+      "id": "bog_place",
+      "out": "art/game/scenes/bog_place.png",
+      "size": "1024x1536",
+      "transparent": false,
+      "refs": [
+        "art/game/scenes/millbrook_town.png",
+        "art/game/scenes/bog.png"
+      ],
+      "prompt": "A tall portrait bird's-eye view (high three-quarter angle, looking down) at dusk, laid out like a game town map where each place is clearly separate, on its own patch of ground, easy to tap on a phone, matching the viewpoint and style of the first reference. A path connects the places. The Sunken Bog, a murky marsh. Exact layout: TOP, the edge of the bog where a rickety boardwalk of planks on stilts starts, with an old drowned bell half sunk in the mud beside it. MIDDLE, the boardwalk winding across dark green water with reeds, lily pads, dead trees hung with moss and drifting will-o'-wisp lights. BOTTOM, the Bog Warden's lair: a huge hollow of ancient roots and sunken ruined stone arches on an island of peat, an old iron lantern glowing green-gold hanging at its mouth (no creature visible). Eerie but cozy, faint green glow. Violet-to-amber dusk sky only in a thin strip at the very top. No people, no characters, no text, no letters."
     }
   ]
 }

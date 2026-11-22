@@ -1,0 +1,209 @@
+{
+  "note": "Planner activity banners (PROD-038): the adventurer drawn into each place doing each activity. 1536x1024, exported for the Planner banner.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame.",
+  "assets": [
+    {
+      "id": "banner_millbrook_mine",
+      "out": "art/game/banners/millbrook_mine.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/mining.png",
+        "art/game/scenes/millbrook_town.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Millbrook's small hillside quarry with a mine entrance, timber supports, a wooden mine cart on rails and boulders with copper-orange and pale blue-grey tin veins. The adventurer swings a pickaxe at a copper-veined boulder, chips of ore flying. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_trees",
+      "out": "art/game/banners/millbrook_trees.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/chopping.png",
+        "art/game/scenes/millbrook_town.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Millbrook's grove beside the village, one ordinary leafy tree and a huge old oak, a chopping stump with cut logs. The adventurer swings a hatchet into the trunk of the leafy tree, wood chips flying. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_pier",
+      "out": "art/game/banners/millbrook_pier.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/fishing_net.png",
+        "art/game/scenes/millbrook_town.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Millbrook's calm pond with a little wooden fishing pier, lily pads, reeds, thatched cottages with glowing windows on the far bank. The adventurer stands on the pier hauling up a small hand net with a few silvery shrimp in it. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_fire",
+      "out": "art/game/banners/millbrook_fire.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/cooking.png",
+        "art/game/scenes/millbrook_town.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Millbrook's open-air cooking spot: a stone fire pit with a glowing campfire, a black pot on a tripod, a small wooden table with a bowl and jug. The adventurer kneels by the fire turning food on a stick over the flames, steam rising. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_furnace",
+      "out": "art/game/banners/millbrook_furnace.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/smithing.png",
+        "art/game/scenes/forge_inside.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: inside Millbrook's forge, the big stone smelting furnace in the back wall glowing orange, a leather bellows, a heap of copper and tin ore. The adventurer uses tongs to pour or set a glowing fresh metal bar from the furnace onto a stone ledge where finished bars cool. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_anvil",
+      "out": "art/game/banners/millbrook_anvil.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/smithing.png",
+        "art/game/scenes/forge_inside.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: inside Millbrook's forge, timber beams and stone walls, the furnace glowing in the background. The adventurer hammers a glowing piece of metal on a heavy iron anvil on a thick stump, sparks flying. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_melt",
+      "out": "art/game/banners/millbrook_melt.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/smithing.png",
+        "art/game/scenes/forge_inside.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: inside Millbrook's forge by the melting corner: a squat clay crucible on glowing coals in a low brick hearth, a wooden bin of old dented helmets and blades beside it. The adventurer drops an old dented helmet into the glowing crucible with tongs. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_cairn",
+      "out": "art/game/banners/millbrook_cairn.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/burying.png",
+        "art/game/scenes/millbrook_town.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: a quiet mossy stone cairn under a willow at the edge of Millbrook, a small lantern on a post, wildflowers. The adventurer kneels respectfully, burying bones in a small patch of soil beside the cairn, a soft warm glow. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_chickens",
+      "out": "art/game/banners/millbrook_chickens.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/sparring.png",
+        "art/game/scenes/millbrook_town.png",
+        "art/game/creatures/chicken.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Millbrook's small fenced chicken yard with a little coop and straw. The adventurer, sword drawn, faces a plump angry chicken flapping its wings, comedic and cozy, feathers flying. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_millbrook_goblins",
+      "out": "art/game/banners/millbrook_goblins.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/sparring.png",
+        "art/game/scenes/millbrook_town.png",
+        "art/game/creatures/goblin.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: the edge of Millbrook by a fence and the path out of the village. The adventurer, sword drawn, faces a small scruffy goblin as in the creature reference, friendly-scary at most. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_greywood_trees",
+      "out": "art/game/banners/greywood_trees.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/chopping.png",
+        "art/game/scenes/greywood_place.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Greywood, an old misty forest of grey-barked oaks and a droopy willow beside a pond, fireflies, stacked logs. The adventurer swings a hatchet into a big grey-barked oak, wood chips flying. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_greywood_river",
+      "out": "art/game/banners/greywood_river.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/fishing_rod.png",
+        "art/game/scenes/greywood_place.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Greywood's clear winding forest river with a wooden plank bridge, mossy rocks, grey-green mist and fireflies. The adventurer stands on the bank casting a fishing rod, a trout leaping from the water. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_greywood_den",
+      "out": "art/game/banners/greywood_den.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/sparring.png",
+        "art/game/scenes/greywood_place.png",
+        "art/game/creatures/wolf.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Greywood, a dark rocky wolf den under twisted roots, gnawed bones on the ground, mist. The adventurer, sword drawn, faces a snarling grey wolf as in the creature reference. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_stonecrest_mine",
+      "out": "art/game/banners/stonecrest_mine.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/mining.png",
+        "art/game/scenes/stonecrest_place.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Stonecrest's windy highland mine entrance cut into grey cliffs, timber supports, a lantern, a cart of ore, boulders with rusty red-brown iron and black coal veins. The adventurer swings a pickaxe at an iron-veined boulder, sparks flying. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_stonecrest_camp",
+      "out": "art/game/banners/stonecrest_camp.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/sparring.png",
+        "art/game/scenes/stonecrest_place.png",
+        "art/game/creatures/bandit.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: Stonecrest's rough bandit camp behind a crude wooden palisade: a ragged tent, a campfire, crates. The adventurer, sword drawn, faces a hooded bandit with a cudgel as in the creature reference. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_bog_lair",
+      "out": "art/game/banners/bog_lair.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/sparring.png",
+        "art/game/scenes/bog_place.png",
+        "art/game/creatures/bog_warden.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: the Sunken Bog, at the mouth of the Bog Warden's lair of ancient roots and sunken stone arches, green-gold lantern light, murky water and reeds. The adventurer, sword drawn, faces the towering Bog Warden as in the creature reference, holding its glowing lantern; tense but not gory. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_camp",
+      "out": "art/game/banners/camp.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/idle.png",
+        "art/game/scenes/millbrook_town.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: a cozy little campsite at the edge of Millbrook at dusk: a small canvas tent, a crackling campfire, a log to sit on, a backpack and bedroll. The adventurer rests by the fire, relaxed, waiting for the next job. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    },
+    {
+      "id": "banner_road",
+      "out": "art/game/banners/road.png",
+      "size": "1536x1024",
+      "transparent": false,
+      "refs": [
+        "art/game/adventurer/walking_home.png",
+        "art/game/scenes/millbrook_town.png"
+      ],
+      "prompt": "The same adventurer as the character reference: a young adult with messy brown hair, a green hooded cloak, tan linen tunic, brown belt with pouches, brown trousers and sturdy brown boots, slightly chibi proportions (head about a fifth of their height), friendly face. Any tool or weapon they hold is drawn plain neutral grey metal. Scene: a winding dirt road through rolling hills at dusk between villages, a wooden signpost, a lantern on a post, distant thatched roofs. The adventurer walks along the road with a full pack. Landscape game banner, 3:2, opaque background, dusk light (violet-to-amber sky where sky shows), lanterns and fire glowing warm. Compose the adventurer left of centre and fairly large (about half the image height), clearly doing the action. Keep the right fifth of the image and a strip along the bottom calm and uncluttered (the app draws signposts and a label there). No text, no letters, no UI."
+    }
+  ]
+}
