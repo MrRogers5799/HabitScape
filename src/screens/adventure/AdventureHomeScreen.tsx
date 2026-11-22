@@ -1,24 +1,23 @@
 /**
- * Today (PROD-019, PROD-026): where the adventurer is and what they're doing, their queue
- * (PROG-045: unstarted blocks can be resized or removed), the log of what came back since
- * you last looked, today's habits, and adventure time (PROG-022).
+ * Planner (PROD-034; was Today): where the adventurer is and what they're doing, the road to
+ * the Bog Warden (PROD-032), their queue (PROG-045: unstarted blocks can be resized or
+ * removed), the log of what came back since you last looked, and adventure time (PROG-022).
+ * Habits have their own tab now.
  */
 import React, { useState } from 'react';
 import { ActivityIndicator, ImageSourcePropType, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activityName, activityOf, BANK_HOURS_CAP, blockHoursWorked, CREATURES, CHUNK_HOURS, clockTime, formatHours, isWorkOrder,
-  itemName, Leg, queueEndsMs, regionName, reportHasNews, TripReport, WEEKLY_HOURS_CAP,
+  activityName, activityOf, blockHoursWorked, CREATURES, CHUNK_HOURS, clockTime, formatHours, isWorkOrder,
+  GameSkill, itemName, Leg, queueEndsMs, regionName, reportHasNews, TripReport, unlocksBetween, WEEKLY_HOURS_CAP,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { TABS } from '../../navigation/newVersionTabs';
-import { TodayHabits } from './TodayHabits';
-import { JourneyCard, WelcomePages } from './Journey';
-import { ActiveWorkoutBanner, useActiveWorkout } from '../workout-kit/ActiveWorkoutBanner';
+import { JourneyCard } from './Journey';
 import {
   ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, Row, SceneBanner, SkillIcon, SkillTile,
-  space, StatReadout, Tag, type, XpChip,
+  ItemIcon, space, StatReadout, Tag, type, XpChip,
 } from '../../game-ui';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'AdventureHome'>;
@@ -124,6 +123,19 @@ function ReturnCard({ report, onDone, home }: { report: TripReport; onDone: () =
           </View>
         </>
       )}
+      {/* What each level-up unlocked (owner note 2026-11-22, #11). */}
+      {levels.map(([s, lvl]) => {
+        const from = Math.min(...report.levelUps.filter((l) => l.skill === s).map((l) => l.level)) - 1;
+        const fresh = unlocksBetween(s as GameSkill, from, lvl);
+        if (fresh.length === 0) return null;
+        return (
+          <View key={`new-${s}`} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+            <Text style={type.caption}>New for {s}:</Text>
+            {fresh.slice(0, 4).map((u) => <Tag key={u.key} label={u.title} tone="gold" icon={u.icon ? <ItemIcon id={u.icon} name={itemName(u.icon)} size={20} /> : undefined} />)}
+            {fresh.length > 4 && <Tag label={`+${fresh.length - 4} more`} />}
+          </View>
+        );
+      })}
       {report.questsCompleted.length > 0 && <Chip label="Quest complete!" tone="gold" />}
       {/* A rare find fills a collection log slot (PROG-047); pets say so by name. */}
       {[...new Set(report.found)].map((id) => <Chip key={id} label={`New in your collection log: ${itemName(id)}`} tone="gold" />)}
@@ -144,7 +156,6 @@ function ReturnCard({ report, onDone, home }: { report: TripReport; onDone: () =
 
 export function AdventureHomeScreen({ navigation }: Props) {
   const { loading, state, activeTrip, nowMs, error, callBack, dismissReturn, resizeBlock, removeBlock } = useGame();
-  const { active: liveWorkout, discard: discardWorkout } = useActiveWorkout();
   const [editing, setEditing] = useState(false);
   const edit = (fn: () => Promise<void>) => {
     setEditing(true);
@@ -190,35 +201,20 @@ export function AdventureHomeScreen({ navigation }: Props) {
   if (showLog && home) pose = activeTrip!.report.levelUps.length > 0 ? 'victorious' : 'walking_home';
 
   return (
-    <KitScreen title="Today">
-      <WelcomePages />
+    <KitScreen title="Planner">
       <SceneBanner compact source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
       {showLog && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} home={home} />}
 
-      {liveWorkout && (
-        <ActiveWorkoutBanner
-          active={liveWorkout}
-          onDiscard={discardWorkout}
-          onResume={() => navigation.getParent()?.navigate(TABS.workout, {
-            // initial: false keeps the Workout list under the session, so Back has somewhere to go.
-            initial: false,
-            screen: 'ActiveSession',
-            params: { templateId: liveWorkout.templateId, templateName: liveWorkout.templateName, backdateDate: liveWorkout.backdateDate },
-          })}
-        />
-      )}
-
       {/* A new player's first goal, one step at a time (PROD-032). */}
       <JourneyCard
-        onGo={(t) => navigation.getParent()?.navigate(TABS.map, 'tab' in t
+        onGo={(t) => ('tab' in t && t.tab === 'habits' ? navigation.getParent()?.navigate(TABS.habits)
+          : 'tab' in t && t.tab === 'quests' ? navigation.getParent()?.navigate(TABS.hero, { screen: 'Hero', params: { section: 'quests' } })
+          : navigation.getParent()?.navigate(TABS.map, 'tab' in t
           ? { screen: 'Map' }
           // initial: false keeps the Map under the region, so Back has somewhere to go.
-          : { initial: false, screen: 'Region', params: { regionId: t.regionId, section: t.section } })}
+          : { initial: false, screen: 'Region', params: { regionId: t.regionId, section: t.section } }))}
       />
-
-      {/* Ticking habits is the daily action, so it comes before the queue (UI review 2026-11-21). */}
-      <TodayHabits />
 
       {/* Blocks are picked on the Map tab, their one home, and join the end of the queue (PROG-045). */}
       {out && (
@@ -235,7 +231,7 @@ export function AdventureHomeScreen({ navigation }: Props) {
         {time.bankHours < 0 ? (
           <StatReadout label="In debt" value={formatHours(-time.bankHours)} tone="red" />
         ) : (
-          <StatReadout label="Ready" value={formatHours(time.bankHours)} max={`${BANK_HOURS_CAP}h`} />
+          <StatReadout label="Ready" value={formatHours(time.bankHours)} />
         )}
         <ProgressBar fraction={time.weekEarnedHours / WEEKLY_HOURS_CAP} color={kitColors.gold} />
         <Body muted>{formatHours(time.weekEarnedHours)} of {WEEKLY_HOURS_CAP}h earned this week{time.bankHours < 0 ? ' · habits pay the debt first' : ''}</Body>

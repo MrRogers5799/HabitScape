@@ -6,8 +6,6 @@
 export const HOURS_PER_HABIT_XP = 1 / 50;
 /** PROG-022: most adventure hours that can be earned in one week. */
 export const WEEKLY_HOURS_CAP = 84;
-/** Most hours the bank holds; extra spills. */
-export const BANK_HOURS_CAP = 48;
 /** PROG-011: trips run in half-hour chunks. */
 export const CHUNK_HOURS = 0.5;
 export const CHUNK_MS = CHUNK_HOURS * 60 * 60 * 1000;

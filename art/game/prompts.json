@@ -1914,5 +1914,18 @@
     ],
     "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Crumb, a tiny cute pet mouse wearing a little white cook's cap, holding a small wooden spoon, round pink ears and a long curled tail. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
     "approved": true
+  },
+  {
+    "id": "tab_planner",
+    "file": "art/game/ui/tabs/planner.png",
+    "generatedAt": "2026-11-22T18:55:55.438Z",
+    "seconds": 106,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/ui/tabs/activities.png",
+      "art/game/ui/tabs/adventure.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a small wooden-framed hourglass with golden sand, a little red ribbon tied round its middle. Very clear silhouette, few details, readable at 28 pixels. Same style, outline and colours as the reference tab icons. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": false
   }
 ]

@@ -179,7 +179,15 @@ export interface VillageOrder {
   xp: Partial<Record<GameSkill, number>>;
   /** A combat request: the creature that drops it (PROG-050). */
   creature?: string;
+  /** A combat request pays this as a combat XP lamp instead of skill XP (PROG-053). */
+  combatLamp?: number;
 }
+
+/** An XP lamp: plain XP for any skill, or a combat lamp for Attack, Strength, Defence or Hitpoints (PROG-053). */
+export type XpLamp = number | { xp: number; kind: 'combat' };
+
+/** The skills a combat lamp can go into. */
+export const COMBAT_LAMP_SKILLS: GameSkill[] = ['Attack', 'Strength', 'Defence', 'Hitpoints'];
 
 // ---------- State ----------
 
@@ -207,8 +215,8 @@ export interface GameState {
   kills: Record<string, number>;
   /** Kills since the last unique, per boss (luck meter, PROG-030). */
   dryKills: Record<string, number>;
-  /** Unused XP lamps from before rewards paid skills directly (PROG-048): XP the player puts into any skill. */
-  lamps: number[];
+  /** Unused XP lamps: a number goes into any skill (from before PROG-048); a combat lamp only into combat skills (PROG-053). */
+  lamps: XpLamp[];
   /** Village orders filled, as `<dayId>:<orderId>` (PROG-044). Only the current day's are kept. */
   ordersFilled: Record<string, true>;
   /** Collection log (PROG-047): each unique found, first time only: when, and at what kill count or level. */

@@ -6,17 +6,17 @@
  * the page stays short (OQ-36).
  */
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
   activitiesIn, canMakeFrom, lowestStyle, CHUNK_HOURS, craftAndDeliverPlan, CREATURES, normaliseLeg, VillageOrder, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, MAX_QUEUE_BLOCKS, Method,
-  orderFilled, ordersFor, questId, QUESTS, REGIONS,
+  orderFilled, ordersFor, QUESTS, REGIONS,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
-  Body, ButtonRow, FRAMES, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, NineSlice, Panel, Row, SkillIcon, SkillSlot,
-  SectionTabs, space, TAB_ICONS, Tag, XpChip,
+  Body, ButtonRow, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, Panel, Row, SkillIcon, SkillSlot,
+  SectionTabs, space, Tag, XpChip,
 } from '../../game-ui';
 import { useDraftPlan } from './draftPlan';
 
@@ -24,6 +24,23 @@ type Props = NativeStackScreenProps<AdventureStackParamList, 'Region'>;
 type Section = 'gather' | 'make' | 'fight' | 'village';
 
 const SLOT = 52;
+
+/**
+ * Owner, 2026-11-22: tell "level too low" (the row greys out) from "level is fine, no
+ * materials" (the row stays bright, with what's missing in red).
+ */
+function NoMaterials({ m, bank }: { m: Method; bank: Record<string, number> }) {
+  if (m.kind !== 'process') return null;
+  return (
+    <>
+      <Tag label="no materials" tone="red" />
+      {Object.entries(m.inputs).map(([id, n]) => (
+        <Tag key={id} label={`${bank[id] ?? 0}/${n}`} tone={(bank[id] ?? 0) >= n ? 'text' : 'red'} icon={<ItemIcon id={id} name={itemName(id)} size={20} />}
+          accessibilityLabel={`Needs ${n} ${itemName(id)}, you have ${bank[id] ?? 0}`} />
+      ))}
+    </>
+  );
+}
 
 /** What a method makes; for one that makes nothing (burying bones), what it uses; else its skill. */
 function MethodIcon({ m }: { m: Method }) {
@@ -42,7 +59,7 @@ export function RegionScreen({ navigation, route }: Props) {
   useEffect(() => { if (route.params.section) setSection(route.params.section); }, [route.params.section]);
   if (!state || !region) return null;
   const locked = !!region.questGate && !state.quests[region.questGate];
-  const { methods, recipes, melts, fights, quests } = activitiesIn(region.id);
+  const { methods, recipes, melts, fights } = activitiesIn(region.id);
   const meltable = melts.filter((m) => m.kind === 'process' && (state.bank[Object.keys(m.inputs)[0]] ?? 0) > 0);
   // Melting is taught by a quest (OQ-37); until then the section says which.
   const meltQuest = melts.find((m) => m.quest && !state.quests[m.quest])?.quest;
@@ -54,7 +71,8 @@ export function RegionScreen({ navigation, route }: Props) {
     ['gather', 'Gather', !locked && gather.length > 0],
     ['make', 'Make', !locked && (making.length > 0 || recipes.length > 0)],
     ['fight', 'Fight', !locked && fights.length > 0],
-    ['village', 'Village', quests.length > 0 || orders.length > 0],
+    // Quests live in Hero's quest journal now; the Village is the order board (owner note 2026-11-22).
+    ['village', 'Village', orders.length > 0],
   ] as [Section, string, boolean][]).filter(([, , has]) => has).map(([value, label]) => ({ value, label }));
   const shown: Section | undefined = sections.find((o) => o.value === section)?.value ?? sections[0]?.value;
   const listed = shown === 'gather' ? gather : shown === 'make' ? making : [];
@@ -121,7 +139,8 @@ export function RegionScreen({ navigation, route }: Props) {
                 dim={!ok}
                 left={<MethodIcon m={m} />}
                 title={m.name}
-                detail={ok ? (
+                detail={!ok ? <NeedsTag skill={m.skill} level={m.level} met={false} />
+                  : m.kind === 'process' && canMakeFrom(state.bank, m) === 0 ? <NoMaterials m={m} bank={state.bank} /> : (
                   <>
                     <Tag label={`${perHour}/h`} accessibilityLabel={`${perHour} per hour`} />
                     <Tag
@@ -131,7 +150,7 @@ export function RegionScreen({ navigation, route }: Props) {
                       accessibilityLabel={`${(perHour * m.xpEach).toLocaleString()} ${m.skill} XP per hour`}
                     />
                   </>
-                ) : <NeedsTag skill={m.skill} level={m.level} met={false} />}
+                )}
                 right={addButton(() => addMethod(m), !ok || full, m.name)}
               />
             );
@@ -162,6 +181,7 @@ export function RegionScreen({ navigation, route }: Props) {
                     {plan && <Tag label={`make ${formatHours(craftHrs)}`} accessibilityLabel={`Your bank can make the rest in ${formatHours(craftHrs)}`} />}
                     {creature && <Tag label={creature.name} icon={<ItemIcon id={creature.id} name={creature.name} size={20} />} accessibilityLabel={`Dropped by ${creature.name}`} />}
                     {(Object.entries(o.xp) as [string, number][]).map(([skill, n]) => <XpChip key={skill} skill={skill} amount={n} />)}
+                    {o.combatLamp ? <Tag label={`+${o.combatLamp.toLocaleString()} combat lamp`} tone="gold" accessibilityLabel={`Pays a ${o.combatLamp.toLocaleString()} XP combat lamp`} /> : null}
                     {/* The button sits under the tags so a long label never squeezes the item name. */}
                     <KitButton compact label={delivering === o.id ? '…' : plan ? 'Craft & deliver' : 'Deliver'} disabled={(have < o.count && !plan) || !!delivering}
                       onPress={() => deliver(o, !!plan)} accessibilityLabel={plan ? `Craft and deliver ${o.count} ${name}` : `Deliver ${o.count} ${name}`} />
@@ -187,14 +207,14 @@ export function RegionScreen({ navigation, route }: Props) {
                 dim={!ok}
                 left={m.output ? <ItemSlot id={m.output} name={name} size={SLOT} /> : <SkillSlot skill={m.skill} size={SLOT} />}
                 title={name}
-                detail={ok ? (
+                detail={!ok ? <NeedsTag skill={m.skill} level={m.level} met={false} /> : have === 0 ? <NoMaterials m={m} bank={state.bank} /> : (
                   <>
                     {inputs.map(([id, n]) => (
                       <Tag key={id} label={`×${n}`} icon={<ItemIcon id={id} name={itemName(id)} size={20} />} accessibilityLabel={`Uses ${n} ${itemName(id)}`} />
                     ))}
-                    <Tag label={`can make ${have}`} tone={have > 0 ? 'green' : 'red'} />
+                    <Tag label={`can make ${have}`} tone="green" />
                   </>
-                ) : <NeedsTag skill={m.skill} level={m.level} met={false} />}
+                )}
                 right={addButton(() => addOrder(m, 1), !ok || full, name)}
               />
             );
@@ -257,33 +277,10 @@ export function RegionScreen({ navigation, route }: Props) {
         </Panel>
       )}
 
-      {shown === 'village' && quests.length > 0 && (
-        <Panel title="Quest board" icon={TAB_ICONS.activities}>
-          {quests.map((q) => {
-            const done = !!state.quests[q.id];
-            return (
-              <Row
-                key={q.id}
-                dim={done}
-                left={(
-                  <NineSlice frame={FRAMES.slot} style={styles.questSlot}>
-                    <Image source={TAB_ICONS.activities} style={styles.questIcon} />
-                  </NineSlice>
-                )}
-                title={q.name}
-                detail={done ? <Tag label="Done" tone="green" /> : <Tag label={formatHours(q.hours)} accessibilityLabel={`Takes ${formatHours(q.hours)}`} />}
-                right={addButton(() => add(questId(q.id), q.hours), done || full, q.name)}
-              />
-            );
-          })}
-        </Panel>
-      )}
     </KitScreen>
   );
 }
 
 const styles = StyleSheet.create({
   planRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  questSlot: { width: SLOT, height: SLOT, alignItems: 'center', justifyContent: 'center' },
-  questIcon: { width: SLOT * 0.62, height: SLOT * 0.62 },
 });

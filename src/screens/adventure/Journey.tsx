@@ -50,9 +50,9 @@ export function JourneyCard({ onGo }: { onGo: (target: JourneyTarget) => void })
 const MAP = require('../../../assets/game-ui/map/valley.png');
 
 const PAGES: { title: string; text: string; image: ImageSourcePropType; square?: boolean }[] = [
-  { title: 'Your habits are your adventure', text: 'Tick a habit on Today and your adventurer earns adventure time. Bigger habits earn more.', image: ADVENTURER_POSES.idle, square: true },
+  { title: 'Your habits are your adventure', text: 'Tick a habit on the Habits tab and your adventurer earns adventure time. Bigger habits earn more.', image: ADVENTURER_POSES.idle, square: true },
   { title: 'Spend it on the Map', text: 'Pick things to do in the valley. Your adventurer works through them in real time while you live your day.', image: MAP },
-  { title: 'Your first goal', text: 'Follow the road to the Bog Warden on Today, one step at a time. Each step gives you something for the next.', image: CREATURE_ICONS.bog_warden, square: true },
+  { title: 'Your first goal', text: 'Follow the road to the Bog Warden on the Planner tab, one step at a time. Each step gives you something for the next.', image: CREATURE_ICONS.bog_warden, square: true },
 ];
 
 /** Shown once, on the first open of the game (PROD-032). */

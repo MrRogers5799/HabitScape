@@ -44,6 +44,7 @@ export const ITEM_ICONS: Record<string, ImageSourcePropType> = {
 export const TAB_ICONS: Record<string, ImageSourcePropType> = {
   activities: require('../../assets/game-ui/tabs/activities.png'),
   adventure: require('../../assets/game-ui/tabs/adventure.png'),
+  planner: require('../../assets/game-ui/tabs/planner.png'),
   profile: require('../../assets/game-ui/tabs/profile.png'),
   settings: require('../../assets/game-ui/tabs/settings.png'),
   skills: require('../../assets/game-ui/tabs/skills.png'),

@@ -11,7 +11,7 @@
 import { collection, doc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import {
-  advanceTrip, callBack, claimJourneyStep, clawBackForDebt, craftAndDeliverPlan, markWelcomed, earnFromHabit, emptyReport, fillOrder, VillageOrder, GameState, LegPlan, newAdventurer,
+  advanceTrip, callBack, claimJourneyStep, earnsAdventureTime, clawBackForDebt, craftAndDeliverPlan, markWelcomed, earnFromHabit, emptyReport, fillOrder, VillageOrder, GameState, LegPlan, newAdventurer,
   queueLegs, queueRunning, removeQueuedLeg, reportHasNews, resizeQueuedLeg, TimeGrant, Trip, TripReport, untickHabit, applyLamp,
 } from '../game';
 import { ADVENTURER_DOC, fromAdventurerDoc, fromTripDoc, mergeReports, toAdventurerDoc, toTripDoc, weekIdFor } from '../game/persistence';
@@ -230,8 +230,9 @@ export async function earnHoursForCompletion(
   uid: string, weekStartDay: 0 | 1, activityId: string, completionId: string, completedAtMs: number, nowMs: number,
 ): Promise<void> {
   try {
+    // Only today's and yesterday's ticks earn, counted against this week's cap (PROG-052).
+    if (!earnsAdventureTime(completedAtMs, nowMs)) return;
     const weekId = weekIdFor(nowMs, weekStartDay);
-    if (weekIdFor(completedAtMs, weekStartDay) !== weekId) return;
     const grant = await earnHours(uid, weekId, habitAdventureXP(activityId));
     await setCompletionTimeGrant(uid, completionId, { weekHours: grant.weekHours, bankHours: grant.bankHours, weekId: grant.weekId });
   } catch (err) {

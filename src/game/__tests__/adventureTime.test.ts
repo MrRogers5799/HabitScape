@@ -1,4 +1,4 @@
-import { earnFromHabit, untickHabit } from '../adventureTime';
+import { earnFromHabit, untickHabit, earnsAdventureTime } from '../adventureTime';
 import { AdventureTime } from '../types';
 
 const fresh = (over: Partial<AdventureTime> = {}): AdventureTime => ({ bankHours: 0, weekId: 'W1', weekEarnedHours: 0, ...over });
@@ -25,11 +25,18 @@ describe('earnFromHabit (PROG-022)', () => {
     expect(time.weekEarnedHours).toBe(4);
   });
 
-  it('spills hours past the 48-hour bank cap', () => {
+  it('has no bank cap: a busy week\'s hours all wait to be spent (PROG-052)', () => {
     const { time, grant, spilledHours } = earnFromHabit(fresh({ bankHours: 46 }), 200, 'W1');
-    expect(grant.bankHours).toBe(2);
-    expect(spilledHours).toBe(2);
-    expect(time.bankHours).toBe(48);
+    expect(grant.bankHours).toBe(4);
+    expect(spilledHours).toBe(0);
+    expect(time.bankHours).toBe(50);
+  });
+
+  it('earns only for ticks on today or yesterday (PROG-052)', () => {
+    const now = new Date(2026, 10, 22, 9).getTime();
+    expect(earnsAdventureTime(new Date(2026, 10, 22, 7).getTime(), now)).toBe(true);
+    expect(earnsAdventureTime(new Date(2026, 10, 21, 12).getTime(), now)).toBe(true);
+    expect(earnsAdventureTime(new Date(2026, 10, 20, 23).getTime(), now)).toBe(false);
   });
 
   it('pays off debt first', () => {

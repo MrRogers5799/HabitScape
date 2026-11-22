@@ -14,7 +14,7 @@ import { kitColors, kitFonts, space } from './tokens';
 
 /** Route name → kit icon id. */
 const ICON_FOR: Record<string, string> = {
-  TodayTab: 'activities', MapTab: 'adventure', HeroTab: 'profile', WorkoutTab: 'workout',
+  HabitsTab: 'activities', PlannerTab: 'planner', MapTab: 'adventure', HeroTab: 'profile',
 };
 
 export function KitTabBar({ state, descriptors, navigation }: BottomTabBarProps) {

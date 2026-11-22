@@ -3,7 +3,7 @@ export * from './components';
 export { NineSlice } from './NineSlice';
 export { FRAMES } from './frames';
 export type { FrameDef } from './frames';
-export { ItemIcon, ItemSlot, LootGrid, formatCount } from './loot';
+export { ItemIcon, ItemInfoContext, ItemSlot, LootGrid, formatCount } from './loot';
 export { NeedsTag, SkillIcon, SkillSlot, SkillTile, Tag, XpChip } from './skills';
 export { KitTabBar } from './KitTabBar';
 export { SectionTabs } from './SectionTabs';

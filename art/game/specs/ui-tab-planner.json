@@ -1,0 +1,17 @@
+{
+  "note": "Planner tab icon (PROD-034): the adventurer's plan, matched to the approved tab icons.",
+  "masterStyle": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.",
+  "assets": [
+    {
+      "id": "tab_planner",
+      "out": "art/game/ui/tabs/planner.png",
+      "size": "1024x1024",
+      "transparent": true,
+      "refs": [
+        "art/game/ui/tabs/activities.png",
+        "art/game/ui/tabs/adventure.png"
+      ],
+      "prompt": "A single bold, simple navigation icon for a game's bottom tab bar: a small wooden-framed hourglass with golden sand, a little red ribbon tied round its middle. Very clear silhouette, few details, readable at 28 pixels. Same style, outline and colours as the reference tab icons. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background."
+    }
+  ]
+}

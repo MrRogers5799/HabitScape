@@ -5,7 +5,7 @@ import { XP_TABLE } from '../constants/xpTable';
 import { calculateLevel } from '../utils/xpCalculations';
 import { ITEMS, STARTING_BANK } from './content/valley';
 import { TOOL_TIER_STEP } from './rules';
-import { GAME_SKILLS, GameSkill, GameState, Method, ToolType, TripReport } from './types';
+import { COMBAT_LAMP_SKILLS, GAME_SKILLS, GameSkill, GameState, Method, ToolType, TripReport, XpLamp } from './types';
 
 export const levelOf = (state: GameState, skill: GameSkill): number => calculateLevel(state.xp[skill] ?? 0);
 
@@ -45,10 +45,17 @@ export function bestTool(state: GameState, type: ToolType, skillLevel: number): 
 /** Gather-rate multiplier for a tool tier (PROG-029: about 20% per tier). */
 export const toolMultiplier = (tier: number): number => Math.pow(TOOL_TIER_STEP, tier - 1);
 
-/** Uses an XP lamp from a quest: its XP goes into any skill the player picks. */
+/** A lamp's XP. */
+export const lampXP = (lamp: XpLamp): number => (typeof lamp === 'number' ? lamp : lamp.xp);
+/** Whether a lamp can go into a skill: plain lamps anywhere, combat lamps into combat skills only (PROG-053). */
+export const lampFits = (lamp: XpLamp, skill: GameSkill): boolean => typeof lamp === 'number' || COMBAT_LAMP_SKILLS.includes(skill);
+
+/** Uses an XP lamp: its XP goes into the skill the player picks, if the lamp fits it. */
 export function applyLamp(state: GameState, lampIndex: number, skill: GameSkill): GameState {
-  const amount = state.lamps[lampIndex];
-  if (amount === undefined) throw new Error('No such lamp');
+  const lamp = state.lamps[lampIndex];
+  if (lamp === undefined) throw new Error('No such lamp');
+  if (!lampFits(lamp, skill)) throw new Error('That lamp only goes into a combat skill');
+  const amount = lampXP(lamp);
   return {
     ...state,
     xp: { ...state.xp, [skill]: (state.xp[skill] ?? 0) + amount },

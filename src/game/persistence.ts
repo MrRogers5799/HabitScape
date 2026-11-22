@@ -10,7 +10,7 @@
  * overwrite newer progress.
  */
 import { newAdventurer } from './adventurer';
-import { CollectionEntry, GAME_SKILLS, GameSkill, GameState, Trip, TripReport } from './types';
+import { CollectionEntry, GAME_SKILLS, GameSkill, GameState, Trip, TripReport, XpLamp } from './types';
 import { backfillCollection } from './collection';
 import { emptyReport } from './trips';
 
@@ -26,7 +26,7 @@ export interface AdventurerDoc {
   quests: Record<string, true>;
   kills: Record<string, number>;
   dryKills: Record<string, number>;
-  lamps: number[];
+  lamps: XpLamp[];
   /** Village orders filled today (PROG-044). */
   ordersFilled: Record<string, true>;
   /** Collection log (PROG-047). */
@@ -114,7 +114,7 @@ export function fromAdventurerDoc(data: unknown, weekId: string): { state: GameS
       quests: isRecord(d.quests) ? (Object.fromEntries(Object.keys(d.quests).map((k) => [k, true])) as Record<string, true>) : {},
       kills: numbers(d.kills),
       dryKills: numbers(d.dryKills),
-      lamps: Array.isArray(d.lamps) ? d.lamps.filter((n): n is number => typeof n === 'number') : [],
+      lamps: Array.isArray(d.lamps) ? d.lamps.filter((l): l is XpLamp => typeof l === 'number' || (isRecord(l) && typeof l.xp === 'number' && l.kind === 'combat')).map((l) => (typeof l === 'number' ? l : { xp: l.xp, kind: 'combat' as const })) : [],
       ordersFilled: isRecord(d.ordersFilled) ? (Object.fromEntries(Object.keys(d.ordersFilled).map((k) => [k, true])) as Record<string, true>) : {},
       // Uniques owned before the log existed count as found (date unknown).
       collection: backfillCollection(bank, collection),

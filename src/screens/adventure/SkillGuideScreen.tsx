@@ -10,7 +10,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import { XP_TABLE } from '../../constants/xpTable';
-import { GameSkill, ITEMS, itemName, levelOf, METHODS, QUESTS, regionName, ToolType } from '../../game';
+import { GameSkill, itemName, lampFits, lampXP, levelOf, SKILL_INFO, skillUnlocks } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
   Body, FRAMES, ItemSlot, KitButton, KitScreen, kitColors, NineSlice, Panel, ProgressBar, Row, SkillIcon, SkillSlot, space, StatReadout,
@@ -20,40 +20,15 @@ import {
 type Props = NativeStackScreenProps<AdventureStackParamList, 'Skill'>;
 
 const SLOT = 52;
-/** The skill each tool type is used with. */
-const TOOL_SKILL: Record<ToolType, GameSkill> = { pickaxe: 'Mining', hatchet: 'Woodcutting', small_net: 'Fishing', fishing_rod: 'Fishing' };
 
-interface Unlock { key: string; level: number; title: string; icon: React.ReactNode; detail?: string }
-
-function unlocksFor(skill: GameSkill): Unlock[] {
-  const out: Unlock[] = [];
-  for (const m of Object.values(METHODS)) {
-    if (m.skill !== skill || m.id.startsWith('melt-')) continue;
-    const icon = m.output ?? (m.kind === 'process' ? Object.keys(m.inputs)[0] : undefined);
-    out.push({
-      key: m.id, level: m.level, title: m.name,
-      icon: icon ? <ItemSlot id={icon} name={itemName(icon)} size={SLOT} /> : <SkillSlot skill={skill} size={SLOT} />,
-      detail: `${m.xpEach} XP each · ${m.regions.map(regionName).join(', ')}`,
-    });
-  }
-  for (const item of Object.values(ITEMS)) {
-    if (item.equip?.wear.skill === skill) {
-      out.push({ key: `wear-${item.id}`, level: item.equip.wear.level, title: `Wear ${item.name.toLowerCase()}`, icon: <ItemSlot id={item.id} name={item.name} size={SLOT} /> });
-    }
-    if (item.tool && TOOL_SKILL[item.tool.type] === skill && item.tool.level > 1) {
-      out.push({ key: `tool-${item.id}`, level: item.tool.level, title: `Use ${item.name.toLowerCase()}`, icon: <ItemSlot id={item.id} name={item.name} size={SLOT} /> });
-    }
-  }
-  for (const q of Object.values(QUESTS)) {
-    const req = q.requirements.find((r) => r.kind === 'skill' && r.skill === skill);
-    if (req && req.kind === 'skill') {
-      out.push({
-        key: `quest-${q.id}`, level: req.level, title: `Quest: ${q.name}`,
-        icon: <NineSlice frame={FRAMES.slot} style={styles.questSlot}><Image source={TAB_ICONS.activities} style={styles.questIcon} /></NineSlice>,
-      });
-    }
-  }
-  return out.sort((a, b) => a.level - b.level || a.title.localeCompare(b.title));
+/** A skill's unlocks (built in the game, src/game/unlocks.ts), with their pictures. */
+function unlocksFor(skill: GameSkill) {
+  return skillUnlocks(skill).map((u) => ({
+    ...u,
+    icon: u.kind === 'quest'
+      ? <NineSlice frame={FRAMES.slot} style={styles.questSlot}><Image source={TAB_ICONS.activities} style={styles.questIcon} /></NineSlice>
+      : u.icon ? <ItemSlot id={u.icon} name={itemName(u.icon)} size={SLOT} /> : <SkillSlot skill={skill} size={SLOT} />,
+  }));
 }
 
 export function SkillGuideScreen({ navigation, route }: Props) {
@@ -69,17 +44,19 @@ export function SkillGuideScreen({ navigation, route }: Props) {
   return (
     <KitScreen title={skill} onBack={() => navigation.goBack()}>
       <Panel>
+        <Body>{SKILL_INFO[skill]}</Body>
         <StatReadout label="Level" value={String(level)} max="99" tone="gold" icon={<SkillIcon skill={skill} size={40} />} />
         {to !== undefined && <ProgressBar fraction={(xp - from) / (to - from)} />}
         <Body muted>{xp.toLocaleString()} XP{to !== undefined ? ` · ${(to - xp).toLocaleString()} to level ${level + 1}` : ''}</Body>
       </Panel>
 
-      {state.lamps.length > 0 && (
+      {/* Only the lamps that fit this skill (combat lamps go into combat skills only, PROG-053). */}
+      {state.lamps.some((l) => lampFits(l, skill)) && (
         <Panel title="XP lamps">
           {/* The amount stays out of the button: Pixelify's small digits misread. */}
-          {state.lamps.map((amount, i) => (
+          {state.lamps.map((lamp, i) => !lampFits(lamp, skill) ? null : (
             <View key={i} style={styles.lampRow}>
-              <Text style={[type.readout, styles.flex, { color: kitColors.gold }]} accessibilityLabel={`${amount.toLocaleString()} XP lamp`}>+{amount.toLocaleString()}</Text>
+              <Text style={[type.readout, styles.flex, { color: kitColors.gold }]} accessibilityLabel={`${lampXP(lamp).toLocaleString()} XP ${typeof lamp === 'number' ? 'lamp' : 'combat lamp'}`}>+{lampXP(lamp).toLocaleString()}</Text>
               <KitButton compact label="Use here" accessibilityLabel={`Use the lamp on ${skill}`} onPress={() => applyLamp(i, skill)} />
             </View>
           ))}
