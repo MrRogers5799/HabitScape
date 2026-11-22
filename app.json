@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.buckorogers.habitscape",
-      "versionCode": 14,
+      "versionCode": 15,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#0d1117",
