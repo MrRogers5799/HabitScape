@@ -14,6 +14,7 @@ import {
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { TABS } from '../../navigation/newVersionTabs';
 import { TodayHabits } from './TodayHabits';
+import { JourneyCard, WelcomePages } from './Journey';
 import { ActiveWorkoutBanner, useActiveWorkout } from '../workout-kit/ActiveWorkoutBanner';
 import {
   ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, Row, SceneBanner, SkillIcon, SkillTile,
@@ -190,6 +191,7 @@ export function AdventureHomeScreen({ navigation }: Props) {
 
   return (
     <KitScreen title="Today">
+      <WelcomePages />
       <SceneBanner compact source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
       {showLog && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} home={home} />}
@@ -206,6 +208,14 @@ export function AdventureHomeScreen({ navigation }: Props) {
           })}
         />
       )}
+
+      {/* A new player's first goal, one step at a time (PROD-032). */}
+      <JourneyCard
+        onGo={(t) => navigation.getParent()?.navigate(TABS.map, 'tab' in t
+          ? { screen: 'Map' }
+          // initial: false keeps the Map under the region, so Back has somewhere to go.
+          : { initial: false, screen: 'Region', params: { regionId: t.regionId, section: t.section } })}
+      />
 
       {/* Ticking habits is the daily action, so it comes before the queue (UI review 2026-11-21). */}
       <TodayHabits />

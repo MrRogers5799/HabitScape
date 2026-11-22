@@ -398,6 +398,7 @@ export function advanceTrip(
     ...stateIn, xp: { ...stateIn.xp }, bank: { ...stateIn.bank }, time: { ...stateIn.time },
     quests: { ...stateIn.quests }, kills: { ...stateIn.kills }, dryKills: { ...stateIn.dryKills }, lamps: [...stateIn.lamps],
     collection: { ...stateIn.collection },
+    journey: stateIn.journey,
   };
   const trip: Trip = { ...tripIn, legs: tripIn.legs.map((l) => ({ ...l })) };
   const report = emptyReport();

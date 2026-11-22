@@ -14,3 +14,4 @@ export * from './preview';
 export * from './labels';
 export * from './orders';
 export * from './collection';
+export * from './journey';

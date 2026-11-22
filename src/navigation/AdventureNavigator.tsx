@@ -27,7 +27,7 @@ export type AdventureStackParamList = {
   Habit: { activityId: string };
   Skill: { skill: GameSkill };
   Map: undefined;
-  Region: { regionId: string };
+  Region: { regionId: string; section?: 'gather' | 'make' | 'fight' | 'village' };
   Planner: undefined;
   Hero: undefined;
   Settings: undefined;

@@ -213,6 +213,8 @@ export interface GameState {
   ordersFilled: Record<string, true>;
   /** Collection log (PROG-047): each unique found, first time only: when, and at what kill count or level. */
   collection: Record<ItemId, CollectionEntry>;
+  /** The road to the Bog Warden (PROD-032): steps collected, and whether the welcome pages were seen. */
+  journey: { claimed: Record<string, true>; welcomed: boolean };
 }
 
 export interface CollectionEntry {
