@@ -30,6 +30,8 @@ interface GameContextType {
   nowMs: number;
   /** The player's local date, for village orders (PROG-044). */
   dayId: string;
+  /** The player's current week, for weekly village orders (PROG-054). */
+  weekId: string;
   /** Skills whose habits were done on the day of `ms` (affinity). */
   affinityAt: (ms: number) => ReadonlySet<string>;
   error: string | null;
@@ -146,6 +148,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     activeTrip,
     nowMs,
     dayId,
+    weekId,
     affinityAt,
     error,
     join: () => run(async () => {

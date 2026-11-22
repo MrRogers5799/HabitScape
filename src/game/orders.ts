@@ -8,14 +8,15 @@
  * for things the adventurer can already get: made or gathered there (their level, and
  * materials from open regions), or dropped by a creature there they can beat (combat
  * requests, PROG-050). Gear comes one to three at a time, other things about 15 to 45
- * minutes' work. "Craft & deliver" (PROG-050) queues the work orders that make what's
+ * minutes' work. Each board also has one larger weekly order (PROG-054), seeded by the week,
+ * about four times a daily order and paying double the bonus. "Craft & deliver" (PROG-050) queues the work orders that make what's
  * missing from the bank, and the last one delivers the order when it finishes.
  */
 import { addRewardXP, burnChance, levelOf } from './adventurer';
 import { fightPreview } from './combat';
 import { CREATURES, ITEMS, METHODS, REGIONS } from './content/valley';
 import { hashString, mulberry32 } from './rng';
-import { ORDERS_PER_BOARD } from './rules';
+import { ORDERS_PER_BOARD, WEEKLY_ORDER_SIZE, WEEKLY_ORDER_XP_BONUS } from './rules';
 import { GameSkill, GameState, ItemId, LegPlan, Method, TripReport, VillageOrder } from './types';
 
 type SkillXP = Partial<Record<GameSkill, number>>;
@@ -117,30 +118,62 @@ function orderCount(item: ItemId, perHour: number, rand: () => number): number {
   return Math.max(1, Math.round(perHour * (0.25 + rand() * 0.5)));
 }
 
-/** Today's orders on a region's board (`dayId` is the player's local date, e.g. '2026-11-21'). */
-export function ordersFor(state: GameState, regionId: string, dayId: string): VillageOrder[] {
-  if (!unlocked(state, regionId)) return [];
+/** An order for `count` of a candidate, paying XP (or a combat lamp) times `bonus`. */
+function makeOrder(c: Candidate, regionId: string, id: string, count: number, bonus: number, weekId?: string): VillageOrder {
+  const xp = Object.fromEntries(
+    (Object.entries(c.xpEach) as [GameSkill, number][]).map(([s, v]) => [s, Math.round(count * v * bonus)]),
+  ) as SkillXP;
+  const period = weekId ? { weekId } : {};
+  // A combat request pays a combat XP lamp instead (PROG-053); Slayer XP joins it once Slayer exists.
+  if (c.creature) return { id, regionId, item: c.item, count, xp: {}, creature: c.creature, combatLamp: Math.round(sumXP(xp)), ...period };
+  return { id, regionId, item: c.item, count, xp, ...period };
+}
+
+/**
+ * This week's larger order on a region's board (PROG-054; `weekId` from weekIdFor). About
+ * four times a daily order (gear four to six pieces) and double the XP bonus.
+ */
+export function weeklyOrderFor(state: GameState, regionId: string, weekId: string): VillageOrder | null {
+  if (!unlocked(state, regionId)) return null;
   const pool = candidates(state, regionId);
+  if (pool.length === 0) return null;
+  const rand = mulberry32(hashString(`orders-week#${weekId}#${regionId}`));
+  const c = pool[Math.floor(rand() * pool.length)];
+  const gear = !!(ITEMS[c.item]?.equip || ITEMS[c.item]?.tool);
+  const count = gear ? 4 + Math.floor(rand() * 3) : Math.max(WEEKLY_ORDER_SIZE, Math.round(c.perHour * WEEKLY_ORDER_SIZE * (0.25 + rand() * 0.5)));
+  return makeOrder(c, regionId, `${regionId}-week-${c.item}`, count, WEEKLY_ORDER_XP_BONUS, weekId);
+}
+
+/**
+ * Today's orders on a region's board (`dayId` is the player's local date, e.g. '2026-11-21').
+ * With `weekId`, they never ask for the same item as this week's order.
+ */
+export function ordersFor(state: GameState, regionId: string, dayId: string, weekId?: string): VillageOrder[] {
+  if (!unlocked(state, regionId)) return [];
+  const weeklyItem = weekId ? weeklyOrderFor(state, regionId, weekId)?.item : undefined;
+  const pool = candidates(state, regionId).filter((c) => c.item !== weeklyItem);
   const rand = mulberry32(hashString(`orders#${dayId}#${regionId}`));
   // Seeded shuffle, then the first few.
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  return pool.slice(0, ORDERS_PER_BOARD).map(({ item, perHour, xpEach, creature }) => {
-    const count = orderCount(item, perHour, rand);
-    const xp = Object.fromEntries(
-      (Object.entries(xpEach) as [GameSkill, number][]).map(([s, v]) => [s, Math.round(count * v * ORDER_XP_BONUS)]),
-    ) as SkillXP;
-    // A combat request pays a combat XP lamp instead (PROG-053); Slayer XP joins it once Slayer exists.
-    if (creature) return { id: `${regionId}-${item}`, regionId, item, count, xp: {}, creature, combatLamp: Math.round(sumXP(xp)) };
-    return { id: `${regionId}-${item}`, regionId, item, count, xp };
-  });
+  return pool.slice(0, ORDERS_PER_BOARD).map((c) => makeOrder(c, regionId, `${regionId}-${c.item}`, orderCount(c.item, c.perHour, rand), ORDER_XP_BONUS));
 }
 
-const filledKey = (dayId: string, orderId: string) => `${dayId}:${orderId}`;
+/** A daily order is marked filled for its day; a weekly one for its week, as `W<weekId>`. */
+const filledKey = (dayId: string, order: string | VillageOrder) =>
+  typeof order !== 'string' && order.weekId ? `W${order.weekId}:${order.id}` : `${dayId}:${typeof order === 'string' ? order : order.id}`;
 
-export const orderFilled = (state: GameState, dayId: string, orderId: string): boolean => !!state.ordersFilled[filledKey(dayId, orderId)];
+export const orderFilled = (state: GameState, dayId: string, order: string | VillageOrder): boolean => !!state.ordersFilled[filledKey(dayId, order)];
+
+/** The date six days before `dayId`: a weekly mark older than this belongs to a past week. */
+function weekAgo(dayId: string): string {
+  const [y, m, d] = dayId.split('-').map(Number);
+  const t = new Date(y, m - 1, d - 6);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
+}
 
 /**
  * Hands an order's items over from the bank and pays its XP to the skills. Takes the
@@ -148,15 +181,17 @@ export const orderFilled = (state: GameState, dayId: string, orderId: string): b
  * strand a delivery already on its way. Older days' marks are dropped.
  */
 export function fillOrder(state: GameState, order: VillageOrder, dayId: string, report: TripReport | null = null): GameState {
-  if (orderFilled(state, dayId, order.id)) throw new Error('That order is already filled');
+  if (orderFilled(state, dayId, order)) throw new Error('That order is already filled');
   if ((state.bank[order.item] ?? 0) < order.count) throw new Error("You don't have enough for that order");
-  // Keep this day's marks and any later day's (a craft & deliver can land after midnight).
-  const today = Object.fromEntries(Object.keys(state.ordersFilled).filter((k) => k.slice(0, 10) >= dayId).map((k) => [k, true as const]));
+  // Keep this day's marks and any later day's (a craft & deliver can land after midnight), and
+  // this week's weekly marks; drop older ones.
+  const keep = (k: string) => (k.startsWith('W') ? k.slice(1, 11) >= weekAgo(dayId) : k.slice(0, 10) >= dayId);
+  const today = Object.fromEntries(Object.keys(state.ordersFilled).filter(keep).map((k) => [k, true as const]));
   const next: GameState = {
     ...state,
     xp: { ...state.xp },
     bank: { ...state.bank, [order.item]: state.bank[order.item] - order.count },
-    ordersFilled: { ...today, [filledKey(dayId, order.id)]: true },
+    ordersFilled: { ...today, [filledKey(dayId, order)]: true },
   };
   for (const [s, n] of Object.entries(order.xp) as [GameSkill, number][]) addRewardXP(next, report, s, n);
   if (order.combatLamp) next.lamps = [...next.lamps, { xp: order.combatLamp, kind: 'combat' }];
