@@ -11,12 +11,14 @@ import { useGame } from '../../context/GameContext';
 import {
   canMakeFrom, collectionItems, CREATURES, formatHours, ITEMS, itemName, levelOf, METHODS, normaliseLeg, regionName, REGIONS, SKILL_PETS,
 } from '../../game';
-import { Body, ItemIcon, ItemInfoContext, KitButton, KitModal, NeedsTag, Row, space, Tag } from '../../game-ui';
+import { Body, ItemIcon, ItemInfoContext, KitButton, KitModal, NeedsTag, Row, SkillIcon, space, Tag } from '../../game-ui';
 
 const SLOT_NAMES: Record<string, string> = {
   head: 'head', neck: 'neck', cape: 'cape', chest: 'body', legs: 'legs', boots: 'feet', gloves: 'hands', ring: 'ring', mainHand: 'weapon', offHand: 'shield',
 };
 const TOOL_SKILL: Record<string, 'Mining' | 'Woodcutting' | 'Fishing'> = { pickaxe: 'Mining', hatchet: 'Woodcutting', small_net: 'Fishing', fishing_rod: 'Fishing' };
+/** How many uses the sheet lists before Show all. */
+const USES_SHOWN = 4;
 const PETS = new Set(Object.values(SKILL_PETS).concat('bogling'));
 
 export function ItemSheetProvider({ children }: { children: React.ReactNode }) {
@@ -24,7 +26,7 @@ export function ItemSheetProvider({ children }: { children: React.ReactNode }) {
   return (
     <ItemInfoContext.Provider value={{ open: setId }}>
       {children}
-      <ItemSheet id={id} onClose={() => setId(null)} />
+      <ItemSheet key={id ?? 'none'} id={id} onClose={() => setId(null)} />
     </ItemInfoContext.Provider>
   );
 }
@@ -32,6 +34,7 @@ export function ItemSheetProvider({ children }: { children: React.ReactNode }) {
 function ItemSheet({ id, onClose }: { id: string | null; onClose: () => void }) {
   const { state } = useGame();
   const { openAdd } = useAddToQueue();
+  const [showAll, setShowAll] = useState(false);
   if (!id || !state) return <KitModal visible={false} title="" onClose={onClose}>{null}</KitModal>;
 
   const creature = CREATURES[id];
@@ -84,7 +87,21 @@ function ItemSheet({ id, onClose }: { id: string | null; onClose: () => void }) 
 
   const makers = Object.values(METHODS).filter((m) => m.output === id && !m.id.startsWith('melt-'));
   const droppers = Object.values(CREATURES).filter((c) => c.bones === id || c.drops.some((d) => d.item === id));
-  const uses = Object.values(METHODS).filter((m) => m.kind === 'process' && m.inputs[id] !== undefined);
+  // Uses you can do now come first; past USES_SHOWN the rest wait behind "Show all" (owner,
+  // 2026-11-22: bronze bars listed eleven and ran off the screen).
+  const uses = Object.values(METHODS)
+    .filter((m) => m.kind === 'process' && m.inputs[id] !== undefined)
+    .map((m) => {
+      if (m.kind !== 'process') throw new Error('unreachable');
+      const regionId = m.regions.find(open);
+      const lvlOk = levelOf(state, m.skill) >= m.level;
+      const questOk = !m.quest || !!state.quests[m.quest];
+      const n = canMakeFrom(state.bank, m);
+      const rank = !lvlOk || !questOk || !regionId ? 2 : n === 0 ? 1 : 0;
+      return { m, regionId, lvlOk, questOk, n, rank };
+    })
+    .sort((a, b) => a.rank - b.rank || a.m.level - b.m.level);
+  const shown = showAll ? uses : uses.slice(0, USES_SHOWN);
 
   return (
     <KitModal visible title={name} onClose={onClose}>
@@ -96,12 +113,7 @@ function ItemSheet({ id, onClose }: { id: string | null; onClose: () => void }) 
         </View>
       </View>
 
-      {uses.map((m) => {
-        if (m.kind !== 'process') return null;
-        const regionId = m.regions.find(open);
-        const lvlOk = levelOf(state, m.skill) >= m.level;
-        const questOk = !m.quest || !!state.quests[m.quest];
-        const n = canMakeFrom(state.bank, m);
+      {shown.map(({ m, regionId, lvlOk, questOk, n }) => {
         const hours = regionId && n > 0 ? normaliseLeg(state, { activityId: m.id, regionId, hours: 0, count: n }).hours : 0;
         return (
           <Row
@@ -111,13 +123,31 @@ function ItemSheet({ id, onClose }: { id: string | null; onClose: () => void }) 
             detail={!lvlOk ? <NeedsTag skill={m.skill} level={m.level} met={false} />
               : !questOk ? <Tag label="Taught by a quest" tone="red" />
                 : n === 0 ? <Tag label="not enough to make one" tone="red" />
-                  : <Tag label={`×${n} · ${formatHours(hours)}`} accessibilityLabel={`${n}, taking ${formatHours(hours)}`} />}
+                  : (
+                    <>
+                      <Tag label={`×${n} · ${formatHours(hours)}`} accessibilityLabel={`${n}, taking ${formatHours(hours)}`} />
+                      <Tag
+                        label={`${(n * m.xpEach).toLocaleString()} XP`}
+                        tone="gold"
+                        icon={<SkillIcon skill={m.skill} size={18} />}
+                        accessibilityLabel={`${(n * m.xpEach).toLocaleString()} ${m.skill} XP`}
+                      />
+                    </>
+                  )}
             right={lvlOk && questOk && regionId && n > 0 ? (
               <KitButton compact label="Queue" accessibilityLabel={`Queue: ${m.name}, all ${n}`} onPress={() => queue(m.id, regionId, n)} />
             ) : undefined}
           />
         );
       })}
+      {uses.length > USES_SHOWN && (
+        <KitButton
+          compact
+          kind="secondary"
+          label={showAll ? 'Show fewer' : `Show all ${uses.length} uses`}
+          onPress={() => setShowAll(!showAll)}
+        />
+      )}
 
       {(makers.length > 0 || droppers.length > 0) && (
         <View style={styles.tags}>
