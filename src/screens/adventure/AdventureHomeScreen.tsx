@@ -16,10 +16,15 @@ import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { TABS } from '../../navigation/newVersionTabs';
 import { JourneyCard } from './Journey';
 import {
-  ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, Row, SceneBanner, SkillIcon, SkillTile,
+  ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, Row, SkillIcon, SkillTile,
   ItemIcon, space, StatReadout, Tag, type, XpChip,
 } from '../../game-ui';
 import { poseFor } from './regionScenes';
+import { bannerKey, BANNERS } from './banners';
+import { PlannerBanner, Signpost } from './PlannerBanner';
+import { Hourglass } from './Hourglass';
+
+const SATCHEL = require('../../../assets/game-ui/planner/satchel.png');
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'AdventureHome'>;
 
@@ -30,6 +35,15 @@ const SCENES: Record<string, ImageSourcePropType> = {
   stonecrest: require('../../../assets/game-ui/scenes/stonecrest.png'),
   bog: require('../../../assets/game-ui/scenes/bog.png'),
 };
+
+/** The icon for a block: what it makes or uses, or the creature it fights. */
+function legIcon(activityId: string): string | undefined {
+  const act = activityOf(activityId);
+  if (!act || act.kind === 'quest') return undefined;
+  if (act.kind === 'fight') return act.creature.id;
+  const m = act.method;
+  return m.output ?? (m.kind === 'process' ? Object.keys(m.inputs)[0] : undefined);
+}
 
 /**
  * What's next in the queue (PROG-045). The block being worked lives in the scene banner
@@ -93,7 +107,7 @@ function ReturnCard({ report, onDone, home }: { report: TripReport; onDone: () =
   const levels = Object.entries(report.levelUps.reduce<Record<string, number>>((m, l) => ({ ...m, [l.skill]: Math.max(m[l.skill] ?? 0, l.level) }), {}));
   const empty = items.length === 0 && xp.length === 0 && kills.length === 0 && report.questsCompleted.length === 0;
   return (
-    <Panel title={home ? 'Welcome back!' : 'While you were away'} right={report.found.length > 0 ? <Chip label="Rare find!" tone="gold" /> : undefined}>
+    <Panel title={home ? 'Welcome back!' : 'While you were away'} icon={SATCHEL} right={report.found.length > 0 ? <Chip label="Rare find!" tone="gold" /> : undefined}>
       {/* One level-up gets the big line; several share one heading and a row of skill slots. */}
       {levels.length === 1 && (
         <StatReadout label={`Level up! ${levels[0][0]}`} value={String(levels[0][1])} tone="gold" icon={<SkillIcon skill={levels[0][0]} size={40} />} />
@@ -162,30 +176,55 @@ export function AdventureHomeScreen({ navigation }: Props) {
   const time = state.time;
 
   let status = 'Resting in Millbrook';
-  let sub = time.bankHours > 0 ? 'Pick something to do on the Map' : 'Do a habit to earn adventure time';
+  let sub: string | undefined = time.bankHours > 0 ? 'Pick something to do on the Map' : 'Do a habit to earn adventure time';
   let progress: number | undefined;
   let progressLabel: string | undefined;
   let sceneRegion = 'millbrook';
   let pose = 'idle';
+  let banner = 'camp';
+  let next: Signpost[] = [];
   if (out) {
     const leg = trip.legs.find((l) => !l.ended) ?? trip.legs[trip.legs.length - 1];
     const plannedHours = trip.legs.reduce((s, l) => s + l.hours - l.refundedHours, 0);
     const doneHours = trip.legs.reduce((s, l) => s + blockHoursWorked(l), 0);
     const backMs = queueEndsMs(trip);
     progress = plannedHours ? doneHours / plannedHours : 0;
-    progressLabel = `${formatHours(Math.max(0, (backMs - nowMs) / 3600000))} left`;
-    status = `Currently at ${regionName(leg.regionId)}`;
+    progressLabel = `${formatHours(Math.max(0, (backMs - nowMs) / 3600000))} left · ${clockTime(backMs)}`;
+    status = activityName(leg.activityId);
     sceneRegion = leg.regionId;
     pose = poseFor(leg.activityId);
-    sub = `${activityName(leg.activityId)} · queue done at ${clockTime(backMs)}`;
+    banner = bannerKey(leg.activityId, leg.regionId);
+    // The painting shows where; the bar says when the queue is done.
+    sub = undefined;
+    // The next two blocks as signposts on the banner (PROD-038).
+    const at = trip.legs.indexOf(leg);
+    next = trip.legs.slice(at + 1).filter((l) => !l.ended).slice(0, 2).map((l, i) => ({
+      key: `${i}-${l.activityId}`, icon: legIcon(l.activityId), name: activityName(l.activityId),
+      label: isWorkOrder(l) ? `×${l.count}` : formatHours(l.hours),
+    }));
   }
 
   // Back home with loot: cheering after a level-up, otherwise walking in with the pack.
-  if (showLog && home) pose = activeTrip!.report.levelUps.length > 0 ? 'victorious' : 'walking_home';
+  if (showLog && home) {
+    pose = activeTrip!.report.levelUps.length > 0 ? 'victorious' : 'walking_home';
+    banner = 'road';
+    status = 'Back home in Millbrook';
+    sub = 'Put your finds in the bank';
+  }
+  const painted = BANNERS[banner];
 
   return (
     <KitScreen title="Planner">
-      <SceneBanner compact source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
+      {/* The adventurer painted at the place and activity (PROD-038); the region's scene and the pose until that banner exists. */}
+      <PlannerBanner
+        source={painted ?? SCENES[sceneRegion] ?? SCENES.millbrook}
+        figure={painted ? undefined : ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle}
+        label={status}
+        sublabel={sub}
+        progress={progress}
+        progressLabel={progressLabel}
+        next={next}
+      />
 
       {showLog && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} home={home} />}
 
@@ -210,14 +249,19 @@ export function AdventureHomeScreen({ navigation }: Props) {
         />
       )}
 
+      {/* The hourglass (PROD-038): top sand is what's banked (full at 12h), bottom sand this week's earnings. */}
       <Panel title="Adventure time">
-        {time.bankHours < 0 ? (
-          <StatReadout label="In debt" value={formatHours(-time.bankHours)} tone="red" />
-        ) : (
-          <StatReadout label="Ready" value={formatHours(time.bankHours)} />
-        )}
-        <ProgressBar fraction={time.weekEarnedHours / WEEKLY_HOURS_CAP} color={kitColors.gold} />
-        <Body muted>{formatHours(time.weekEarnedHours)} of {WEEKLY_HOURS_CAP}h earned this week{time.bankHours < 0 ? ' · habits pay the debt first' : ''}</Body>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
+          <Hourglass banked={Math.max(0, time.bankHours) / 12} earned={time.weekEarnedHours / WEEKLY_HOURS_CAP} />
+          <View style={{ flex: 1, gap: space.xs }}>
+            {time.bankHours < 0 ? (
+              <StatReadout label="In debt" value={formatHours(-time.bankHours)} tone="red" />
+            ) : (
+              <StatReadout label="Ready" value={formatHours(time.bankHours)} />
+            )}
+            <Body muted>{formatHours(time.weekEarnedHours)} of {WEEKLY_HOURS_CAP}h earned this week{time.bankHours < 0 ? ' · habits pay the debt first' : ''}</Body>
+          </View>
+        </View>
       </Panel>
 
       {error && <Panel><Body style={{ color: kitColors.red }}>{error}</Body></Panel>}

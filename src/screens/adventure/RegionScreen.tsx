@@ -284,7 +284,8 @@ export function RegionScreen({ navigation, route }: Props) {
   );
 
   const fightPanel = (list: typeof fights) => list.length > 0 && (
-    <Box title="Fights" inSpot={spotTitle}>
+    // A spot's fights need no "Fights" heading: the spot (Wolf den, Bandit camp) already says so.
+    <Box title="Fights" inSpot={spot ? 'Fights' : undefined}>
       {list.map((c) => {
         const p = fightPreview(state, c);
         const win = Math.round(p.winChance * 100);

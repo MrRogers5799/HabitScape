@@ -125,6 +125,110 @@
     "scenes/forge_inside": {
       "src": "art/game/scenes/forge_inside.png",
       "width": 900
+    },
+    "scenes/greywood_place": {
+      "src": "art/game/scenes/greywood_place.png",
+      "width": 900
+    },
+    "scenes/stonecrest_place": {
+      "src": "art/game/scenes/stonecrest_place.png",
+      "width": 900
+    },
+    "scenes/bog_place": {
+      "src": "art/game/scenes/bog_place.png",
+      "width": 900
+    },
+    "planner/road_parchment": {
+      "src": "art/game/ui/road_parchment.png",
+      "width": 900
+    },
+    "banners/millbrook_mine": {
+      "src": "art/game/banners/millbrook_mine.png",
+      "width": 960
+    },
+    "banners/greywood_river": {
+      "src": "art/game/banners/greywood_river.png",
+      "width": 960
+    },
+    "banners/bog_lair": {
+      "src": "art/game/banners/bog_lair.png",
+      "width": 960
+    },
+    "planner/hourglass": {
+      "src": "art/game/ui/hourglass.png",
+      "width": 256
+    },
+    "planner/hourglass_sand_top": {
+      "src": "art/game/ui/hourglass_sand_top.png",
+      "width": 256
+    },
+    "planner/hourglass_sand_bottom": {
+      "src": "art/game/ui/hourglass_sand_bottom.png",
+      "width": 256
+    },
+    "planner/satchel": {
+      "src": "art/game/ui/satchel.png",
+      "width": 256
+    },
+    "banners/camp": {
+      "src": "art/game/banners/camp.png",
+      "width": 960
+    },
+    "banners/greywood_den": {
+      "src": "art/game/banners/greywood_den.png",
+      "width": 960
+    },
+    "banners/greywood_trees": {
+      "src": "art/game/banners/greywood_trees.png",
+      "width": 960
+    },
+    "banners/millbrook_anvil": {
+      "src": "art/game/banners/millbrook_anvil.png",
+      "width": 960
+    },
+    "banners/millbrook_cairn": {
+      "src": "art/game/banners/millbrook_cairn.png",
+      "width": 960
+    },
+    "banners/millbrook_chickens": {
+      "src": "art/game/banners/millbrook_chickens.png",
+      "width": 960
+    },
+    "banners/millbrook_fire": {
+      "src": "art/game/banners/millbrook_fire.png",
+      "width": 960
+    },
+    "banners/millbrook_furnace": {
+      "src": "art/game/banners/millbrook_furnace.png",
+      "width": 960
+    },
+    "banners/millbrook_goblins": {
+      "src": "art/game/banners/millbrook_goblins.png",
+      "width": 960
+    },
+    "banners/millbrook_melt": {
+      "src": "art/game/banners/millbrook_melt.png",
+      "width": 960
+    },
+    "banners/millbrook_pier": {
+      "src": "art/game/banners/millbrook_pier.png",
+      "width": 960
+    },
+    "banners/millbrook_trees": {
+      "src": "art/game/banners/millbrook_trees.png",
+      "width": 960
+    },
+    "banners/road": {
+      "src": "art/game/banners/road.png",
+      "width": 960
+    },
+    "banners/stonecrest_camp": {
+      "src": "art/game/banners/stonecrest_camp.png",
+      "width": 960
+    },
+    "banners/stonecrest_mine": {
+      "src": "art/game/banners/stonecrest_mine.png",
+      "width": 960
     }
   },
   "iconSets": {
