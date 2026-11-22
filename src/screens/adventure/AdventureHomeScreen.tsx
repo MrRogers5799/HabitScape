@@ -117,7 +117,9 @@ function ReturnCard({ report, onDone, home }: { report: TripReport; onDone: () =
           </View>
         </>
       )}
-      {report.questsCompleted.length > 0 && <Chip label="Quest complete! Lamp on the Hero screen" tone="gold" />}
+      {report.questsCompleted.length > 0 && <Chip label="Quest complete!" tone="gold" />}
+      {/* A rare find fills a collection log slot (PROG-047); pets say so by name. */}
+      {[...new Set(report.found)].map((id) => <Chip key={id} label={`New in your collection log: ${itemName(id)}`} tone="gold" />)}
       {kills.length > 0 && <LootGrid items={kills} nameOf={(id) => CREATURES[id]?.name ?? id} />}
       {items.length > 0 && <LootGrid items={items} nameOf={itemName} />}
       {xp.length > 0 && (

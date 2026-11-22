@@ -1792,5 +1792,127 @@
     "approved": true,
     "approvedBy": "owner",
     "approvedAt": "2026-11-20"
+  },
+  {
+    "id": "pet_scrap",
+    "file": "art/game/items/pet_scrap.png",
+    "generatedAt": "2026-11-22T04:08:26.231Z",
+    "seconds": 131,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Scrap, a tiny cute pet fox kit sitting up proudly, a red bandana around its neck and a little wooden practice sword at its side, bright eager eyes. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_bruno",
+    "file": "art/game/items/pet_bruno.png",
+    "generatedAt": "2026-11-22T04:09:44.374Z",
+    "seconds": 78,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Bruno, a tiny cute pet bear cub flexing one stubby arm, a small leather wrist strap on it, round tummy, cheerful face. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_shelly",
+    "file": "art/game/items/pet_shelly.png",
+    "generatedAt": "2026-11-22T04:11:18.975Z",
+    "seconds": 95,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Shelly, a tiny cute pet tortoise whose domed shell is patterned like a round bronze shield with a rim and a centre boss, calm sleepy smile. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_patch",
+    "file": "art/game/items/pet_patch.png",
+    "generatedAt": "2026-11-22T04:12:52.741Z",
+    "seconds": 94,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Patch, a tiny cute pet hedgehog curled half open with a small cloth bandage on its forehead and a tiny red heart-shaped berry held in its paws, warm brown spines. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_wisp",
+    "file": "art/game/items/pet_wisp.png",
+    "generatedAt": "2026-11-22T04:14:28.836Z",
+    "seconds": 96,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Wisp, a tiny cute pet spirit moth: a soft round fluffy body glowing pale gold, two small feathery antennae and wide gentle wings with faint candle-flame markings, a soft halo of light around it. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_pebble",
+    "file": "art/game/items/pet_pebble.png",
+    "generatedAt": "2026-11-22T04:15:59.664Z",
+    "seconds": 91,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png",
+      "art/game/items/copper_ore.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Pebble, a tiny cute pet armadillo curled almost into a ball so it looks like a grey stone, with copper-coloured ore flecks in its armour bands, one little face and two paws peeking out. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_cinder",
+    "file": "art/game/items/pet_cinder.png",
+    "generatedAt": "2026-11-22T04:17:29.418Z",
+    "seconds": 90,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Cinder, a tiny cute pet salamander glowing like hot iron: dark charcoal skin with orange-red glowing spots and a warm ember-tipped tail, sitting on a tiny anvil. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_hoot",
+    "file": "art/game/items/pet_hoot.png",
+    "generatedAt": "2026-11-22T04:19:02.907Z",
+    "seconds": 93,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png",
+      "art/game/items/logs.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Hoot, a tiny cute pet owlet with big round amber eyes and fluffy bark-brown feathers, perched on a short cut log with a leafy twig. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_ripple",
+    "file": "art/game/items/pet_ripple.png",
+    "generatedAt": "2026-11-22T04:20:56.018Z",
+    "seconds": 113,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Ripple, a tiny cute pet otter pup floating on its back, holding a small silver fish on its tummy, sleek brown fur and a few water droplets around it. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
+  },
+  {
+    "id": "pet_crumb",
+    "file": "art/game/items/pet_crumb.png",
+    "generatedAt": "2026-11-22T04:22:10.294Z",
+    "seconds": 74,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/items/bogling.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single game icon of Crumb, a tiny cute pet mouse wearing a little white cook's cap, holding a small wooden spoon, round pink ears and a long curled tail. Small, round and chunky like the reference pet. Three-quarter view from slightly above, centred with a small margin on every side (the creature fills about 75% of the square), on a plain transparent background.\nImage size: 1024x1024.",
+    "approved": true
   }
 ]

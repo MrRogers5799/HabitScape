@@ -93,6 +93,12 @@ describe('fights', () => {
     expect(report.kills['bog-warden']).toBeGreaterThan(0);
     expect(report.found.some((i) => i === 'wardens_maul' || i === 'bog_iron_helm')).toBe(true);
     expect(state.dryKills['bog-warden']).toBeLessThan(60);
+    // The collection log (PROG-047) records it once, with the kill count it came at.
+    const unique = report.found.find((i) => i === 'wardens_maul' || i === 'bog_iron_helm')!;
+    expect(state.collection[unique].kc).toBeGreaterThan(0);
+    expect(state.collection[unique].kc).toBeLessThanOrEqual(state.kills['bog-warden']);
+    expect(state.collection[unique].atMs).toBeGreaterThanOrEqual(T0);
+    expect(report.gained[unique]).toBe(1);
   });
 });
 
@@ -127,11 +133,15 @@ describe('quests', () => {
     const { state, report } = advanceTrip(sent.state, sent.trip, T0 + HOUR);
     expect(report.questsCompleted).toEqual(['supper-for-the-smith']);
     expect(state.bank.fishing_rod).toBe(1);
-    expect(state.lamps).toEqual([500]);
+    // Quest XP goes straight to its skill (PROG-048), not into a lamp.
+    expect(state.lamps).toEqual([]);
+    expect(state.xp.Cooking).toBe(s.xp.Cooking + 500);
+    expect(report.xp.Cooking).toBe(500);
     expect(checkPlan(state, [leg(questId('supper-for-the-smith'), 1)])).toBe('quest-done');
 
-    const lit = applyLamp(state, 0, 'Mining');
-    expect(lit.xp.Mining).toBe(500);
+    // Lamps already in older saves still work.
+    const lit = applyLamp({ ...state, lamps: [500] }, 0, 'Mining');
+    expect(lit.xp.Mining).toBe(state.xp.Mining + 500);
     expect(lit.lamps).toEqual([]);
   });
 

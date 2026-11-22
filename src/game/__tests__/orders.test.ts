@@ -1,5 +1,5 @@
 import { newAdventurer } from '../adventurer';
-import { fillOrder, itemXPValue, orderFilled, ordersFor } from '../orders';
+import { fillOrder, itemXPBySkill, itemXPValue, orderFilled, ordersFor } from '../orders';
 import { fromAdventurerDoc, toAdventurerDoc } from '../persistence';
 import { GameState } from '../types';
 
@@ -24,7 +24,7 @@ describe('village orders (PROG-044)', () => {
       for (const o of ordersFor(adventurer(), 'millbrook', day)) {
         expect(['iron_bar', 'steel_bar', 'trout', 'salmon', 'oak_logs']).not.toContain(o.item);
         expect(o.count).toBeGreaterThanOrEqual(1);
-        expect(o.lampXP).toBeGreaterThan(0);
+        expect(Object.values(o.xp).some((n) => (n ?? 0) > 0)).toBe(true);
       }
     }
   });
@@ -50,14 +50,19 @@ describe('village orders (PROG-044)', () => {
     expect(itemXPValue('bronze_helm')).toBe(24 + 2 * 26);
   });
 
-  it('takes the items, pays a lamp and marks the order filled', () => {
+  it('splits an order\'s XP over the skills that make the item (PROG-048)', () => {
+    expect(itemXPBySkill('bronze_helm')).toEqual({ Smithing: 24 + 2 * 6, Mining: 2 * 20 });
+  });
+
+  it('takes the items, pays XP to the skills and marks the order filled', () => {
     const day = '2026-11-21';
     const [o] = ordersFor(adventurer(), 'millbrook', day);
     const s = adventurer({ [o.item]: o.count + 2 });
     s.ordersFilled = { '2026-11-20:old': true };
     const after = fillOrder(s, 'millbrook', o.id, day);
     expect(after.bank[o.item]).toBe(2);
-    expect(after.lamps).toEqual([o.lampXP]);
+    expect(after.lamps).toEqual([]);
+    for (const [skill, n] of Object.entries(o.xp)) expect(after.xp[skill as keyof typeof after.xp]).toBe((s.xp[skill as keyof typeof s.xp] ?? 0) + (n ?? 0));
     expect(orderFilled(after, day, o.id)).toBe(true);
     expect(after.ordersFilled['2026-11-20:old']).toBeUndefined();
     expect(() => fillOrder(after, 'millbrook', o.id, day)).toThrow(/already/);

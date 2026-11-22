@@ -1,5 +1,6 @@
 /**
- * Hero: the player's name, with the cog that opens Settings and the account (PROD-026), then the adventurer's skills, gear, bank and XP lamps, as icons with numbers
+ * Hero: the player's name, with the cog that opens Settings and the account (PROD-026) and the way into the
+ * collection log (PROG-047), then the adventurer's skills, gear, bank and XP lamps, as icons with numbers
  * (new-version kit, PROD-024/025).
  */
 import React, { useState } from 'react';
@@ -7,7 +8,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
-import { GAME_SKILLS, GameSkill, ITEMS, itemName, levelOf, ToolType } from '../../game';
+import { collectionProgress, GAME_SKILLS, GameSkill, ITEMS, itemName, levelOf, ToolType } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
   Body, ItemSlot, KitButton, KitScreen, LootGrid, NeedsTag, Panel, FRAMES, NineSlice, Row, SkillIcon, SkillSlot, space, kitColors, TAB_ICONS, Tag, type,
@@ -30,6 +31,7 @@ export function HeroScreen({ navigation }: Props) {
   const gear = owned.filter(([id]) => ITEMS[id]?.equip || ITEMS[id]?.tool);
   const total = GAME_SKILLS.reduce((sum, s) => sum + levelOf(state, s), 0);
   const questsDone = Object.values(state.quests).filter(Boolean).length;
+  const log = collectionProgress(state);
 
   return (
     <KitScreen
@@ -47,6 +49,10 @@ export function HeroScreen({ navigation }: Props) {
         <View style={styles.tags}>
           <Tag label={`Total ${total}`} tone="gold" accessibilityLabel={`Total level ${total}`} />
           <Tag label={`Quests ${questsDone}`} accessibilityLabel={`${questsDone} quests done`} />
+          <Tag label={`Log ${log.found}/${log.total}`} tone={log.found ? 'gold' : 'text'} accessibilityLabel={`Collection log: ${log.found} of ${log.total} found`} />
+        </View>
+        <View style={styles.logRow}>
+          <KitButton compact kind="secondary" label="Collection log" onPress={() => navigation.navigate('CollectionLog')} />
         </View>
       </Panel>
 
@@ -120,5 +126,6 @@ const styles = StyleSheet.create({
   cog: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center' },
   cogIcon: { width: 30, height: 30 },
   pressed: { opacity: 0.8 },
+  logRow: { flexDirection: 'row' },
   lampAmount: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
 });

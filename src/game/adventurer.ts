@@ -23,6 +23,7 @@ export function newAdventurer(weekId: string): GameState {
     dryKills: {},
     lamps: [],
     ordersFilled: {},
+    collection: {},
   };
 }
 

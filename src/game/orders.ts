@@ -1,6 +1,6 @@
 /**
  * Village orders (PROG-044): each village's board asks for a few items each day, and
- * filling one pays an XP lamp. Spare gear and materials get a use without coins
+ * filling one pays XP straight to the skills that make those items (PROG-048). Spare gear and materials get a use without coins
  * (PROG-013 stands).
  *
  * Boards are worked out, not stored: the same region, day and adventurer give the same
@@ -12,7 +12,8 @@ import { levelOf } from './adventurer';
 import { ITEMS, METHODS, REGIONS } from './content/valley';
 import { hashString, mulberry32 } from './rng';
 import { ORDERS_PER_BOARD } from './rules';
-import { GameState, ItemId, Method } from './types';
+import { addRewardXP } from './trips';
+import { GameSkill, GameState, ItemId, Method } from './types';
 
 export interface VillageOrder {
   /** `<region>-<item>`, unique on a board for the day. */
@@ -20,8 +21,8 @@ export interface VillageOrder {
   regionId: string;
   item: ItemId;
   count: number;
-  /** XP lamp paid on delivery: half again the XP it took to make the items. */
-  lampXP: number;
+  /** XP paid on delivery, to the skills that make the items: half again what making them gave (PROG-048). */
+  xp: Partial<Record<GameSkill, number>>;
 }
 
 /** How much more XP an order pays than making its items did. */
@@ -32,18 +33,28 @@ function makersOf(item: ItemId): Method[] {
   return Object.values(METHODS).filter((m) => m.output === item && !m.id.startsWith('melt-'));
 }
 
-/** XP it takes to make one of an item from scratch, inputs included (cheapest way). */
-export function itemXPValue(item: ItemId, seen: ReadonlySet<ItemId> = new Set()): number {
-  if (seen.has(item)) return 0;
+type SkillXP = Partial<Record<GameSkill, number>>;
+const sumXP = (xp: SkillXP) => Object.values(xp).reduce<number>((a, n) => a + (n ?? 0), 0);
+
+/** XP per skill it takes to make one of an item from scratch, inputs included (cheapest way). */
+export function itemXPBySkill(item: ItemId, seen: ReadonlySet<ItemId> = new Set()): SkillXP {
+  if (seen.has(item)) return {};
   const next = new Set(seen).add(item);
-  let best = Infinity;
+  let best: SkillXP | null = null;
   for (const m of makersOf(item)) {
-    let v = m.xpEach / (m.kind === 'process' ? m.outputEach ?? 1 : 1);
-    if (m.kind === 'process') for (const [input, n] of Object.entries(m.inputs)) v += n * itemXPValue(input, next);
-    best = Math.min(best, v);
+    const xp: SkillXP = { [m.skill]: m.xpEach / (m.kind === 'process' ? m.outputEach ?? 1 : 1) };
+    if (m.kind === 'process') {
+      for (const [input, n] of Object.entries(m.inputs)) {
+        for (const [s, v] of Object.entries(itemXPBySkill(input, next)) as [GameSkill, number][]) xp[s] = (xp[s] ?? 0) + n * v;
+      }
+    }
+    if (!best || sumXP(xp) < sumXP(best)) best = xp;
   }
-  return Number.isFinite(best) ? best : 0;
+  return best ?? {};
 }
+
+/** XP it takes to make one of an item from scratch, inputs included (cheapest way). */
+export const itemXPValue = (item: ItemId): number => sumXP(itemXPBySkill(item));
 
 const unlocked = (state: GameState, regionId: string) => {
   const gate = REGIONS[regionId]?.questGate;
@@ -88,7 +99,10 @@ export function ordersFor(state: GameState, regionId: string, dayId: string): Vi
   }
   return pool.slice(0, ORDERS_PER_BOARD).map(({ item, perHour }) => {
     const count = orderCount(item, perHour, rand);
-    return { id: `${regionId}-${item}`, regionId, item, count, lampXP: Math.round(count * itemXPValue(item) * ORDER_XP_BONUS) };
+    const xp = Object.fromEntries(
+      (Object.entries(itemXPBySkill(item)) as [GameSkill, number][]).map(([s, v]) => [s, Math.round(count * v * ORDER_XP_BONUS)]),
+    ) as SkillXP;
+    return { id: `${regionId}-${item}`, regionId, item, count, xp };
   });
 }
 
@@ -96,17 +110,19 @@ const filledKey = (dayId: string, orderId: string) => `${dayId}:${orderId}`;
 
 export const orderFilled = (state: GameState, dayId: string, orderId: string): boolean => !!state.ordersFilled[filledKey(dayId, orderId)];
 
-/** Hands an order's items over from the bank and adds its XP lamp. Older days' marks are dropped. */
+/** Hands an order's items over from the bank and pays its XP to the skills. Older days' marks are dropped. */
 export function fillOrder(state: GameState, regionId: string, orderId: string, dayId: string): GameState {
   const order = ordersFor(state, regionId, dayId).find((o) => o.id === orderId);
   if (!order) throw new Error('That order is no longer on the board');
   if (orderFilled(state, dayId, orderId)) throw new Error('That order is already filled');
   if ((state.bank[order.item] ?? 0) < order.count) throw new Error("You don't have enough for that order");
   const today = Object.fromEntries(Object.keys(state.ordersFilled).filter((k) => k.startsWith(`${dayId}:`)).map((k) => [k, true as const]));
-  return {
+  const next: GameState = {
     ...state,
+    xp: { ...state.xp },
     bank: { ...state.bank, [order.item]: state.bank[order.item] - order.count },
-    lamps: [...state.lamps, order.lampXP],
     ordersFilled: { ...today, [filledKey(dayId, orderId)]: true },
   };
+  for (const [s, n] of Object.entries(order.xp) as [GameSkill, number][]) addRewardXP(next, null, s, n);
+  return next;
 }

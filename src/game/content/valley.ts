@@ -2,7 +2,7 @@
  * The melee valley: content for the first playable slice (PROD-018).
  * Numbers come from the vault's "Content sheet - melee valley" and are first passes.
  */
-import { AttackType, Creature, GameSkill, Item, Method, Quest, Region, Slot } from '../types';
+import { AttackType, Creature, GameSkill, Item, ItemId, Method, Quest, Region, Slot } from '../types';
 import { MELT_SHARE } from '../rules';
 
 export const REGIONS: Record<string, Region> = {
@@ -73,11 +73,29 @@ for (const t of TIERS) {
     if (back > 0) {
       MELTING_METHODS.push({
         kind: 'process', id: `melt-${id}`, name: `Melt ${item.name.toLowerCase()}s`, skill: 'Smithing',
-        level: 1, regions: ['millbrook'], xpEach: 0, perHour: 240, inputs: { [id]: 1 }, output: t.bar, outputEach: back,
+        level: 1, regions: ['millbrook'], xpEach: 0, perHour: 240, inputs: { [id]: 1 }, output: t.bar, outputEach: back, quest: 'melting-pot',
       });
     }
   }
 }
+
+// ---------- Skilling pets (PROG-046): original creatures, one per skill ----------
+
+const PETS: [GameSkill, ItemId, string][] = [
+  ['Attack', 'pet_scrap', 'Scrap'],
+  ['Strength', 'pet_bruno', 'Bruno'],
+  ['Defence', 'pet_shelly', 'Shelly'],
+  ['Hitpoints', 'pet_patch', 'Patch'],
+  ['Prayer', 'pet_wisp', 'Wisp'],
+  ['Mining', 'pet_pebble', 'Pebble'],
+  ['Smithing', 'pet_cinder', 'Cinder'],
+  ['Woodcutting', 'pet_hoot', 'Hoot'],
+  ['Fishing', 'pet_ripple', 'Ripple'],
+  ['Cooking', 'pet_crumb', 'Crumb'],
+];
+
+/** Each skill's pet item. */
+export const SKILL_PETS = Object.fromEntries(PETS.map(([skill, id]) => [skill, id])) as Record<GameSkill, ItemId>;
 
 // ---------- Items ----------
 
@@ -99,6 +117,7 @@ export const ITEMS: Record<string, Item> = Object.fromEntries(
     item('wardens_maul', "Warden's maul", { equip: { slot: 'mainHand', wear: { skill: 'Attack', level: 30 }, attackType: 'crush', power: 22 } }),
     item('bog_iron_helm', 'Bog-iron helm', { equip: { slot: 'head', wear: { skill: 'Defence', level: 30 }, defence: 6 } }),
     item('bogling', 'Bogling (pet)'),
+    ...PETS.map(([, id, name]) => item(id, `${name} (pet)`)),
     ...SMITHED_ITEMS,
   ] as Item[]).map((i) => [i.id, i]),
 );
@@ -168,13 +187,17 @@ export const QUESTS: Record<string, Quest> = Object.fromEntries(
   ([
     { id: 'supper-for-the-smith', name: 'Supper for the Smith', region: 'millbrook', hours: 1,
       requirements: [{ kind: 'skill', skill: 'Cooking', level: 5 }, { kind: 'item', item: 'shrimp', count: 20 }],
-      takes: { shrimp: 20 }, rewards: { items: { fishing_rod: 1 }, lampXP: 500 } },
+      takes: { shrimp: 20 }, rewards: { items: { fishing_rod: 1 }, xp: { Cooking: 500 } } },
+    // Teaches melting (OQ-37): a short job at the Millbrook forge once you know your metals.
+    { id: 'melting-pot', name: 'The Melting Pot', region: 'millbrook', hours: 1,
+      requirements: [{ kind: 'skill', skill: 'Smithing', level: 10 }, { kind: 'skill', skill: 'Mining', level: 10 }, { kind: 'item', item: 'bronze_bar', count: 5 }],
+      takes: { bronze_bar: 5 }, rewards: { xp: { Smithing: 600, Mining: 300 } } },
     { id: 'road-to-stonecrest', name: 'The Road to Stonecrest', region: 'millbrook', hours: 2,
       requirements: [{ kind: 'skill', skill: 'Attack', level: 15 }, { kind: 'kills', creature: 'wolf', count: 10 }],
-      rewards: { lampXP: 1500 } },
+      rewards: { xp: { Attack: 1000, Hitpoints: 500 } } },
     { id: 'drowned-bell', name: 'The Drowned Bell', region: 'millbrook', hours: 2,
       requirements: [{ kind: 'skill', skill: 'Fishing', level: 20 }, { kind: 'skill', skill: 'Woodcutting', level: 20 }, { kind: 'kills', creature: 'bandit', count: 10 }],
-      rewards: { lampXP: 3000 } },
+      rewards: { xp: { Fishing: 1500, Woodcutting: 1500 } } },
   ] as Quest[]).map((q) => [q.id, q]),
 );
 

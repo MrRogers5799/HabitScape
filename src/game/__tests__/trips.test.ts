@@ -237,9 +237,15 @@ describe('work orders (PROG-043)', () => {
 });
 
 describe('melting (PROG-044)', () => {
+  it('is taught by The Melting Pot (OQ-37)', () => {
+    const s = adventurer({ bank: { bronze_platelegs: 1 } });
+    expect(checkPlan(s, [order('melt-bronze_platelegs', 1)])).toBe('needs-quest');
+    expect(checkPlan({ ...s, quests: { 'melting-pot': true } }, [order('melt-bronze_platelegs', 1)])).toBeNull();
+  });
+
   it('gives back half the bars, rounded down, and no XP', () => {
     expect(METHODS['melt-bronze_dagger']).toBeUndefined();
-    const sent = sendTrip(adventurer({ bank: { bronze_platelegs: 2, bronze_chestplate: 1 } }), [order('melt-bronze_platelegs', 2), order('melt-bronze_chestplate', 1)], 'melt-1', T0);
+    const sent = sendTrip(adventurer({ bank: { bronze_platelegs: 2, bronze_chestplate: 1 }, quests: { 'melting-pot': true } }), [order('melt-bronze_platelegs', 2), order('melt-bronze_chestplate', 1)], 'melt-1', T0);
     const { state, report } = advanceTrip(sent.state, sent.trip, T0 + HOUR);
     expect(state.bank.bronze_bar).toBe(2 * 1 + 2);
     expect(state.bank.bronze_platelegs).toBe(0);
