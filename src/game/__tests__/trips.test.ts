@@ -289,6 +289,14 @@ describe('the queue (PROG-045)', () => {
     expect(() => resizeQueuedLeg(bigger.state, bigger.trip, 1, { count: 0 })).toThrow();
   });
 
+  it('resizes a timed block without writing an undefined count (Firestore rejects undefined)', () => {
+    const sent = sendTrip(adventurer(), [leg('mine-copper', 1), leg('mine-tin', 1)], 'q-6', T0);
+    const longer = resizeQueuedLeg(sent.state, sent.trip, 1, { hours: 1.5 });
+    expect(longer.trip.legs[1].hours).toBe(1.5);
+    expect('count' in longer.trip.legs[1]).toBe(false);
+    expect(longer.state.time.bankHours).toBeCloseTo(24 - 2.5, 4);
+  });
+
   it('cancels an unstarted work order whole to cover debt', () => {
     const sent = sendTrip(smith({ bronze_bar: 50 }, 2), [leg('mine-copper', 1), order('smith-bronze_chestplate', 10)], 'q-5', T0);
     const inDebt: GameState = { ...sent.state, time: { ...sent.state.time, bankHours: -0.2 } };
