@@ -35,6 +35,7 @@ const PROBLEMS: Record<PlanProblem, string> = {
   'quest-done': "You've already finished that quest.",
   'quest-requirements': "You don't meet that quest's requirements yet.",
   'quest-length': 'Quests take their own length.',
+  'needs-quest': 'A quest teaches that first.',
 };
 
 function Requirement({ r, met }: { r: QuestRequirement; met: boolean }) {

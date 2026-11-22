@@ -85,6 +85,8 @@ interface MethodBase {
   xpEach: number;
   /** Items per hour of work, with a tier-1 tool. */
   perHour: number;
+  /** A quest that teaches the method (melting, OQ-37). */
+  quest?: string;
 }
 
 export interface GatherMethod extends MethodBase {
@@ -161,7 +163,8 @@ export interface Quest {
   requirements: QuestRequirement[];
   /** Items handed over when the quest starts. */
   takes?: Record<ItemId, number>;
-  rewards: { items?: Record<ItemId, number>; lampXP?: number };
+  /** XP goes straight to the skills the quest is about (PROG-048); `lampXP` is from older saves' content and unused now. */
+  rewards: { items?: Record<ItemId, number>; xp?: Partial<Record<GameSkill, number>>; lampXP?: number };
 }
 
 // ---------- State ----------
@@ -190,10 +193,20 @@ export interface GameState {
   kills: Record<string, number>;
   /** Kills since the last unique, per boss (luck meter, PROG-030). */
   dryKills: Record<string, number>;
-  /** Unused XP lamps from quests and village orders: XP the player puts into any skill. */
+  /** Unused XP lamps from before rewards paid skills directly (PROG-048): XP the player puts into any skill. */
   lamps: number[];
   /** Village orders filled, as `<dayId>:<orderId>` (PROG-044). Only the current day's are kept. */
   ordersFilled: Record<string, true>;
+  /** Collection log (PROG-047): each unique found, first time only: when, and at what kill count or level. */
+  collection: Record<ItemId, CollectionEntry>;
+}
+
+export interface CollectionEntry {
+  atMs: number;
+  /** Boss drops: the boss kill count it came at. */
+  kc?: number;
+  /** Skilling pets: the skill's level when it came. */
+  level?: number;
 }
 
 // ---------- Trips ----------

@@ -41,11 +41,12 @@ service cloud.firestore {
       function validAdventurer() {
         let d = request.resource.data;
         return d.keys().hasOnly(['schemaVersion', 'rev', 'xp', 'bank', 'time', 'quests', 'kills',
-                                 'dryKills', 'lamps', 'ordersFilled', 'activeTripId', 'updatedAt'])
+                                 'dryKills', 'lamps', 'ordersFilled', 'collection', 'activeTripId', 'updatedAt'])
           && d.schemaVersion is int && d.rev is int
           && d.xp is map && d.bank is map && d.time is map && d.quests is map
           && d.kills is map && d.dryKills is map && d.lamps is list
           && (!('ordersFilled' in d) || d.ordersFilled is map)
+          && (!('collection' in d) || d.collection is map)
           && (d.activeTripId == null || d.activeTripId is string);
       }
       match /game/{docId} {

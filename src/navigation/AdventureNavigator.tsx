@@ -15,6 +15,7 @@ import { RegionScreen } from '../screens/adventure/RegionScreen';
 import { TripPlannerScreen } from '../screens/adventure/TripPlannerScreen';
 import { HeroScreen } from '../screens/adventure/HeroScreen';
 import { KitSettingsScreen } from '../screens/adventure/KitSettingsScreen';
+import { CollectionLogScreen } from '../screens/adventure/CollectionLogScreen';
 import { KitWorkoutNavigator } from './KitWorkoutNavigator';
 import { TABS } from './newVersionTabs';
 
@@ -26,6 +27,7 @@ export type AdventureStackParamList = {
   Planner: undefined;
   Hero: undefined;
   Settings: undefined;
+  CollectionLog: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -59,6 +61,7 @@ function HeroTab() {
     <HeroStack.Navigator screenOptions={stackOptions}>
       <HeroStack.Screen name="Hero" component={HeroScreen} />
       <HeroStack.Screen name="Settings" component={KitSettingsScreen} />
+      <HeroStack.Screen name="CollectionLog" component={CollectionLogScreen} />
     </HeroStack.Navigator>
   );
 }

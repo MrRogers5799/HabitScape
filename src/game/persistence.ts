@@ -10,7 +10,8 @@
  * overwrite newer progress.
  */
 import { newAdventurer } from './adventurer';
-import { GAME_SKILLS, GameSkill, GameState, Trip, TripReport } from './types';
+import { CollectionEntry, GAME_SKILLS, GameSkill, GameState, Trip, TripReport } from './types';
+import { backfillCollection } from './collection';
 import { emptyReport } from './trips';
 
 export const GAME_SCHEMA_VERSION = 1;
@@ -28,6 +29,8 @@ export interface AdventurerDoc {
   lamps: number[];
   /** Village orders filled today (PROG-044). */
   ordersFilled: Record<string, true>;
+  /** Collection log (PROG-047). */
+  collection: Record<string, CollectionEntry>;
   activeTripId: string | null;
 }
 
@@ -63,6 +66,7 @@ export function toAdventurerDoc(state: GameState, activeTripId: string | null, r
     dryKills: { ...state.dryKills },
     lamps: [...state.lamps],
     ordersFilled: { ...state.ordersFilled },
+    collection: { ...state.collection },
     activeTripId,
   };
 }
@@ -78,10 +82,18 @@ export function fromAdventurerDoc(data: unknown, weekId: string): { state: GameS
   const storedXp = numbers(d.xp);
   for (const s of GAME_SKILLS) if (typeof storedXp[s] === 'number') xp[s as GameSkill] = storedXp[s];
   const time = isRecord(d.time) ? d.time : {};
+  const bank = isRecord(d.bank) ? numbers(d.bank) : fresh.bank;
+  const collection: Record<string, CollectionEntry> = {};
+  if (isRecord(d.collection)) {
+    for (const [item, e] of Object.entries(d.collection)) {
+      if (!isRecord(e) || typeof e.atMs !== 'number') continue;
+      collection[item] = { atMs: e.atMs, ...(typeof e.kc === 'number' ? { kc: e.kc } : {}), ...(typeof e.level === 'number' ? { level: e.level } : {}) };
+    }
+  }
   return {
     state: {
       xp,
-      bank: isRecord(d.bank) ? numbers(d.bank) : fresh.bank,
+      bank,
       time: {
         bankHours: typeof time.bankHours === 'number' ? time.bankHours : 0,
         weekId: typeof time.weekId === 'string' ? time.weekId : weekId,
@@ -92,6 +104,8 @@ export function fromAdventurerDoc(data: unknown, weekId: string): { state: GameS
       dryKills: numbers(d.dryKills),
       lamps: Array.isArray(d.lamps) ? d.lamps.filter((n): n is number => typeof n === 'number') : [],
       ordersFilled: isRecord(d.ordersFilled) ? (Object.fromEntries(Object.keys(d.ordersFilled).map((k) => [k, true])) as Record<string, true>) : {},
+      // Uniques owned before the log existed count as found (date unknown).
+      collection: backfillCollection(bank, collection),
     },
     activeTripId: typeof d.activeTripId === 'string' ? d.activeTripId : null,
     rev: typeof d.rev === 'number' ? d.rev : 0,

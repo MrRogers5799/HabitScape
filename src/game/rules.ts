@@ -24,3 +24,5 @@ export const ORDERS_PER_BOARD = 3;
 export const TOOL_TIER_STEP = 1.2;
 /** Affinity: XP bonus in the game for a skill your habits trained that day. */
 export const AFFINITY_BONUS = 0.1;
+/** PROG-046: each XP point earned in a skill is a 1 in this many roll for its pet. */
+export const PET_XP = 5_000_000;

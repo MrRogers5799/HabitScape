@@ -13,9 +13,9 @@
  */
 import { bestTool, levelOf, toolMultiplier } from './adventurer';
 import { attemptsPerHour, bestFood, defence, offence, pickLoadout, winChance } from './combat';
-import { CREATURES, METHODS, QUESTS, REGIONS } from './content/valley';
+import { CREATURES, METHODS, QUESTS, REGIONS, SKILL_PETS } from './content/valley';
 import { chunkRng, stochasticRound } from './rng';
-import { AFFINITY_BONUS, CHUNK_HOURS, MAX_QUEUE_BLOCKS } from './rules';
+import { AFFINITY_BONUS, CHUNK_HOURS, MAX_QUEUE_BLOCKS, PET_XP } from './rules';
 import { Creature, GameSkill, GameState, Leg, LegPlan, MeleeFocus, Method, Quest, QuestRequirement, Trip, TripReport } from './types';
 
 /** Hours are kept to four places: crafting blocks come in whole minutes (1/60 h). */
@@ -45,7 +45,7 @@ export function activityOf(id: string): Activity | null {
 export type PlanProblem =
   | 'no-legs' | 'queue-full' | 'bad-length' | 'unknown-activity' | 'wrong-region'
   | 'region-locked' | 'level-too-low' | 'no-tool' | 'not-enough-time' | 'in-debt'
-  | 'quest-done' | 'quest-requirements' | 'quest-length';
+  | 'quest-done' | 'quest-requirements' | 'quest-length' | 'needs-quest';
 
 export function requirementMet(state: GameState, r: QuestRequirement): boolean {
   switch (r.kind) {
@@ -94,6 +94,7 @@ export function checkLeg(state: GameState, leg: LegPlan): PlanProblem | null {
     const level = levelOf(state, act.method.skill);
     if (level < act.method.level) return 'level-too-low';
     if (act.method.kind === 'gather' && !bestTool(state, act.method.tool, level)) return 'no-tool';
+    if (act.method.quest && !state.quests[act.method.quest]) return 'needs-quest';
   }
   if (act.kind === 'quest') {
     if (state.quests[act.quest.id]) return 'quest-done';
@@ -200,7 +201,32 @@ export function effectiveRate(state: GameState, method: Method, regionId: string
   return rate * (1 - travelOf(regionId));
 }
 
-function gainXP(state: GameState, report: TripReport, skill: GameSkill, amount: number, affinity: ReadonlySet<string>) {
+/** Randomness and the moment for rolls inside one step (pets, PROG-046). */
+interface Roll { rand: () => number; atMs: number }
+
+/**
+ * A rare find (boss unique, boss pet or skilling pet): into the bank and the log, and
+ * into the collection log the first time (PROG-047), with when and at what count.
+ */
+function logFind(state: GameState, report: TripReport, item: string, atMs: number, detail: { kc?: number; level?: number } = {}) {
+  add(state.bank, item, 1);
+  add(report.gained, item, 1);
+  report.found.push(item);
+  if (!state.collection[item]) state.collection = { ...state.collection, [item]: { atMs, ...detail } };
+}
+
+/** Reward XP (quests, village orders, PROG-048): added to the skill, with any level-up reported. */
+export function addRewardXP(state: GameState, report: TripReport | null, skill: GameSkill, amount: number) {
+  if (amount <= 0) return;
+  const before = levelOf(state, skill);
+  state.xp[skill] = (state.xp[skill] ?? 0) + amount;
+  if (!report) return;
+  report.xp[skill] = (report.xp[skill] ?? 0) + amount;
+  const after = levelOf(state, skill);
+  if (after > before) report.levelUps.push({ skill, level: after });
+}
+
+function gainXP(state: GameState, report: TripReport, skill: GameSkill, amount: number, affinity: ReadonlySet<string>, roll: Roll) {
   if (amount <= 0) return;
   const before = levelOf(state, skill);
   const total = amount * (affinity.has(skill) ? 1 + AFFINITY_BONUS : 1);
@@ -208,6 +234,8 @@ function gainXP(state: GameState, report: TripReport, skill: GameSkill, amount: 
   report.xp[skill] = (report.xp[skill] ?? 0) + total;
   const after = levelOf(state, skill);
   if (after > before) report.levelUps.push({ skill, level: after });
+  // Skilling pet (PROG-046): every XP point is a 1 in PET_XP roll, so this many XP finds it with this chance.
+  if (roll.rand() < 1 - Math.exp(-total / PET_XP)) logFind(state, report, SKILL_PETS[skill], roll.atMs, { level: after });
 }
 
 /** Ends a leg early and hands its unworked hours back; quest legs also hand their items back. */
@@ -226,7 +254,7 @@ function endLeg(state: GameState, trip: Trip, legIndex: number, report: TripRepo
 }
 
 /** Uses the inputs for `made` actions and adds what they make, burns and the XP. */
-function makeItems(state: GameState, report: TripReport, method: Method, made: number, rand: () => number, affinity: ReadonlySet<string>) {
+function makeItems(state: GameState, report: TripReport, method: Method, made: number, rand: () => number, affinity: ReadonlySet<string>, atMs: number) {
   if (method.kind !== 'process') return;
   for (const [id, n] of Object.entries(method.inputs)) {
     state.bank[id] -= made * n;
@@ -243,7 +271,7 @@ function makeItems(state: GameState, report: TripReport, method: Method, made: n
     add(state.bank, method.burn.burntItem, burnt);
     add(report.burnt, method.output, burnt);
   }
-  gainXP(state, report, method.skill, ok * method.xpEach, affinity);
+  gainXP(state, report, method.skill, ok * method.xpEach, affinity, { rand, atMs });
 }
 
 const currentLeg = (trip: Trip) => trip.legs.findIndex((l) => !l.ended);
@@ -300,14 +328,15 @@ export function resizeQueuedLeg(
   return { state, trip: { ...tripIn, legs } };
 }
 
-function meleeXP(state: GameState, report: TripReport, focus: MeleeFocus, amount: number, affinity: ReadonlySet<string>) {
+function meleeXP(state: GameState, report: TripReport, focus: MeleeFocus, amount: number, affinity: ReadonlySet<string>, roll: Roll) {
   if (focus === 'shared') {
-    for (const s of ['Attack', 'Strength', 'Defence'] as const) gainXP(state, report, s, amount / 3, affinity);
-  } else gainXP(state, report, focus, amount, affinity);
+    for (const s of ['Attack', 'Strength', 'Defence'] as const) gainXP(state, report, s, amount / 3, affinity, roll);
+  } else gainXP(state, report, focus, amount, affinity, roll);
 }
 
 /** One half hour of fighting: attempts, wins, XP, bones, drops, luck meter. */
-function fightChunk(state: GameState, leg: Leg, creature: Creature, rand: () => number, report: TripReport, affinity: ReadonlySet<string>) {
+function fightChunk(state: GameState, leg: Leg, creature: Creature, rand: () => number, report: TripReport, affinity: ReadonlySet<string>, atMs: number) {
+  const roll = { rand, atMs };
   const loadout = pickLoadout(state, creature, leg.overrides);
   const attempts = stochasticRound(attemptsPerHour(offence(state, loadout, creature), creature) * CHUNK_HOURS * (1 - travelOf(leg.regionId)), rand);
   for (let a = 0; a < attempts; a++) {
@@ -321,8 +350,8 @@ function fightChunk(state: GameState, leg: Leg, creature: Creature, rand: () => 
 
     state.kills[creature.id] = (state.kills[creature.id] ?? 0) + 1;
     add(report.kills, creature.id, 1);
-    meleeXP(state, report, leg.focus ?? 'shared', 4 * creature.hp, affinity);
-    gainXP(state, report, 'Hitpoints', (4 / 3) * creature.hp, affinity);
+    meleeXP(state, report, leg.focus ?? 'shared', 4 * creature.hp, affinity, roll);
+    gainXP(state, report, 'Hitpoints', (4 / 3) * creature.hp, affinity, roll);
     add(state.bank, creature.bones, 1);
     add(report.gained, creature.bones, 1);
     for (const d of creature.drops) {
@@ -340,15 +369,12 @@ function fightChunk(state: GameState, leg: Leg, creature: Creature, rand: () => 
       const missing = uniques.filter((u) => !state.bank[u.item]);
       const pity = 2 * Math.min(...uniques.map((u) => u.oneIn));
       if (!found && missing.length && dry >= pity) found = missing[0].item;
+      const kc = state.kills[creature.id];
       if (found) {
-        add(state.bank, found, 1);
-        report.found.push(found);
+        logFind(state, report, found, atMs, { kc });
         state.dryKills[creature.id] = 0;
       } else state.dryKills[creature.id] = dry;
-      if (rand() < 1 / pet.oneIn) {
-        add(state.bank, pet.item, 1);
-        report.found.push(pet.item);
-      }
+      if (rand() < 1 / pet.oneIn) logFind(state, report, pet.item, atMs, { kc });
     }
   }
 }
@@ -359,7 +385,8 @@ function completeQuest(state: GameState, quest: Quest, report: TripReport) {
     add(state.bank, item, n);
     add(report.gained, item, n);
   }
-  if (quest.rewards.lampXP) state.lamps.push(quest.rewards.lampXP);
+  // Quest XP goes straight to its skills (PROG-048); no affinity bonus or pet roll, as it isn't earned by the work.
+  for (const [skill, n] of Object.entries(quest.rewards.xp ?? {}) as [GameSkill, number][]) addRewardXP(state, report, skill, n);
   report.questsCompleted.push(quest.id);
 }
 
@@ -376,6 +403,7 @@ export function advanceTrip(
   const state: GameState = {
     ...stateIn, xp: { ...stateIn.xp }, bank: { ...stateIn.bank }, time: { ...stateIn.time },
     quests: { ...stateIn.quests }, kills: { ...stateIn.kills }, dryKills: { ...stateIn.dryKills }, lamps: [...stateIn.lamps],
+    collection: { ...stateIn.collection },
   };
   const trip: Trip = { ...tripIn, legs: tripIn.legs.map((l) => ({ ...l })) };
   const report = emptyReport();
@@ -404,7 +432,7 @@ export function advanceTrip(
       const hours = Math.min(craftHours(effectiveRate(state, method, leg.regionId), made), legRemaining(leg));
       if (chunkStart + hoursToMs(hours) > nowMs) break; // still working on it
       const rand = chunkRng(trip.id, trip.nextChunk);
-      makeItems(state, report, method, made, rand, affinityAt(chunkStart));
+      makeItems(state, report, method, made, rand, affinityAt(chunkStart), chunkStart);
       leg.madeHours = hours;
       trip.nextChunk += 1;
       if (made < leg.count!) endLeg(state, trip, li, report, `${method.name}: ran out of materials after ${made}.`);
@@ -418,7 +446,7 @@ export function advanceTrip(
     const affinity = affinityAt(chunkStart);
 
     if (act.kind === 'fight') {
-      fightChunk(state, leg, act.creature, rand, report, affinity);
+      fightChunk(state, leg, act.creature, rand, report, affinity, chunkStart);
     } else if (act.kind === 'quest') {
       // Quests just take their time; rewards land when the last half hour finishes.
     } else {
@@ -428,7 +456,7 @@ export function advanceTrip(
         const count = stochasticRound(expected, rand);
         add(state.bank, method.output, count);
         add(report.gained, method.output, count);
-        gainXP(state, report, method.skill, count * method.xpEach, affinity);
+        gainXP(state, report, method.skill, count * method.xpEach, affinity, { rand, atMs: chunkStart });
       } else {
         // Older, time-planned processing (before work orders) is limited by materials in the bank (PROG-026).
         const wanted = stochasticRound(expected, rand);
@@ -437,7 +465,7 @@ export function advanceTrip(
           endLeg(state, trip, li, report, `${method.name}: ran out of materials.`);
           continue; // the next leg starts in this same half hour
         }
-        makeItems(state, report, method, made, rand, affinity);
+        makeItems(state, report, method, made, rand, affinity, chunkStart);
         if (made < wanted) {
           leg.chunksDone += 1;
           trip.nextChunk += 1;

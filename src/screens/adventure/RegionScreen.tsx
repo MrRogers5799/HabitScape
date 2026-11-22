@@ -15,7 +15,7 @@ import {
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
   Body, ButtonRow, FRAMES, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, NineSlice, Panel, Row, SkillIcon, SkillSlot,
-  space, TAB_ICONS, Tag,
+  space, TAB_ICONS, Tag, XpChip,
 } from '../../game-ui';
 import { useDraftPlan } from './draftPlan';
 
@@ -39,6 +39,8 @@ export function RegionScreen({ navigation, route }: Props) {
   const locked = !!region.questGate && !state.quests[region.questGate];
   const { methods, recipes, melts, fights, quests } = activitiesIn(region.id);
   const meltable = melts.filter((m) => m.kind === 'process' && (state.bank[Object.keys(m.inputs)[0]] ?? 0) > 0);
+  // Melting is taught by a quest (OQ-37); until then the section says which.
+  const meltQuest = melts.find((m) => m.quest && !state.quests[m.quest])?.quest;
   const orders = locked ? [] : ordersFor(state, region.id, dayId);
   // The anvil lists what you can make now, plus the next few unlocks; the rest behind a toggle.
   const makeable = recipes.filter((m) => levelOf(state, m.skill) >= m.level);
@@ -115,7 +117,7 @@ export function RegionScreen({ navigation, route }: Props) {
 
       {orders.length > 0 && (
         <Panel title="Order board">
-          <Body muted>Villagers want these today. Deliver from your bank for an XP lamp to put in any skill.</Body>
+          <Body muted>Villagers want these today. Deliver from your bank for XP in the skills that make them.</Body>
           {orders.map((o) => {
             const have = state.bank[o.item] ?? 0;
             const done = orderFilled(state, dayId, o.id);
@@ -129,7 +131,7 @@ export function RegionScreen({ navigation, route }: Props) {
                 detail={done ? <Tag label="Delivered" tone="green" /> : (
                   <>
                     <Tag label={`have ${have}/${o.count}`} tone={have >= o.count ? 'green' : 'red'} accessibilityLabel={`You have ${have} of ${o.count}`} />
-                    <Tag label={`+${o.lampXP.toLocaleString()} XP lamp`} tone="gold" accessibilityLabel={`Pays a ${o.lampXP.toLocaleString()} XP lamp`} />
+                    {(Object.entries(o.xp) as [string, number][]).map(([skill, n]) => <XpChip key={skill} skill={skill} amount={n} />)}
                   </>
                 )}
                 right={done ? undefined : (
@@ -176,7 +178,9 @@ export function RegionScreen({ navigation, route }: Props) {
 
       {!locked && meltable.length > 0 && (
         <Panel title="Melt down">
-          <Body muted>Spare gear goes back into half its bars. Melting gives no XP.</Body>
+          {meltQuest
+            ? <Body muted>Finish the quest {QUESTS[meltQuest]?.name} to learn melting: spare gear back into half its bars.</Body>
+            : <Body muted>Spare gear goes back into half its bars. Melting gives no XP.</Body>}
           {meltable.map((m) => {
             if (m.kind !== 'process') return null;
             const gear = Object.keys(m.inputs)[0];
@@ -191,7 +195,7 @@ export function RegionScreen({ navigation, route }: Props) {
                   <Tag label={`→ ${m.outputEach ?? 1} each`} icon={<ItemIcon id={m.output} name={itemName(m.output)} size={20} />}
                     accessibilityLabel={`Gives ${m.outputEach ?? 1} ${itemName(m.output)} each`} />
                 ) : undefined}
-                right={addButton(() => addOrder(m, owned), full, `melting ${name}`)}
+                right={addButton(() => addOrder(m, owned), full || !!meltQuest, `melting ${name}`)}
               />
             );
           })}
