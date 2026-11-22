@@ -12,6 +12,7 @@ import { useGame } from '../../context/GameContext';
 import { GAME_SKILLS, GameSkill, ITEMS, itemName, levelOf, ToolType, wornGear } from '../../game';
 import { CollectionLogSections } from './CollectionLog';
 import { QuestJournal } from './QuestJournal';
+import { HeroRoom } from './HeroRoom';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
   Body, ItemSlot, KitScreen, LootGrid, NeedsTag, Panel, FRAMES, NineSlice, Row, SectionTabs, SkillTile, space, TAB_ICONS, Tag,
@@ -58,6 +59,8 @@ export function HeroScreen({ navigation, route }: Props) {
       )}
     >
       <Panel title={user?.displayName || 'Adventurer'} icon={TAB_ICONS.profile}>
+        {/* The Hero room (PROD-037): the adventurer with what they wear and use. */}
+        <HeroRoom state={state} />
         <View style={styles.tags}>
           <Tag label={`Total ${total}`} tone="gold" accessibilityLabel={`Total level ${total}`} />
           <Tag label={`Quests ${questsDone}`} accessibilityLabel={`${questsDone} quests done`} />

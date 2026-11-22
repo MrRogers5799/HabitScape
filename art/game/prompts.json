@@ -1927,5 +1927,50 @@
     ],
     "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame, no background shapes.\nA single bold, simple navigation icon for a game's bottom tab bar: a small wooden-framed hourglass with golden sand, a little red ribbon tied round its middle. Very clear silhouette, few details, readable at 28 pixels. Same style, outline and colours as the reference tab icons. Seen straight on, centred with a small margin on every side (about 80% of the square), on a plain transparent background.\nImage size: 1024x1024.",
     "approved": true
+  },
+  {
+    "id": "millbrook_town",
+    "file": "art/game/scenes/millbrook_town.png",
+    "generatedAt": "2026-11-22T21:27:08.911Z",
+    "seconds": 88,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook.png",
+      "art/game/map/valley.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame.\nA tall portrait bird's-eye view (high three-quarter angle, looking down) of Millbrook, a small cozy riverside village at dusk, laid out like a game town map where each place is clearly separate and easy to tap on a phone. A dirt path winds from the bottom to the top connecting every place. Exact layout, each place on its own patch of ground with grass between them: TOP LEFT, a rocky hillside quarry with a few big boulders showing copper-orange and pale grey-blue mineral veins and a wooden mine cart. TOP RIGHT, a small grove: one tall ordinary leafy tree and one huge old oak tree, a chopping stump with a few cut logs. MIDDLE LEFT, an open-air cooking spot: a stone fire pit with a glowing campfire, a black cooking pot on a tripod and a small wooden table, smoke rising. CENTRE, a wooden notice board on two posts beside the path with several blank parchment notes pinned on it (no writing), a lantern hanging on it. MIDDLE RIGHT, a blacksmith's forge under a timber shelter: a stone furnace glowing orange, an iron anvil in front, a water barrel. BOTTOM LEFT, a calm pond with a little wooden fishing pier, a fishing net hung over the rail, ripples in the water, lily pads. BOTTOM RIGHT, a small fenced chicken yard with a few plump white and brown chickens and a little coop. BOTTOM CENTRE, a quiet mossy stone cairn under a willow with a small lantern and a few wildflowers. A few thatched cottages with warm glowing windows fill the gaps but never cover the places above. Violet-to-amber dusk sky only in a thin strip at the very top. No people, no characters, no text.\nImage size: 1024x1536.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-22"
+  },
+  {
+    "id": "hero_room",
+    "file": "art/game/scenes/hero_room.png",
+    "generatedAt": "2026-11-22T21:28:18.716Z",
+    "seconds": 70,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook.png",
+      "art/game/adventurer/idle.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame.\nA cozy stone alcove inside an adventurer's hall at night, seen straight on, opaque background. Dark warm grey stone brick walls with an arched niche in the centre. A hanging crimson cloth banner with gold trim at the top centre of the arch, plain with only a small gold leaf sprig emblem (no letters, no crossed weapons). Two iron wall torches with warm orange flames, one on each side of the arch, casting warm light. In the centre, a round low stone dais on the floor, empty, lit by the torches: leave the middle of the image empty above the dais so a standing character can be placed there later. Dark edges fading to near-black brown at the left and right sides. No people, no characters, no text.\nImage size: 1536x1024.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-22"
+  },
+  {
+    "id": "forge_inside",
+    "file": "art/game/scenes/forge_inside.png",
+    "generatedAt": "2026-11-22T21:47:58.462Z",
+    "seconds": 69,
+    "tool": "codex-cli codex-cli 0.167.0-alpha.3.2 (built-in image generation)",
+    "refs": [
+      "art/game/scenes/millbrook_town.png",
+      "art/game/scenes/hero_room.png"
+    ],
+    "prompt": "Cozy dusk fantasy game art in a crisp, high-resolution pixel-art style: chunky stepped shading, limited colours per object, a strong dark brown outline, light from the top left with a warm rim light on the right. Readable at small sizes. No text, no letters, no numbers, no watermark, no UI, no frame.\nA tall portrait view of the inside of Millbrook's village blacksmith forge at night, seen from slightly above like a cozy game room, warm orange firelight, timber beams and stone walls. Three clearly separate work places, each on its own patch of floor with space between them so they are easy to tap on a phone: TOP, a big stone smelting furnace built into the back wall with a glowing orange mouth, a leather bellows beside it and a small heap of copper-orange and grey ore lumps in front, a few finished metal bars cooling on a stone ledge. MIDDLE, a heavy iron anvil on a thick tree stump in the centre of the floor with a hammer and tongs resting on it, a few sparks. BOTTOM, a melting corner: a squat clay crucible pot sitting on glowing coals in a low brick hearth, beside it a wooden bin piled with old dented helmets, shields and blades waiting to be melted down. A tool rack with tongs and hammers on one wall and a water barrel fill the gaps but never cover the three places. No people, no characters, no text, no letters.\nImage size: 1024x1536.",
+    "approved": true,
+    "approvedBy": "owner",
+    "approvedAt": "2026-11-22"
   }
 ]

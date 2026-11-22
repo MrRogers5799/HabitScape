@@ -113,6 +113,18 @@
     "map/valley": {
       "src": "art/game/map/valley.png",
       "width": 900
+    },
+    "scenes/millbrook_town": {
+      "src": "art/game/scenes/millbrook_town.png",
+      "width": 900
+    },
+    "scenes/hero_room": {
+      "src": "art/game/scenes/hero_room.png",
+      "width": 960
+    },
+    "scenes/forge_inside": {
+      "src": "art/game/scenes/forge_inside.png",
+      "width": 900
     }
   },
   "iconSets": {

@@ -19,6 +19,7 @@ import {
   ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, Row, SceneBanner, SkillIcon, SkillTile,
   ItemIcon, space, StatReadout, Tag, type, XpChip,
 } from '../../game-ui';
+import { poseFor } from './regionScenes';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'AdventureHome'>;
 
@@ -29,24 +30,6 @@ const SCENES: Record<string, ImageSourcePropType> = {
   stonecrest: require('../../../assets/game-ui/scenes/stonecrest.png'),
   bog: require('../../../assets/game-ui/scenes/bog.png'),
 };
-
-/** Which adventurer pose fits an activity (art bible §6); file ids in ADVENTURER_POSES. */
-function poseFor(activityId: string): string {
-  const act = activityOf(activityId);
-  if (!act) return 'idle';
-  if (act.kind === 'fight') return 'sparring';
-  if (act.kind === 'quest') return 'walking_home';
-  const m = act.method;
-  switch (m.skill) {
-    case 'Mining': return 'mining';
-    case 'Woodcutting': return 'chopping';
-    case 'Fishing': return m.kind === 'gather' && m.tool === 'small_net' ? 'fishing_net' : 'fishing_rod';
-    case 'Smithing': return 'smithing';
-    case 'Cooking': return 'cooking';
-    case 'Prayer': return 'burying';
-    default: return 'idle';
-  }
-}
 
 /**
  * What's next in the queue (PROG-045). The block being worked lives in the scene banner
