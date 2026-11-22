@@ -1,20 +1,23 @@
 /**
- * Today (PROD-019, PROD-026): where the adventurer is and what they're doing, the
- * "Welcome back" moment when a trip ends, today's habits, and adventure time (PROG-022).
+ * Today (PROD-019, PROD-026): where the adventurer is and what they're doing, their queue
+ * (PROG-045: unstarted blocks can be resized or removed), the log of what came back since
+ * you last looked, today's habits, and adventure time (PROG-022).
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, ImageSourcePropType, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activityName, activityOf, BANK_HOURS_CAP, CREATURES, CHUNK_HOURS, CHUNK_MS, clockTime, formatHours, itemName, regionName, TripReport, WEEKLY_HOURS_CAP,
+  activityName, activityOf, BANK_HOURS_CAP, blockHoursLeft, blockHoursWorked, CREATURES, CHUNK_HOURS, clockTime, formatHours, isWorkOrder,
+  itemName, Leg, queueEndsMs, regionName, reportHasNews, TripReport, WEEKLY_HOURS_CAP,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { TABS } from '../../navigation/newVersionTabs';
 import { TodayHabits } from './TodayHabits';
 import { ActiveWorkoutBanner, useActiveWorkout } from '../workout-kit/ActiveWorkoutBanner';
 import {
-  ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, SceneBanner, SkillIcon, SkillSlot, StatReadout, type, XpChip,
+  ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, Row, SceneBanner, SkillIcon, SkillSlot,
+  space, StatReadout, Tag, type, XpChip,
 } from '../../game-ui';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'AdventureHome'>;
@@ -45,7 +48,53 @@ function poseFor(activityId: string): string {
   }
 }
 
-function ReturnCard({ report, onDone }: { report: TripReport; onDone: () => void }) {
+/** The queue: the block being worked, then what's next (PROG-045). */
+function QueuePanel({ legs, onResize, onRemove, busy }: {
+  legs: Leg[]; busy: boolean;
+  onResize: (index: number, size: { hours?: number; count?: number }) => void;
+  onRemove: (index: number) => void;
+}) {
+  const current = legs.findIndex((l) => !l.ended);
+  const rows = legs.map((l, i) => ({ l, i })).filter(({ l }) => !l.ended);
+  return (
+    <Panel title="Queue" right={<Tag label={`${rows.length}`} accessibilityLabel={`${rows.length} blocks queued`} />}>
+      {rows.map(({ l, i }) => {
+        const now = i === current;
+        const order = isWorkOrder(l);
+        const left = blockHoursLeft(l);
+        const name = activityName(l.activityId);
+        return (
+          <Row
+            key={`${i}-${l.activityId}`}
+            title={name}
+            accessibilityLabel={`${name}${now ? ', working on it now' : ''}`}
+            detail={(
+              <>
+                {now && <Tag label="Now" tone="gold" />}
+                {order && <Tag label={`×${l.count}`} accessibilityLabel={`Make ${l.count}`} />}
+                <Tag label={formatHours(now ? left : l.hours)} accessibilityLabel={`${formatHours(now ? left : l.hours)}${now ? ' left' : ''}`} />
+                <Tag label={regionName(l.regionId)} />
+                {!now && activityOf(l.activityId)?.kind !== 'quest' && (
+              <View style={{ flexDirection: 'row', gap: space.xs }}>
+                <KitButton compact kind="secondary" label="−" disabled={busy || (order ? l.count! <= 1 : l.hours <= CHUNK_HOURS)}
+                  accessibilityLabel={order ? `One fewer ${name}` : `30 minutes less ${name}`}
+                  onPress={() => onResize(i, order ? { count: l.count! - 1 } : { hours: l.hours - CHUNK_HOURS })} />
+                <KitButton compact kind="secondary" label="+" disabled={busy}
+                  accessibilityLabel={order ? `One more ${name}` : `30 minutes more ${name}`}
+                  onPress={() => onResize(i, order ? { count: l.count! + 1 } : { hours: l.hours + CHUNK_HOURS })} />
+                <KitButton compact kind="secondary" label="✕" disabled={busy} accessibilityLabel={`Remove ${name} from the queue`} onPress={() => onRemove(i)} />
+              </View>
+                )}
+              </>
+            )}
+          />
+        );
+      })}
+    </Panel>
+  );
+}
+
+function ReturnCard({ report, onDone, home }: { report: TripReport; onDone: () => void; home: boolean }) {
   const items = Object.entries(report.gained).filter(([, n]) => n > 0) as [string, number][];
   const rare = new Set(report.found);
   // Rare finds first, then the biggest piles.
@@ -55,7 +104,7 @@ function ReturnCard({ report, onDone }: { report: TripReport; onDone: () => void
   const levels = Object.entries(report.levelUps.reduce<Record<string, number>>((m, l) => ({ ...m, [l.skill]: Math.max(m[l.skill] ?? 0, l.level) }), {}));
   const empty = items.length === 0 && xp.length === 0 && kills.length === 0 && report.questsCompleted.length === 0;
   return (
-    <Panel title="Welcome back!" right={report.found.length > 0 ? <Chip label="Rare find!" tone="gold" /> : undefined}>
+    <Panel title={home ? 'Welcome back!' : 'While you were away'} right={report.found.length > 0 ? <Chip label="Rare find!" tone="gold" /> : undefined}>
       {/* One level-up gets the big line; several share one heading and a row of skill slots. */}
       {levels.length === 1 && (
         <StatReadout label={`Level up! ${levels[0][0]}`} value={String(levels[0][1])} tone="gold" icon={<SkillIcon skill={levels[0][0]} size={40} />} />
@@ -77,6 +126,7 @@ function ReturnCard({ report, onDone }: { report: TripReport; onDone: () => void
         </View>
       )}
       {report.refundedHours > 0 && <Body muted>+{formatHours(report.refundedHours)} adventure time back</Body>}
+      {[...new Set(report.notes)].slice(0, 3).map((n) => <Body key={n} muted>{n}</Body>)}
       {empty && <Body muted>Nothing this time.</Body>}
       <ButtonRow><KitButton label="Put it in the bank" onPress={onDone} /></ButtonRow>
     </Panel>
@@ -84,8 +134,14 @@ function ReturnCard({ report, onDone }: { report: TripReport; onDone: () => void
 }
 
 export function AdventureHomeScreen({ navigation }: Props) {
-  const { loading, state, activeTrip, nowMs, error, callBack, dismissReturn } = useGame();
+  const { loading, state, activeTrip, nowMs, error, callBack, dismissReturn, resizeBlock, removeBlock } = useGame();
   const { active: liveWorkout, discard: discardWorkout } = useActiveWorkout();
+  const [editing, setEditing] = useState(false);
+  const edit = (fn: () => Promise<void>) => {
+    setEditing(true);
+    // A failed edit shows in the error panel below.
+    fn().catch(() => {}).finally(() => setEditing(false));
+  };
 
   if (loading || !state) {
     return (
@@ -97,38 +153,38 @@ export function AdventureHomeScreen({ navigation }: Props) {
 
   const trip = activeTrip?.trip;
   const out = !!trip && !trip.done;
-  const showReturn = !!trip && trip.done && activeTrip!.seenMs === null;
+  // The log (PROG-045): what came back since the player last looked, while out or home.
+  const showLog = !!activeTrip && reportHasNews(activeTrip.report);
+  const home = !!trip && trip.done;
   const time = state.time;
 
   let status = 'Resting in Millbrook';
-  let sub = time.bankHours >= CHUNK_HOURS ? 'Ready for a trip' : 'Do a habit to earn adventure time';
+  let sub = time.bankHours > 0 ? 'Ready to go' : 'Do a habit to earn adventure time';
   let progress: number | undefined;
   let progressLabel: string | undefined;
-  let soFar: [string, number][] = [];
   let sceneRegion = 'millbrook';
   let pose = 'idle';
   if (out) {
     const leg = trip.legs.find((l) => !l.ended) ?? trip.legs[trip.legs.length - 1];
     const plannedHours = trip.legs.reduce((s, l) => s + l.hours - l.refundedHours, 0);
-    const doneHours = trip.legs.reduce((s, l) => s + l.chunksDone * CHUNK_HOURS, 0);
-    const backMs = trip.startMs + plannedHours * 2 * CHUNK_MS;
+    const doneHours = trip.legs.reduce((s, l) => s + blockHoursWorked(l), 0);
+    const backMs = queueEndsMs(trip);
     progress = plannedHours ? doneHours / plannedHours : 0;
     progressLabel = `${formatHours(Math.max(0, (backMs - nowMs) / 3600000))} left`;
     status = `Currently at ${regionName(leg.regionId)}`;
     sceneRegion = leg.regionId;
     pose = poseFor(leg.activityId);
-    sub = `${activityName(leg.activityId)} · back at ${clockTime(backMs)}`;
-    soFar = (Object.entries(activeTrip!.report.gained) as [string, number][]).filter(([, n]) => n > 0).sort(([, x], [, y]) => y - x);
+    sub = `${activityName(leg.activityId)} · queue done at ${clockTime(backMs)}`;
   }
 
   // Back home with loot: cheering after a level-up, otherwise walking in with the pack.
-  if (showReturn) pose = activeTrip!.report.levelUps.length > 0 ? 'victorious' : 'walking_home';
+  if (showLog && home) pose = activeTrip!.report.levelUps.length > 0 ? 'victorious' : 'walking_home';
 
   return (
     <KitScreen title="Today">
       <SceneBanner source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
-      {showReturn && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} />}
+      {showLog && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} home={home} />}
 
       {liveWorkout && (
         <ActiveWorkoutBanner
@@ -144,15 +200,19 @@ export function AdventureHomeScreen({ navigation }: Props) {
       )}
 
       <ButtonRow>
-        {out ? (
-          <KitButton label="Call back early" kind="secondary" onPress={callBack} />
-        ) : (
-          // Trips are planned on the Map tab.
-          <KitButton label="Plan a trip" onPress={() => navigation.getParent()?.navigate(TABS.map)} disabled={showReturn || time.bankHours < CHUNK_HOURS} />
-        )}
+        {/* Blocks are picked on the Map tab and join the end of the queue, even while out (PROG-045). */}
+        <KitButton label={out ? 'Add to queue' : 'Plan a trip'} onPress={() => navigation.getParent()?.navigate(TABS.map)} disabled={time.bankHours <= 0} />
+        {out && <KitButton label="Call back" kind="secondary" onPress={callBack} accessibilityLabel="Call back: stop now and get unworked time back" />}
       </ButtonRow>
 
-      {out && soFar.length > 0 && <Panel title="So far"><LootGrid items={soFar} nameOf={itemName} /></Panel>}
+      {out && (
+        <QueuePanel
+          legs={trip.legs}
+          busy={editing}
+          onResize={(i, size) => edit(() => resizeBlock(i, size))}
+          onRemove={(i) => edit(() => removeBlock(i))}
+        />
+      )}
 
       <TodayHabits />
 

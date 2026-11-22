@@ -101,6 +101,8 @@ export interface ProcessMethod extends MethodBase {
   inputs: Record<ItemId, number>;
   /** What each action makes; none for burying bones. */
   output?: ItemId;
+  /** How many of `output` each action makes (melting gives back several bars). Default 1. */
+  outputEach?: number;
   /** Cooking burns (PROG-037): chance at the unlock level, falling to 0 over `levelsToZero` levels. */
   burn?: { chanceAtUnlock: number; levelsToZero: number; burntItem: ItemId };
 }
@@ -188,8 +190,10 @@ export interface GameState {
   kills: Record<string, number>;
   /** Kills since the last unique, per boss (luck meter, PROG-030). */
   dryKills: Record<string, number>;
-  /** Unused XP lamps from quests: XP the player puts into any skill. */
+  /** Unused XP lamps from quests and village orders: XP the player puts into any skill. */
   lamps: number[];
+  /** Village orders filled, as `<dayId>:<orderId>` (PROG-044). Only the current day's are kept. */
+  ordersFilled: Record<string, true>;
 }
 
 // ---------- Trips ----------
@@ -198,8 +202,13 @@ export interface LegPlan {
   /** A method id, a fight id (`fight-<creature>`) or a quest id (`quest-<quest>`). */
   activityId: string;
   regionId: RegionId;
-  /** Planned length in hours, in 0.5 steps. Quests take their own length. */
+  /**
+   * Planned length in hours: half-hour steps for gathering and fights; quests take their
+   * own length; crafting (a `count`) takes the whole minutes its items need (PROG-043).
+   */
   hours: number;
+  /** Crafting work orders (PROG-043): how many to make. Absent on gathering, fights, quests, and older trips. */
+  count?: number;
   /** Fights: where melee XP goes. Defaults to shared. */
   focus?: MeleeFocus;
   /** Fights: slots the player chose by hand (PROG-015). */
@@ -209,16 +218,22 @@ export interface LegPlan {
 export interface Leg extends LegPlan {
   /** Half-hour chunks worked so far. */
   chunksDone: number;
+  /** Crafting legs: hours actually worked once the order is done (may be less than planned if materials ran short). */
+  madeHours?: number;
   /** Hours handed back (materials ran out, called back, or clawed back for debt). */
   refundedHours: number;
   ended: boolean;
 }
 
+/**
+ * The adventurer's queue (PROG-045): blocks worked one after another from `startMs`.
+ * Blocks can be added to the end while it runs; a new queue starts once it empties.
+ */
 export interface Trip {
   id: string;
   startMs: number;
   legs: Leg[];
-  /** Index of the next half-hour chunk to resolve, counted from startMs. */
+  /** How many steps have been resolved (seeds each step's randomness). */
   nextChunk: number;
   done: boolean;
   finishedMs?: number;

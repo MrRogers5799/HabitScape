@@ -11,8 +11,8 @@
 import { collection, doc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import {
-  advanceTrip, callBack, clawBackForDebt, earnFromHabit, emptyReport, GameState, LegPlan, newAdventurer,
-  sendTrip, TimeGrant, Trip, TripReport, untickHabit, applyLamp,
+  advanceTrip, callBack, clawBackForDebt, earnFromHabit, emptyReport, fillOrder, GameState, LegPlan, newAdventurer,
+  queueLegs, queueRunning, removeQueuedLeg, reportHasNews, resizeQueuedLeg, TimeGrant, Trip, TripReport, untickHabit, applyLamp,
 } from '../game';
 import { ADVENTURER_DOC, fromAdventurerDoc, fromTripDoc, mergeReports, toAdventurerDoc, toTripDoc, weekIdFor } from '../game/persistence';
 import { habitAdventureXP } from '../game/content/habitTiers';
@@ -22,10 +22,11 @@ const adventurerRef = (uid: string) => doc(db, 'users', uid, 'game', ADVENTURER_
 const tripRef = (uid: string, tripId: string) => doc(db, 'users', uid, 'trips', tripId);
 
 export interface ActiveTrip {
+  /** The adventurer's queue (PROG-045). */
   trip: Trip;
-  /** Everything the trip has produced so far (the "Welcome back" screen). */
+  /** What the queue has produced since the player last looked (the log, PROG-045). */
   report: TripReport;
-  /** When the player dismissed the return screen. */
+  /** When the player last cleared the log of a finished queue. */
   seenMs: number | null;
 }
 
@@ -109,14 +110,54 @@ export function untickHours(uid: string, weekId: string, grant: TimeGrant & { we
   });
 }
 
-/** Sends the adventurer on a new trip. Fails if the last trip hasn't been collected. */
-export function startTrip(uid: string, weekId: string, legs: LegPlan[], nowMs: number) {
-  const tripId = doc(collection(db, 'users', uid, 'trips')).id;
+/** Brings a running queue up to date inside a change, merging what it produced into the log. */
+function caughtUp(g: GameSnapshot, nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>): { state: GameState; activeTrip: ActiveTrip | null } {
+  if (!g.activeTrip || !queueRunning(g.activeTrip.trip)) return { state: g.state, activeTrip: g.activeTrip };
+  const res = advanceTrip(g.state, g.activeTrip.trip, nowMs, affinityAt);
+  return { state: res.state, activeTrip: { ...g.activeTrip, trip: res.trip, report: mergeReports(g.activeTrip.report, res.report) } };
+}
+
+/**
+ * Adds blocks to the adventurer's queue (PROG-045): to the end if it's running, or as a
+ * new queue starting now. A finished queue's unread log carries over into the new one.
+ */
+export function queueBlocks(uid: string, weekId: string, legs: LegPlan[], nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>) {
+  const newId = doc(collection(db, 'users', uid, 'trips')).id;
   return updateGame(uid, weekId, (g) => {
-    if (g.activeTrip && (!g.activeTrip.trip.done || g.activeTrip.seenMs === null)) throw new Error('Your adventurer is still out');
-    const sent = sendTrip(g.state, legs, tripId, nowMs);
-    return { state: sent.state, activeTrip: { trip: sent.trip, report: emptyReport(), seenMs: null }, result: tripId };
+    const cur = caughtUp(g, nowMs, affinityAt);
+    const res = queueLegs(cur.state, cur.activeTrip?.trip ?? null, legs, newId, nowMs);
+    const carried = cur.activeTrip && reportHasNews(cur.activeTrip.report) && (res.appended || cur.activeTrip.seenMs === null)
+      ? cur.activeTrip.report : emptyReport();
+    return { state: res.state, activeTrip: { trip: res.trip, report: carried, seenMs: null }, result: res.trip.id };
   });
+}
+
+/** Removes a block that hasn't started; its time goes back to the bank. */
+export function removeBlock(uid: string, weekId: string, index: number, nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>) {
+  return updateGame(uid, weekId, (g) => {
+    const cur = caughtUp(g, nowMs, affinityAt);
+    if (!cur.activeTrip || !queueRunning(cur.activeTrip.trip)) throw new Error('Nothing is queued');
+    const res = removeQueuedLeg(cur.state, cur.activeTrip.trip, index);
+    return { state: res.state, activeTrip: { ...cur.activeTrip, trip: res.trip }, result: undefined };
+  });
+}
+
+/** Resizes a block that hasn't started: hours for gathering and fights, a count for a work order. */
+export function resizeBlock(
+  uid: string, weekId: string, index: number, size: { hours?: number; count?: number }, nowMs: number,
+  affinityAt?: (ms: number) => ReadonlySet<string>,
+) {
+  return updateGame(uid, weekId, (g) => {
+    const cur = caughtUp(g, nowMs, affinityAt);
+    if (!cur.activeTrip || !queueRunning(cur.activeTrip.trip)) throw new Error('Nothing is queued');
+    const res = resizeQueuedLeg(cur.state, cur.activeTrip.trip, index, size);
+    return { state: res.state, activeTrip: { ...cur.activeTrip, trip: res.trip }, result: undefined };
+  });
+}
+
+/** Fills a village order from the bank (PROG-044); `dayId` is the player's local date. */
+export function fillVillageOrder(uid: string, weekId: string, regionId: string, orderId: string, dayId: string) {
+  return updateGame(uid, weekId, (g) => ({ state: fillOrder(g.state, regionId, orderId, dayId), activeTrip: g.activeTrip, result: undefined }));
 }
 
 /**
@@ -142,11 +183,15 @@ export function callBackTrip(uid: string, weekId: string, nowMs: number, affinit
   });
 }
 
-/** The player closed the "Welcome back" screen: the trip stays in history, and they can send a new one. */
+/** The player read the log (PROG-045): it starts again empty; a finished queue is marked seen. */
 export function dismissReturn(uid: string, weekId: string, nowMs: number) {
   return updateGame(uid, weekId, (g) => {
-    if (!g.activeTrip || !g.activeTrip.trip.done) return { state: g.state, activeTrip: g.activeTrip, result: undefined };
-    return { state: g.state, activeTrip: { ...g.activeTrip, seenMs: nowMs }, result: undefined };
+    if (!g.activeTrip) return { state: g.state, activeTrip: g.activeTrip, result: undefined };
+    return {
+      state: g.state,
+      activeTrip: { ...g.activeTrip, report: emptyReport(), seenMs: g.activeTrip.trip.done ? nowMs : null },
+      result: undefined,
+    };
   });
 }
 

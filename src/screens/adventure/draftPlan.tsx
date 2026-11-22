@@ -1,9 +1,9 @@
 /**
- * The trip plan the player is building in the Adventure tab, shared by the region and
+ * Blocks the player is picking to add to the queue (PROG-045), shared by the region and
  * planner screens (kept apart from the navigator to avoid a circular import).
  */
 import React, { createContext, useContext, useState } from 'react';
-import { LegPlan, MAX_LEGS } from '../../game';
+import { LegPlan, MAX_QUEUE_BLOCKS } from '../../game';
 
 export interface DraftPlan {
   legs: LegPlan[];
@@ -20,7 +20,7 @@ export function DraftPlanProvider({ children }: { children: React.ReactNode }) {
   const plan: DraftPlan = {
     legs,
     addLeg: (leg) => {
-      if (legs.length >= MAX_LEGS) return false;
+      if (legs.length >= MAX_QUEUE_BLOCKS) return false;
       setLegs([...legs, leg]);
       return true;
     },

@@ -12,10 +12,10 @@ import { useAuth } from './AuthContext';
 import { useActivities } from './ActivitiesContext';
 import { adventureActive } from '../constants/features';
 import { GameSkill, GameState, LegPlan } from '../game';
-import { weekIdFor } from '../game/persistence';
+import { dayIdFor, weekIdFor } from '../game/persistence';
 import {
-  ActiveTrip, applyLampOn, callBackTrip, dismissReturn, joinAdventureBeta, resolveActiveTrip, startTrip,
-  subscribeToAdventurer, subscribeToTrip,
+  ActiveTrip, applyLampOn, callBackTrip, dismissReturn, fillVillageOrder, joinAdventureBeta, queueBlocks, removeBlock, resizeBlock,
+  resolveActiveTrip, subscribeToAdventurer, subscribeToTrip,
 } from '../services/gameService';
 
 const RESOLVE_EVERY_MS = 60 * 1000;
@@ -28,11 +28,17 @@ interface GameContextType {
   activeTrip: ActiveTrip | null;
   /** The current time, refreshed every minute so countdowns move. */
   nowMs: number;
+  /** The player's local date, for village orders (PROG-044). */
+  dayId: string;
   /** Skills whose habits were done on the day of `ms` (affinity). */
   affinityAt: (ms: number) => ReadonlySet<string>;
   error: string | null;
   join: () => Promise<void>;
+  /** Adds blocks to the queue (PROG-045), starting it if it's empty. */
   send: (legs: LegPlan[]) => Promise<void>;
+  removeBlock: (index: number) => Promise<void>;
+  resizeBlock: (index: number, size: { hours?: number; count?: number }) => Promise<void>;
+  fillOrder: (regionId: string, orderId: string) => Promise<void>;
   callBack: () => Promise<void>;
   dismissReturn: () => Promise<void>;
   applyLamp: (index: number, skill: GameSkill) => Promise<void>;
@@ -59,6 +65,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const weekId = weekIdFor(nowMs, weekStart);
+  const dayId = dayIdFor(nowMs);
 
   // Affinity: skills of habits completed on a given day.
   const skillsByDay = useMemo(() => {
@@ -133,6 +140,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     state,
     activeTrip,
     nowMs,
+    dayId,
     affinityAt,
     error,
     join: () => run(async () => {
@@ -143,8 +151,23 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     send: (legs) => run(async () => {
       if (!user) return;
       const now = Date.now();
-      await startTrip(user.uid, weekIdFor(now, weekStart), legs, now);
+      await queueBlocks(user.uid, weekIdFor(now, weekStart), legs, now, affinityAt);
       setNowMs(now);
+    }),
+    removeBlock: (index) => run(async () => {
+      if (!user) return;
+      const now = Date.now();
+      await removeBlock(user.uid, weekIdFor(now, weekStart), index, now, affinityAt);
+    }),
+    resizeBlock: (index, size) => run(async () => {
+      if (!user) return;
+      const now = Date.now();
+      await resizeBlock(user.uid, weekIdFor(now, weekStart), index, size, now, affinityAt);
+    }),
+    fillOrder: (regionId, orderId) => run(async () => {
+      if (!user) return;
+      const now = Date.now();
+      await fillVillageOrder(user.uid, weekIdFor(now, weekStart), regionId, orderId, dayIdFor(now));
     }),
     callBack: () => run(async () => {
       if (!user) return;

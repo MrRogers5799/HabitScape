@@ -1,13 +1,16 @@
 /**
  * A region: everything you can do there, shown as icons with their rate and level
- * (new-version kit, PROD-024/025). Tapping Add puts it in the trip plan (up to three legs, PROG-026).
+ * (new-version kit, PROD-024/025). Tapping Add picks it for the queue (PROG-045); crafting
+ * is added as a work order by count (PROG-043). The village's order board and melting
+ * live here too (PROG-044).
  */
 import React, { useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Alert, Image, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activitiesIn, CHUNK_HOURS, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, MAX_LEGS, Method, questId, QUESTS, REGIONS,
+  activitiesIn, canMakeFrom, CHUNK_HOURS, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, MAX_QUEUE_BLOCKS, Method,
+  orderFilled, ordersFor, questId, QUESTS, REGIONS,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
@@ -27,26 +30,44 @@ function MethodIcon({ m }: { m: Method }) {
 }
 
 export function RegionScreen({ navigation, route }: Props) {
-  const { state } = useGame();
+  const { state, dayId, fillOrder } = useGame();
   const plan = useDraftPlan();
   const region = REGIONS[route.params.regionId];
   const [showAllRecipes, setShowAllRecipes] = useState(false);
+  const [delivering, setDelivering] = useState<string | null>(null);
   if (!state || !region) return null;
   const locked = !!region.questGate && !state.quests[region.questGate];
-  const { methods, recipes, fights, quests } = activitiesIn(region.id);
+  const { methods, recipes, melts, fights, quests } = activitiesIn(region.id);
+  const meltable = melts.filter((m) => m.kind === 'process' && (state.bank[Object.keys(m.inputs)[0]] ?? 0) > 0);
+  const orders = locked ? [] : ordersFor(state, region.id, dayId);
   // The anvil lists what you can make now, plus the next few unlocks; the rest behind a toggle.
   const makeable = recipes.filter((m) => levelOf(state, m.skill) >= m.level);
   const nextUp = recipes.filter((m) => levelOf(state, m.skill) < m.level).sort((a, b) => a.level - b.level).slice(0, 3);
   const shownRecipes = showAllRecipes ? recipes : [...makeable, ...nextUp];
-  const full = plan.legs.length >= MAX_LEGS;
+  const full = plan.legs.length >= MAX_QUEUE_BLOCKS;
   const defaultHours = Math.max(CHUNK_HOURS, Math.min(4, Math.floor(state.time.bankHours / CHUNK_HOURS) * CHUNK_HOURS));
 
   const add = (activityId: string, hours = defaultHours) => {
     if (plan.addLeg({ activityId, regionId: region.id, hours })) navigation.navigate('Planner');
   };
+  /** Crafting goes in as a work order (PROG-043): a count, not hours. */
+  const addOrder = (m: Method, count: number) => {
+    if (plan.addLeg({ activityId: m.id, regionId: region.id, hours: 0, count: Math.max(1, count) })) navigation.navigate('Planner');
+  };
+  const addMethod = (m: Method) => (m.kind === 'process' ? addOrder(m, canMakeFrom(state.bank, m)) : add(m.id));
   const addButton = (onPress: () => void, disabled: boolean, what: string) => (
-    <KitButton compact label="Add" disabled={disabled} onPress={onPress} accessibilityLabel={`Add ${what} to the trip`} />
+    <KitButton compact label="Add" disabled={disabled} onPress={onPress} accessibilityLabel={`Add ${what} to the queue`} />
   );
+  const deliver = async (orderId: string) => {
+    setDelivering(orderId);
+    try {
+      await fillOrder(region.id, orderId);
+    } catch (e) {
+      Alert.alert("Couldn't deliver that", e instanceof Error ? e.message : 'Please try again.');
+    } finally {
+      setDelivering(null);
+    }
+  };
 
   return (
     <KitScreen title={region.name} onBack={() => navigation.goBack()}>
@@ -56,8 +77,8 @@ export function RegionScreen({ navigation, route }: Props) {
       {plan.legs.length > 0 && (
         <Panel>
           <View style={styles.planRow}>
-            <Tag label={`Trip: ${plan.legs.length}/${MAX_LEGS} legs`} tone="gold" />
-            <KitButton compact kind="secondary" label="Open plan" onPress={() => navigation.navigate('Planner')} />
+            <Tag label={`Picked: ${plan.legs.length}`} tone="gold" accessibilityLabel={`${plan.legs.length} picked for the queue`} />
+            <KitButton compact kind="secondary" label="Review" onPress={() => navigation.navigate('Planner')} />
           </View>
         </Panel>
       )}
@@ -85,7 +106,36 @@ export function RegionScreen({ navigation, route }: Props) {
                     />
                   </>
                 ) : <NeedsTag skill={m.skill} level={m.level} met={false} />}
-                right={addButton(() => add(m.id), !ok || full, m.name)}
+                right={addButton(() => addMethod(m), !ok || full, m.name)}
+              />
+            );
+          })}
+        </Panel>
+      )}
+
+      {orders.length > 0 && (
+        <Panel title="Order board">
+          <Body muted>Villagers want these today. Deliver from your bank for an XP lamp to put in any skill.</Body>
+          {orders.map((o) => {
+            const have = state.bank[o.item] ?? 0;
+            const done = orderFilled(state, dayId, o.id);
+            const name = itemName(o.item);
+            return (
+              <Row
+                key={o.id}
+                dim={done}
+                left={<ItemSlot id={o.item} name={name} count={o.count} size={SLOT} />}
+                title={name}
+                detail={done ? <Tag label="Delivered" tone="green" /> : (
+                  <>
+                    <Tag label={`have ${have}/${o.count}`} tone={have >= o.count ? 'green' : 'red'} accessibilityLabel={`You have ${have} of ${o.count}`} />
+                    <Tag label={`+${o.lampXP.toLocaleString()} XP lamp`} tone="gold" accessibilityLabel={`Pays a ${o.lampXP.toLocaleString()} XP lamp`} />
+                  </>
+                )}
+                right={done ? undefined : (
+                  <KitButton compact label={delivering === o.id ? '…' : 'Deliver'} disabled={have < o.count || !!delivering}
+                    onPress={() => deliver(o.id)} accessibilityLabel={`Deliver ${o.count} ${name}`} />
+                )}
               />
             );
           })}
@@ -114,13 +164,37 @@ export function RegionScreen({ navigation, route }: Props) {
                     <Tag label={`can make ${have}`} tone={have > 0 ? 'green' : 'red'} />
                   </>
                 ) : <NeedsTag skill={m.skill} level={m.level} met={false} />}
-                right={addButton(() => add(m.id, CHUNK_HOURS), !ok || full, name)}
+                right={addButton(() => addOrder(m, 1), !ok || full, name)}
               />
             );
           })}
           <ButtonRow>
             <KitButton kind="secondary" label={showAllRecipes ? 'Show fewer' : 'Show all'} onPress={() => setShowAllRecipes(!showAllRecipes)} />
           </ButtonRow>
+        </Panel>
+      )}
+
+      {!locked && meltable.length > 0 && (
+        <Panel title="Melt down">
+          <Body muted>Spare gear goes back into half its bars. Melting gives no XP.</Body>
+          {meltable.map((m) => {
+            if (m.kind !== 'process') return null;
+            const gear = Object.keys(m.inputs)[0];
+            const owned = state.bank[gear] ?? 0;
+            const name = itemName(gear);
+            return (
+              <Row
+                key={m.id}
+                left={<ItemSlot id={gear} name={name} count={owned} size={SLOT} />}
+                title={name}
+                detail={m.output ? (
+                  <Tag label={`→ ${m.outputEach ?? 1} each`} icon={<ItemIcon id={m.output} name={itemName(m.output)} size={20} />}
+                    accessibilityLabel={`Gives ${m.outputEach ?? 1} ${itemName(m.output)} each`} />
+                ) : undefined}
+                right={addButton(() => addOrder(m, owned), full, `melting ${name}`)}
+              />
+            );
+          })}
         </Panel>
       )}
 

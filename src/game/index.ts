@@ -12,3 +12,4 @@ export * from './trips';
 export { CREATURES, ITEMS, METHODS, QUESTS, REGIONS, STARTING_BANK } from './content/valley';
 export * from './preview';
 export * from './labels';
+export * from './orders';

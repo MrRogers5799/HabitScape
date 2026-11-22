@@ -3,7 +3,7 @@
  *
  * Layout under users/{uid}:
  *   game/adventurer   one document: levels, bank, adventure time, quests, kill counts, lamps, active trip id
- *   trips/{tripId}    one document per trip: its legs and progress, plus the running report for the return screen
+ *   trips/{tripId}    one document per queue (PROG-045): its blocks and progress, plus the running log of what it produced
  *
  * Kept pure (no Firebase imports) so it's tested with Jest. `rev` goes up by one on
  * every save; the security rules reject a save that doesn't, so a stale device can't
@@ -26,6 +26,8 @@ export interface AdventurerDoc {
   kills: Record<string, number>;
   dryKills: Record<string, number>;
   lamps: number[];
+  /** Village orders filled today (PROG-044). */
+  ordersFilled: Record<string, true>;
   activeTripId: string | null;
 }
 
@@ -60,6 +62,7 @@ export function toAdventurerDoc(state: GameState, activeTripId: string | null, r
     kills: { ...state.kills },
     dryKills: { ...state.dryKills },
     lamps: [...state.lamps],
+    ordersFilled: { ...state.ordersFilled },
     activeTripId,
   };
 }
@@ -88,6 +91,7 @@ export function fromAdventurerDoc(data: unknown, weekId: string): { state: GameS
       kills: numbers(d.kills),
       dryKills: numbers(d.dryKills),
       lamps: Array.isArray(d.lamps) ? d.lamps.filter((n): n is number => typeof n === 'number') : [],
+      ordersFilled: isRecord(d.ordersFilled) ? (Object.fromEntries(Object.keys(d.ordersFilled).map((k) => [k, true])) as Record<string, true>) : {},
     },
     activeTripId: typeof d.activeTripId === 'string' ? d.activeTripId : null,
     rev: typeof d.rev === 'number' ? d.rev : 0,
@@ -141,7 +145,7 @@ export function mergeReports(a: TripReport, b: Partial<TripReport>): TripReport 
     attempts: addBags(a.attempts, b.attempts),
     found: [...a.found, ...(b.found ?? [])],
     questsCompleted: [...a.questsCompleted, ...(b.questsCompleted ?? [])],
-    refundedHours: Math.round((a.refundedHours + (b.refundedHours ?? 0)) * 100) / 100,
+    refundedHours: Math.round((a.refundedHours + (b.refundedHours ?? 0)) * 10000) / 10000,
     levelUps: [...a.levelUps, ...(b.levelUps ?? [])],
     notes: [...a.notes, ...(b.notes ?? [])],
   };
@@ -157,4 +161,11 @@ export function weekIdFor(ms: number, weekStartDay: 0 | 1): string {
   const start = new Date(d.getFullYear(), d.getMonth(), d.getDate() - back);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+}
+
+/** The player's local date, e.g. '2026-11-21': village boards change with it (PROG-044). */
+export function dayIdFor(ms: number): string {
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }

@@ -3,6 +3,7 @@
  * Numbers come from the vault's "Content sheet - melee valley" and are first passes.
  */
 import { AttackType, Creature, GameSkill, Item, Method, Quest, Region, Slot } from '../types';
+import { MELT_SHARE } from '../rules';
 
 export const REGIONS: Record<string, Region> = {
   millbrook: { id: 'millbrook', name: 'Millbrook', travelFraction: 0 },
@@ -47,6 +48,7 @@ const PIECES: Piece[] = [
 
 const SMITHED_ITEMS: Item[] = [];
 const SMITHING_METHODS: Method[] = [];
+const MELTING_METHODS: Method[] = [];
 for (const t of TIERS) {
   for (const p of PIECES) {
     const id = `${t.key}_${p.key}`;
@@ -65,6 +67,15 @@ for (const t of TIERS) {
       level: t.base + p.offset, regions: ['millbrook'], xpEach: p.bars * t.xpPerBar,
       perHour: 120 / p.bars, inputs: { [t.bar]: p.bars }, output: id,
     });
+    // Melting (PROG-044): half the bars back, rounded down, and no XP, so smithing and
+    // melting can't loop into free Smithing XP. One-bar pieces give nothing, so they have none.
+    const back = Math.floor(p.bars * MELT_SHARE);
+    if (back > 0) {
+      MELTING_METHODS.push({
+        kind: 'process', id: `melt-${id}`, name: `Melt ${item.name.toLowerCase()}s`, skill: 'Smithing',
+        level: 1, regions: ['millbrook'], xpEach: 0, perHour: 240, inputs: { [id]: 1 }, output: t.bar, outputEach: back,
+      });
+    }
   }
 }
 
@@ -129,6 +140,7 @@ export const METHODS: Record<string, Method> = Object.fromEntries(
     bury('bury-big-bones', 'big_bones', 'Bury big bones', 33),
     bury('bury-warden-remains', 'warden_remains', "Bury the Warden's remains", 180),
     ...SMITHING_METHODS,
+    ...MELTING_METHODS,
   ] as Method[]).map((m) => [m.id, m]),
 );
 
