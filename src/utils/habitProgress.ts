@@ -65,11 +65,34 @@ export function habitProgress(
   return { count, target, doneToday, settled: count >= target || (multi && doneToday), multi };
 }
 
-/** Today's completion of a habit, newest first, for undoing a tick. */
-export function latestCompletionToday(completions: ActivityCompletion[], activityId: string, now: Date): ActivityCompletion | undefined {
-  const from = startOfDay(now);
-  const to = endOfDay(now);
+/** A habit's newest completion on the given day, for undoing a tick. */
+export function latestCompletionOn(completions: ActivityCompletion[], activityId: string, day: Date): ActivityCompletion | undefined {
+  const from = startOfDay(day);
+  const to = endOfDay(day);
   return completions
     .filter((c) => c.activityId === activityId && new Date(c.completedAt) >= from && new Date(c.completedAt) <= to)
     .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0];
+}
+
+/** How many days back a habit can be ticked (PROG-005), on the live Activities screen and on Today. */
+export const MAX_BACKFILL_DAYS = 14;
+
+/** The start of the day `back` days before `now`. */
+export function daysBack(now: Date, back: number): Date {
+  const d = startOfDay(now);
+  d.setDate(d.getDate() - back);
+  return d;
+}
+
+/** "Today", "Yesterday", otherwise e.g. "Wed, Nov 18". */
+export function dayLabel(day: Date, now: Date): string {
+  const back = Math.round((startOfDay(now).getTime() - startOfDay(day).getTime()) / 86_400_000);
+  if (back === 0) return 'Today';
+  if (back === 1) return 'Yesterday';
+  return day.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+/** The habit wasn't being tracked yet on that day, so it can't be ticked (PROG-005). */
+export function beforeTracking(selectedAt: Date | undefined, day: Date): boolean {
+  return !!selectedAt && startOfDay(day) < startOfDay(new Date(selectedAt));
 }
