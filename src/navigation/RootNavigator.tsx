@@ -8,7 +8,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image, ImageSourcePropType } from 'react-native';
+import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import { PlatformPressable } from '@react-navigation/elements';
 import { useAuth } from '../context/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -179,9 +179,14 @@ function AppTabs() {
 export function RootNavigator() {
   const { user, loading } = useAuth();
 
-  // Still loading auth state
+  // Still loading auth state: the same logo on the same colour as the native splash
+  // (app.json), so the splash seems to stay until the first screen is ready.
   if (loading) {
-    return null; // Splash screen could be shown here
+    return (
+      <View style={splash.screen} accessibilityLabel="HabitScape is loading">
+        <Image source={require('../../assets/splash/splash-logo.png')} style={splash.logo} resizeMode="contain" />
+      </View>
+    );
   }
 
   return (
@@ -224,3 +229,8 @@ export function RootNavigator() {
   );
 }
 
+/** Matches the native splash in app.json (expo-splash-screen: backgroundColor, imageWidth). */
+const splash = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#080c18', alignItems: 'center', justifyContent: 'center' },
+  logo: { width: 200, height: 200 },
+});
