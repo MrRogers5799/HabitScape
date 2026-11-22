@@ -2,7 +2,7 @@
  * Today's habits on the Today tab (PROD-019, PROD-026): tick a habit to earn adventure
  * time. Each row shows the hours it earns (PROD-015: habits feed the adventure, not their
  * own skill levels), its progress for spread-out cadences, and its streak. Tapping a row
- * opens the habit's history; "Edit habits" adds or removes them. The arrows step back up
+ * opens the habit's page (KitHabitScreen); "Edit habits" adds or removes them. The arrows step back up
  * to 14 days to tick a day you forgot (PROG-005); only days in the current week earn
  * adventure time (PROG-005; gameService.earnHoursForCompletion).
  */
@@ -19,7 +19,9 @@ import { weekIdFor } from '../../game/persistence';
 import {
   beforeTracking, dayLabel, daysBack, habitProgress, latestCompletionOn, MAX_BACKFILL_DAYS,
 } from '../../utils/habitProgress';
-import { HabitDetailModal } from '../../components/HabitDetailModal';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { ActivitySelectionWizard } from '../../components/ActivitySelectionWizard';
 import {
   Body, ButtonRow, FRAMES, KitButton, kitColors, kitFonts, NineSlice, Panel, Row, space, Tag,
@@ -62,7 +64,7 @@ export function TodayHabits() {
   const isToday = back === 0;
   // Ticks on days before this week don't earn adventure time (gameService.earnHoursForCompletion).
   const earnsTime = weekIdFor(day.getTime(), weekStartDay) === weekIdFor(now.getTime(), weekStartDay);
-  const [detail, setDetail] = useState<UserActivity | null>(null);
+  const navigation = useNavigation<NativeStackNavigationProp<AdventureStackParamList>>();
   const [editing, setEditing] = useState(false);
   const [editBusy, setEditBusy] = useState(false);
 
@@ -148,8 +150,8 @@ export function TodayHabits() {
           <Row
             key={activity.id}
             dim={cantTick}
-            onPress={() => setDetail(activity)}
-            accessibilityLabel={`${name}. ${state}. Opens its history`}
+            onPress={() => navigation.navigate('Habit', { activityId: activity.id })}
+            accessibilityLabel={`${name}. ${state}. Opens its page`}
             left={(
               <Pressable
                 onPress={() => toggle(activity, progress.doneToday, progress.settled)}
@@ -177,7 +179,6 @@ export function TodayHabits() {
         <KitButton kind="secondary" label={rows.length ? 'Edit habits' : 'Add habits'} onPress={() => setEditing(true)} />
       </ButtonRow>
 
-      <HabitDetailModal activity={detail} completions={completions} onClose={() => setDetail(null)} />
       <ActivitySelectionWizard
         visible={editing}
         onClose={() => setEditing(false)}

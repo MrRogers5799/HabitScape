@@ -11,7 +11,7 @@
 import { collection, doc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import {
-  advanceTrip, callBack, clawBackForDebt, earnFromHabit, emptyReport, fillOrder, GameState, LegPlan, newAdventurer,
+  advanceTrip, callBack, clawBackForDebt, craftAndDeliverPlan, earnFromHabit, emptyReport, fillOrder, VillageOrder, GameState, LegPlan, newAdventurer,
   queueLegs, queueRunning, removeQueuedLeg, reportHasNews, resizeQueuedLeg, TimeGrant, Trip, TripReport, untickHabit, applyLamp,
 } from '../game';
 import { ADVENTURER_DOC, fromAdventurerDoc, fromTripDoc, mergeReports, toAdventurerDoc, toTripDoc, weekIdFor } from '../game/persistence';
@@ -122,10 +122,15 @@ function caughtUp(g: GameSnapshot, nowMs: number, affinityAt?: (ms: number) => R
  * new queue starting now. A finished queue's unread log carries over into the new one.
  */
 export function queueBlocks(uid: string, weekId: string, legs: LegPlan[], nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>) {
+  return queueWith(uid, weekId, () => legs, nowMs, affinityAt);
+}
+
+/** Queues the blocks `pick` chooses from the caught-up state, in one save. */
+function queueWith(uid: string, weekId: string, pick: (state: GameState) => LegPlan[], nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>) {
   const newId = doc(collection(db, 'users', uid, 'trips')).id;
   return updateGame(uid, weekId, (g) => {
     const cur = caughtUp(g, nowMs, affinityAt);
-    const res = queueLegs(cur.state, cur.activeTrip?.trip ?? null, legs, newId, nowMs);
+    const res = queueLegs(cur.state, cur.activeTrip?.trip ?? null, pick(cur.state), newId, nowMs);
     const carried = cur.activeTrip && reportHasNews(cur.activeTrip.report) && (res.appended || cur.activeTrip.seenMs === null)
       ? cur.activeTrip.report : emptyReport();
     return { state: res.state, activeTrip: { trip: res.trip, report: carried, seenMs: null }, result: res.trip.id };
@@ -156,8 +161,17 @@ export function resizeBlock(
 }
 
 /** Fills a village order from the bank (PROG-044); `dayId` is the player's local date. */
-export function fillVillageOrder(uid: string, weekId: string, regionId: string, orderId: string, dayId: string) {
-  return updateGame(uid, weekId, (g) => ({ state: fillOrder(g.state, regionId, orderId, dayId), activeTrip: g.activeTrip, result: undefined }));
+export function fillVillageOrder(uid: string, weekId: string, order: VillageOrder, dayId: string) {
+  return updateGame(uid, weekId, (g) => ({ state: fillOrder(g.state, order, dayId), activeTrip: g.activeTrip, result: undefined }));
+}
+
+/** Craft & deliver (PROG-050): queues the work orders that make what's missing; the last one delivers the order. */
+export function craftAndDeliver(uid: string, weekId: string, order: VillageOrder, dayId: string, nowMs: number, affinityAt?: (ms: number) => ReadonlySet<string>) {
+  return queueWith(uid, weekId, (state) => {
+    const plan = craftAndDeliverPlan(state, order, dayId);
+    if (!plan) throw new Error("Your bank doesn't hold enough to make that");
+    return plan;
+  }, nowMs, affinityAt);
 }
 
 /**

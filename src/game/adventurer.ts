@@ -5,7 +5,7 @@ import { XP_TABLE } from '../constants/xpTable';
 import { calculateLevel } from '../utils/xpCalculations';
 import { ITEMS, STARTING_BANK } from './content/valley';
 import { TOOL_TIER_STEP } from './rules';
-import { GAME_SKILLS, GameSkill, GameState, ToolType } from './types';
+import { GAME_SKILLS, GameSkill, GameState, Method, ToolType, TripReport } from './types';
 
 export const levelOf = (state: GameState, skill: GameSkill): number => calculateLevel(state.xp[skill] ?? 0);
 
@@ -53,4 +53,22 @@ export function applyLamp(state: GameState, lampIndex: number, skill: GameSkill)
     xp: { ...state.xp, [skill]: (state.xp[skill] ?? 0) + amount },
     lamps: state.lamps.filter((_, i) => i !== lampIndex),
   };
+}
+
+/** Burn chance for a cooking method at a level (PROG-037). */
+export function burnChance(method: Method, level: number): number {
+  if (method.kind !== 'process' || !method.burn) return 0;
+  const { chanceAtUnlock, levelsToZero } = method.burn;
+  return Math.max(0, chanceAtUnlock * (1 - (level - method.level) / levelsToZero));
+}
+
+/** Reward XP (quests, village orders, PROG-048): added to the skill, with any level-up reported. */
+export function addRewardXP(state: GameState, report: TripReport | null, skill: GameSkill, amount: number) {
+  if (amount <= 0) return;
+  const before = levelOf(state, skill);
+  state.xp[skill] = (state.xp[skill] ?? 0) + amount;
+  if (!report) return;
+  report.xp[skill] = (report.xp[skill] ?? 0) + amount;
+  const after = levelOf(state, skill);
+  if (after > before) report.levelUps.push({ skill, level: after });
 }

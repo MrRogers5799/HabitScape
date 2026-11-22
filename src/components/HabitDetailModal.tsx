@@ -42,7 +42,7 @@ function formatDateTime(date: Date): string {
 
 // ─── completion rate ──────────────────────────────────────────────────────────
 
-function calculateCompletionRate(
+export function calculateCompletionRate(
   completions: ActivityCompletion[],
   activityId: string,
   cadence: string,
@@ -110,7 +110,7 @@ function calculateCompletionRate(
 
 // ─── calendar ────────────────────────────────────────────────────────────────
 
-interface CalendarDay {
+export interface CalendarDay {
   date: Date | null;
   completed: boolean;
   isToday: boolean;
@@ -119,7 +119,7 @@ interface CalendarDay {
   isPreTracking: boolean;
 }
 
-function buildMonthCalendar(
+export function buildMonthCalendar(
   year: number,
   month: number,
   completions: ActivityCompletion[],

@@ -8,7 +8,7 @@ import { ActivityIndicator, ImageSourcePropType, Text, View } from 'react-native
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activityName, activityOf, BANK_HOURS_CAP, blockHoursLeft, blockHoursWorked, CREATURES, CHUNK_HOURS, clockTime, formatHours, isWorkOrder,
+  activityName, activityOf, BANK_HOURS_CAP, blockHoursWorked, CREATURES, CHUNK_HOURS, clockTime, formatHours, isWorkOrder,
   itemName, Leg, queueEndsMs, regionName, reportHasNews, TripReport, WEEKLY_HOURS_CAP,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
@@ -16,7 +16,7 @@ import { TABS } from '../../navigation/newVersionTabs';
 import { TodayHabits } from './TodayHabits';
 import { ActiveWorkoutBanner, useActiveWorkout } from '../workout-kit/ActiveWorkoutBanner';
 import {
-  ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, Row, SceneBanner, SkillIcon, SkillSlot,
+  ADVENTURER_POSES, Body, ButtonRow, Chip, KitButton, KitScreen, kitColors, LootGrid, Panel, ProgressBar, Row, SceneBanner, SkillIcon, SkillTile,
   space, StatReadout, Tag, type, XpChip,
 } from '../../game-ui';
 
@@ -48,33 +48,39 @@ function poseFor(activityId: string): string {
   }
 }
 
-/** The queue: the block being worked, then what's next (PROG-045). */
-function QueuePanel({ legs, onResize, onRemove, busy }: {
+/**
+ * What's next in the queue (PROG-045). The block being worked lives in the scene banner
+ * above, so it isn't repeated here (one home per thing, OQ-36). Call back sits here too.
+ */
+function QueuePanel({ legs, onResize, onRemove, onCallBack, busy }: {
   legs: Leg[]; busy: boolean;
   onResize: (index: number, size: { hours?: number; count?: number }) => void;
   onRemove: (index: number) => void;
+  onCallBack: () => void;
 }) {
   const current = legs.findIndex((l) => !l.ended);
-  const rows = legs.map((l, i) => ({ l, i })).filter(({ l }) => !l.ended);
+  const rows = legs.map((l, i) => ({ l, i })).filter(({ l, i }) => !l.ended && i !== current);
   return (
-    <Panel title="Queue" right={<Tag label={`${rows.length}`} accessibilityLabel={`${rows.length} blocks queued`} />}>
+    <Panel
+      title="Up next"
+      right={<KitButton compact kind="secondary" label="Call back" onPress={onCallBack} accessibilityLabel="Call back: stop now and get unworked time back" />}
+    >
+      {rows.length === 0 && <Body muted>Nothing else queued. Pick more on the Map.</Body>}
       {rows.map(({ l, i }) => {
-        const now = i === current;
         const order = isWorkOrder(l);
-        const left = blockHoursLeft(l);
         const name = activityName(l.activityId);
         return (
           <Row
             key={`${i}-${l.activityId}`}
             title={name}
-            accessibilityLabel={`${name}${now ? ', working on it now' : ''}`}
+            accessibilityLabel={name}
             detail={(
               <>
-                {now && <Tag label="Now" tone="gold" />}
                 {order && <Tag label={`×${l.count}`} accessibilityLabel={`Make ${l.count}`} />}
-                <Tag label={formatHours(now ? left : l.hours)} accessibilityLabel={`${formatHours(now ? left : l.hours)}${now ? ' left' : ''}`} />
+                {l.focus && l.focus !== 'shared' && <Tag label={l.focus} tone="gold" accessibilityLabel={`${l.focus} XP`} />}
+                <Tag label={formatHours(l.hours)} />
                 <Tag label={regionName(l.regionId)} />
-                {!now && activityOf(l.activityId)?.kind !== 'quest' && (
+                {activityOf(l.activityId)?.kind !== 'quest' && (
               <View style={{ flexDirection: 'row', gap: space.xs }}>
                 <KitButton compact kind="secondary" label="−" disabled={busy || (order ? l.count! <= 1 : l.hours <= CHUNK_HOURS)}
                   accessibilityLabel={order ? `One fewer ${name}` : `30 minutes less ${name}`}
@@ -113,7 +119,7 @@ function ReturnCard({ report, onDone, home }: { report: TripReport; onDone: () =
         <>
           <Text style={[type.heading, { color: kitColors.gold }]}>Level up!</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {levels.map(([s, lvl]) => <SkillSlot key={s} skill={s} level={lvl} size={52} />)}
+            {levels.map(([s, lvl]) => <SkillTile key={s} skill={s} level={lvl} />)}
           </View>
         </>
       )}
@@ -161,7 +167,7 @@ export function AdventureHomeScreen({ navigation }: Props) {
   const time = state.time;
 
   let status = 'Resting in Millbrook';
-  let sub = time.bankHours > 0 ? 'Ready to go' : 'Do a habit to earn adventure time';
+  let sub = time.bankHours > 0 ? 'Pick something to do on the Map' : 'Do a habit to earn adventure time';
   let progress: number | undefined;
   let progressLabel: string | undefined;
   let sceneRegion = 'millbrook';
@@ -184,7 +190,7 @@ export function AdventureHomeScreen({ navigation }: Props) {
 
   return (
     <KitScreen title="Today">
-      <SceneBanner source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
+      <SceneBanner compact source={SCENES[sceneRegion] ?? SCENES.millbrook} figure={ADVENTURER_POSES[pose] ?? ADVENTURER_POSES.idle} label={status} sublabel={sub} progress={progress} progressLabel={progressLabel} />
 
       {showLog && <ReturnCard report={activeTrip!.report} onDone={dismissReturn} home={home} />}
 
@@ -201,22 +207,19 @@ export function AdventureHomeScreen({ navigation }: Props) {
         />
       )}
 
-      <ButtonRow>
-        {/* Blocks are picked on the Map tab and join the end of the queue, even while out (PROG-045). */}
-        <KitButton label={out ? 'Add to queue' : 'Plan a trip'} onPress={() => navigation.getParent()?.navigate(TABS.map)} disabled={time.bankHours <= 0} />
-        {out && <KitButton label="Call back" kind="secondary" onPress={callBack} accessibilityLabel="Call back: stop now and get unworked time back" />}
-      </ButtonRow>
+      {/* Ticking habits is the daily action, so it comes before the queue (UI review 2026-11-21). */}
+      <TodayHabits />
 
+      {/* Blocks are picked on the Map tab, their one home, and join the end of the queue (PROG-045). */}
       {out && (
         <QueuePanel
           legs={trip.legs}
           busy={editing}
+          onCallBack={callBack}
           onResize={(i, size) => edit(() => resizeBlock(i, size))}
           onRemove={(i) => edit(() => removeBlock(i))}
         />
       )}
-
-      <TodayHabits />
 
       <Panel title="Adventure time">
         {time.bankHours < 0 ? (

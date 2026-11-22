@@ -20,7 +20,7 @@ export function KitScreen({ title, right, onBack, footer, children }: {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       {title !== undefined && (
-        <View style={styles.titleBar}>
+        <View style={[styles.titleBar, styles.column]}>
           {onBack && (
             <Pressable onPress={onBack} accessibilityRole="button" accessibilityLabel="Back" hitSlop={8} style={({ pressed }) => pressed && styles.pressed}>
               <NineSlice frame={FRAMES.slot} style={styles.back}>
@@ -33,8 +33,8 @@ export function KitScreen({ title, right, onBack, footer, children }: {
         </View>
       )}
       {/* 'handled': a tap on a button while the keyboard is up presses it instead of only closing the keyboard. */}
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">{children}</ScrollView>
-      {footer !== undefined && <View style={styles.footer}>{footer}</View>}
+      <ScrollView contentContainerStyle={[styles.scroll, styles.column]} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+      {footer !== undefined && <View style={styles.footer}><View style={styles.column}>{footer}</View></View>}
     </View>
   );
 }
@@ -74,7 +74,7 @@ export function PanelHeader({ title, icon, right }: { title: string; icon?: Imag
 }
 
 /**
- * A list row in a sunken slot: optional left element (checkbox, icon), title, then a subtitle and/or a
+ * A list row, flat with a divider under it: optional left element (checkbox, icon), title, then a subtitle and/or a
  * `detail` line of chips, optional right element. `dim` greys out a row you can't use yet.
  */
 export function Row({ left, title, subtitle, detail, right, onPress, accessibilityLabel, dim }: {
@@ -82,7 +82,8 @@ export function Row({ left, title, subtitle, detail, right, onPress, accessibili
   onPress?: () => void; accessibilityLabel?: string; dim?: boolean;
 }) {
   const content = (
-    <NineSlice frame={FRAMES.slot} padding={space.xs} style={[styles.rowInner, dim && styles.dim]}>
+    // Flat, with a divider: the slot frame means "an item", so it stays on icons only (UI review 2026-11-21).
+    <View style={[styles.rowInner, styles.rowFlat, dim && styles.dim]}>
       {left && <View style={styles.rowLeft}>{left}</View>}
       <View style={[styles.flex, styles.rowText]}>
         <Text style={type.bodyBold} numberOfLines={2}>{title}</Text>
@@ -90,7 +91,7 @@ export function Row({ left, title, subtitle, detail, right, onPress, accessibili
         {detail !== undefined && <View style={styles.detail}>{detail}</View>}
       </View>
       {right}
-    </NineSlice>
+    </View>
   );
   if (!onPress) return content;
   return (
@@ -132,11 +133,13 @@ export function ProgressBar({ fraction, color = kitColors.green }: { fraction: n
  * The illustrated scene at the top of a screen, framed, with a label plate and an optional progress strip.
  * `figure` (the adventurer's pose) stands on the right, over the scene: scenes have no characters baked in.
  */
-export function SceneBanner({ source, label, sublabel, progress, progressLabel, figure }: {
+export function SceneBanner({ source, label, sublabel, progress, progressLabel, figure, compact }: {
   source: ImageSourcePropType; label: string; sublabel?: string; progress?: number; progressLabel?: string; figure?: ImageSourcePropType;
+  /** A shorter, wider crop, so what comes under it starts higher on a phone (Today, UI review 2026-11-21). */
+  compact?: boolean;
 }) {
   return (
-    <View style={styles.scene}>
+    <View style={[styles.scene, compact && styles.sceneCompact]}>
       <View style={[StyleSheet.absoluteFill, styles.sceneClip]}>
         <Image source={source} style={styles.sceneImage} resizeMode="cover" />
         {figure && (
@@ -251,6 +254,9 @@ export function Choice<T extends string | number>({ options, value, onChange, di
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: kitColors.background },
+  // Tablets, foldables and landscape (Android 16 ignores the portrait lock on large screens):
+  // the content stays a phone-width column, centred, instead of stretching across.
+  column: { width: '100%', maxWidth: 640, alignSelf: 'center' },
   titleBar: { paddingHorizontal: space.gutter, paddingTop: space.sm, flexDirection: 'row', alignItems: 'center', gap: space.sm },
   plate: { flex: 1, minHeight: 52, justifyContent: 'center' },
   scroll: { padding: space.gutter, gap: space.gap, paddingBottom: space.xl * 2 },
@@ -263,6 +269,7 @@ const styles = StyleSheet.create({
   headerIcon: { width: 28, height: 28 },
   divider: { height: 2, backgroundColor: kitColors.divider, opacity: 0.8 },
   rowInner: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56 },
+  rowFlat: { paddingVertical: space.sm, paddingHorizontal: space.xxs, borderBottomWidth: 2, borderBottomColor: kitColors.divider },
   rowLeft: { minWidth: 36, alignItems: 'center' },
   rowText: { gap: 2 },
   detail: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.xs },
@@ -274,6 +281,7 @@ const styles = StyleSheet.create({
   barFill: { height: '100%' },
   barShine: { height: 3, backgroundColor: 'rgba(255,255,255,0.28)' },
   scene: { aspectRatio: 3 / 2, justifyContent: 'space-between' },
+  sceneCompact: { aspectRatio: 2 / 1 },
   sceneClip: { overflow: 'hidden', margin: 6 },
   sceneImage: { width: '100%', height: '100%' },
   // Right-aligned box over the lower scene; the figure keeps its square shape inside it.
@@ -284,7 +292,8 @@ const styles = StyleSheet.create({
   sceneLabel: { alignSelf: 'flex-start', maxWidth: '85%', backgroundColor: 'rgba(20,14,7,0.82)', borderWidth: 2, borderColor: kitColors.goldDeep, paddingHorizontal: space.md, paddingVertical: space.xs },
   sceneStrip: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: 'rgba(20,14,7,0.82)', borderWidth: 2, borderColor: kitColors.goldDeep, paddingHorizontal: space.md, paddingVertical: space.sm },
   button: { minHeight: 52, justifyContent: 'center' },
-  buttonCompact: { minHeight: 44, minWidth: 64, justifyContent: 'center' },
+  // 48 dp: Android's minimum touch target (UI review 2026-11-21).
+  buttonCompact: { minHeight: 48, minWidth: 64, justifyContent: 'center' },
   back: { width: 48, height: 52, justifyContent: 'center' },
   buttonRow: { flexDirection: 'row', gap: space.sm },
   chip: { borderWidth: 2, paddingHorizontal: space.sm, paddingVertical: 1 },

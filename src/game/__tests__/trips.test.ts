@@ -1,9 +1,9 @@
 import { XP_TABLE } from '../../constants/xpTable';
-import { levelOf, newAdventurer } from '../adventurer';
+import { burnChance, levelOf, newAdventurer } from '../adventurer';
 import { CHUNK_MS } from '../rules';
 import { mulberry32, stochasticRound } from '../rng';
 import {
-  advanceTrip, burnChance, callBack, checkPlan, clawBackForDebt, craftHours, queueEndsMs, queueLegs, removeQueuedLeg, resizeQueuedLeg, sendTrip,
+  advanceTrip, callBack, checkPlan, clawBackForDebt, craftHours, queueEndsMs, queueLegs, removeQueuedLeg, resizeQueuedLeg, sendTrip,
 } from '../trips';
 import { METHODS } from '../content/valley';
 import { GameState, LegPlan } from '../types';

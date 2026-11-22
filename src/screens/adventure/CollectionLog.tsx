@@ -1,17 +1,12 @@
 /**
  * The collection log (PROG-047): every unique in the game by section (each boss, then
  * the skilling pets of PROG-046), found ones lit and the rest dim. Under each section,
- * when each find came and at what kill count or level. Opened from Hero.
+ * when each find came and at what kill count or level. Its one home is Hero's Log section.
  */
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useGame } from '../../context/GameContext';
-import { CollectionEntry, collectionLog, collectionProgress, itemName } from '../../game';
-import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
-import { Body, ItemSlot, KitScreen, Panel, ProgressBar, space, StatReadout, Tag } from '../../game-ui';
-
-type Props = NativeStackScreenProps<AdventureStackParamList, 'CollectionLog'>;
+import { CollectionEntry, collectionLog, collectionProgress, GameState, itemName } from '../../game';
+import { Body, ItemSlot, Panel, ProgressBar, space, StatReadout, Tag } from '../../game-ui';
 
 const SLOT = 64;
 
@@ -23,13 +18,10 @@ function foundLine(e: CollectionEntry): string {
   return when;
 }
 
-export function CollectionLogScreen({ navigation }: Props) {
-  const { state } = useGame();
-  if (!state) return null;
+export function CollectionLogSections({ state }: { state: GameState }) {
   const { found, total } = collectionProgress(state);
-
   return (
-    <KitScreen title="Collection log" onBack={() => navigation.goBack()}>
+    <>
       <Panel>
         <StatReadout label="Found" value={String(found)} max={String(total)} tone="gold" />
         <ProgressBar fraction={total ? found / total : 0} />
@@ -52,7 +44,7 @@ export function CollectionLogScreen({ navigation }: Props) {
           </Panel>
         );
       })}
-    </KitScreen>
+    </>
   );
 }
 

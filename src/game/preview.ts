@@ -3,10 +3,10 @@
  * the player sends it. Expected values only (no randomness). Legs are previewed in
  * order, carrying expected items forward, so "mine copper, then smelt bronze" works.
  */
-import { levelOf } from './adventurer';
+import { burnChance, levelOf } from './adventurer';
 import { fightPreview } from './combat';
 import { CHUNK_HOURS } from './rules';
-import { activityOf, burnChance, canMakeFrom, checkLeg, effectiveRate, isWorkOrder, normaliseLeg, PlanProblem, requirementMet } from './trips';
+import { activityOf, canMakeFrom, checkLeg, effectiveRate, isWorkOrder, normaliseLeg, PlanProblem, requirementMet } from './trips';
 import { GameState, LegPlan, QuestRequirement } from './types';
 
 export type LegPreview =

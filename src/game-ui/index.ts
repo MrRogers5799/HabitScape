@@ -4,6 +4,7 @@ export { NineSlice } from './NineSlice';
 export { FRAMES } from './frames';
 export type { FrameDef } from './frames';
 export { ItemIcon, ItemSlot, LootGrid, formatCount } from './loot';
-export { NeedsTag, SkillIcon, SkillSlot, Tag, XpChip } from './skills';
+export { NeedsTag, SkillIcon, SkillSlot, SkillTile, Tag, XpChip } from './skills';
 export { KitTabBar } from './KitTabBar';
+export { SectionTabs } from './SectionTabs';
 export { ADVENTURER_POSES, CREATURE_ICONS, GEAR_ICONS, ITEM_ICONS, SKILL_ICONS, TAB_ICONS } from './icons';

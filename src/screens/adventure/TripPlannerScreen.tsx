@@ -10,16 +10,21 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
   activityName, activityOf, canMakeFrom, checkPlan, CHUNK_HOURS, clockTime, CREATURES, formatHours, isWorkOrder, itemName, LegPreview,
-  MAX_QUEUE_BLOCKS, PlanProblem, previewPlan, QuestRequirement, queueEndsMs, queueRunning, regionName, remainingPlan,
+  GameSkill, levelOf, lowestStyle, MAX_QUEUE_BLOCKS, MeleeFocus, PlanProblem, previewPlan, QuestRequirement, queueEndsMs, queueRunning, regionName, remainingPlan,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { TABS } from '../../navigation/newVersionTabs';
 import {
-  Body, ButtonRow, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, Panel, space, StatReadout, Tag, type, XpChip,
+  Body, ButtonRow, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, Panel, space, StatReadout, Tag, type, XpChip, SkillTile,
 } from '../../game-ui';
 import { useDraftPlan } from './draftPlan';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'Planner'>;
+
+/** Melee XP focus for a fight (PROG-051): one style; there's no even split to pick. */
+const FOCUS: { label: string; value: MeleeFocus }[] = [
+  { label: 'Attack', value: 'Attack' }, { label: 'Strength', value: 'Strength' }, { label: 'Defence', value: 'Defence' },
+];
 
 const PROBLEMS: Record<PlanProblem, string> = {
   'no-legs': 'Add something to do from the map.',
@@ -173,6 +178,16 @@ export function TripPlannerScreen({ navigation }: Props) {
                   onPress={() => plan.updateLeg(i, { ...leg, hours: leg.hours + CHUNK_HOURS })} />
               )}
             </View>
+            {act?.kind === 'fight' && (
+              // Where the fight's melee XP goes; Hitpoints grows either way.
+              // Skill tiles with levels, so the choice shows why the lowest style comes first.
+              <View style={styles.styles3}>
+                {FOCUS.map((f) => (
+                  <SkillTile key={f.value} skill={f.value} level={levelOf(state, f.value as GameSkill)} selected={(leg.focus ?? lowestStyle(state)) === f.value}
+                    accessibilityLabel={`Train ${f.label}`} onPress={() => plan.updateLeg(i, { ...leg, focus: f.value })} />
+                ))}
+              </View>
+            )}
             {p && <Preview p={p} />}
             {legProblem && legProblem !== 'not-enough-time' && <Body style={{ color: kitColors.red }}>{PROBLEMS[legProblem]}</Body>}
           </Panel>
@@ -200,6 +215,7 @@ export function TripPlannerScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.xs },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  styles3: { flexDirection: 'row', justifyContent: 'space-between' },
   hours: { minWidth: 92, textAlign: 'center', color: kitColors.text },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });

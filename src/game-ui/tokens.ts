@@ -21,7 +21,7 @@ export const kitColors = {
   slotFill: '#1a140a', // matches the flat centre of the slot frame
   text: '#f6e6bd',
   textMuted: '#bfa575',
-  textFaint: '#86704a',
+  textFaint: '#a08860', // 4.7:1 on panels (was #86704a, 3.4:1; UI review 2026-11-21)
   gold: '#efc85a',
   goldDeep: '#8b5a2b',
   green: '#93d46b',

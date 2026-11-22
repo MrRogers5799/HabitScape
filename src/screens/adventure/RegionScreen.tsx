@@ -2,24 +2,26 @@
  * A region: everything you can do there, shown as icons with their rate and level
  * (new-version kit, PROD-024/025). Tapping Add picks it for the queue (PROG-045); crafting
  * is added as a work order by count (PROG-043). The village's order board and melting
- * live here too (PROG-044).
+ * live here too (PROG-044). One section shows at a time (Gather, Make, Fight, Village) so
+ * the page stays short (OQ-36).
  */
 import React, { useState } from 'react';
 import { Alert, Image, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activitiesIn, canMakeFrom, CHUNK_HOURS, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, MAX_QUEUE_BLOCKS, Method,
+  activitiesIn, canMakeFrom, lowestStyle, CHUNK_HOURS, craftAndDeliverPlan, CREATURES, normaliseLeg, VillageOrder, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, MAX_QUEUE_BLOCKS, Method,
   orderFilled, ordersFor, questId, QUESTS, REGIONS,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
   Body, ButtonRow, FRAMES, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, NineSlice, Panel, Row, SkillIcon, SkillSlot,
-  space, TAB_ICONS, Tag, XpChip,
+  SectionTabs, space, TAB_ICONS, Tag, XpChip,
 } from '../../game-ui';
 import { useDraftPlan } from './draftPlan';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'Region'>;
+type Section = 'gather' | 'make' | 'fight' | 'village';
 
 const SLOT = 52;
 
@@ -30,11 +32,12 @@ function MethodIcon({ m }: { m: Method }) {
 }
 
 export function RegionScreen({ navigation, route }: Props) {
-  const { state, dayId, fillOrder } = useGame();
+  const { state, dayId, fillOrder, craftAndDeliver } = useGame();
   const plan = useDraftPlan();
   const region = REGIONS[route.params.regionId];
   const [showAllRecipes, setShowAllRecipes] = useState(false);
   const [delivering, setDelivering] = useState<string | null>(null);
+  const [section, setSection] = useState<Section | null>(null);
   if (!state || !region) return null;
   const locked = !!region.questGate && !state.quests[region.questGate];
   const { methods, recipes, melts, fights, quests } = activitiesIn(region.id);
@@ -42,6 +45,17 @@ export function RegionScreen({ navigation, route }: Props) {
   // Melting is taught by a quest (OQ-37); until then the section says which.
   const meltQuest = melts.find((m) => m.quest && !state.quests[m.quest])?.quest;
   const orders = locked ? [] : ordersFor(state, region.id, dayId);
+  const gather = methods.filter((m) => m.kind === 'gather');
+  const making = methods.filter((m) => m.kind === 'process');
+  // Only the sections this region has; the first one shows until the player picks.
+  const sections = ([
+    ['gather', 'Gather', !locked && gather.length > 0],
+    ['make', 'Make', !locked && (making.length > 0 || recipes.length > 0)],
+    ['fight', 'Fight', !locked && fights.length > 0],
+    ['village', 'Village', quests.length > 0 || orders.length > 0],
+  ] as [Section, string, boolean][]).filter(([, , has]) => has).map(([value, label]) => ({ value, label }));
+  const shown: Section | undefined = sections.find((o) => o.value === section)?.value ?? sections[0]?.value;
+  const listed = shown === 'gather' ? gather : shown === 'make' ? making : [];
   // The anvil lists what you can make now, plus the next few unlocks; the rest behind a toggle.
   const makeable = recipes.filter((m) => levelOf(state, m.skill) >= m.level);
   const nextUp = recipes.filter((m) => levelOf(state, m.skill) < m.level).sort((a, b) => a.level - b.level).slice(0, 3);
@@ -57,13 +71,18 @@ export function RegionScreen({ navigation, route }: Props) {
     if (plan.addLeg({ activityId: m.id, regionId: region.id, hours: 0, count: Math.max(1, count) })) navigation.navigate('Planner');
   };
   const addMethod = (m: Method) => (m.kind === 'process' ? addOrder(m, canMakeFrom(state.bank, m)) : add(m.id));
+  /** A fight goes in focused on the lowest melee style (PROG-051); the planner can switch it. */
+  const addFight = (creatureId: string) => {
+    if (plan.addLeg({ activityId: fightId(creatureId), regionId: region.id, hours: defaultHours, focus: lowestStyle(state) })) navigation.navigate('Planner');
+  };
   const addButton = (onPress: () => void, disabled: boolean, what: string) => (
     <KitButton compact label="Add" disabled={disabled} onPress={onPress} accessibilityLabel={`Add ${what} to the queue`} />
   );
-  const deliver = async (orderId: string) => {
-    setDelivering(orderId);
+  const deliver = async (order: VillageOrder, craft: boolean) => {
+    setDelivering(order.id);
     try {
-      await fillOrder(region.id, orderId);
+      if (craft) await craftAndDeliver(order);
+      else await fillOrder(order);
     } catch (e) {
       Alert.alert("Couldn't deliver that", e instanceof Error ? e.message : 'Please try again.');
     } finally {
@@ -85,9 +104,12 @@ export function RegionScreen({ navigation, route }: Props) {
         </Panel>
       )}
 
-      {!locked && methods.length > 0 && (
-        <Panel title="Things to do">
-          {methods.map((m) => {
+      {sections.length > 1 && shown && <SectionTabs options={sections} value={shown} onChange={setSection} />}
+
+      {listed.length > 0 && (
+        // No panel title: the selected section button already names it.
+        <Panel>
+          {listed.map((m) => {
             const lvl = levelOf(state, m.skill);
             const ok = lvl >= m.level;
             const perHour = Math.round(effectiveRate(state, m, region.id));
@@ -115,13 +137,17 @@ export function RegionScreen({ navigation, route }: Props) {
         </Panel>
       )}
 
-      {orders.length > 0 && (
+      {shown === 'village' && orders.length > 0 && (
         <Panel title="Order board">
-          <Body muted>Villagers want these today. Deliver from your bank for XP in the skills that make them.</Body>
+          <Body muted>Villagers want these today, for XP in the skills behind them.</Body>
           {orders.map((o) => {
             const have = state.bank[o.item] ?? 0;
             const done = orderFilled(state, dayId, o.id);
             const name = itemName(o.item);
+            // Craft & deliver (PROG-050) when the bank can make what's missing.
+            const plan = !done && have < o.count ? craftAndDeliverPlan(state, o, dayId) : null;
+            const craftHrs = plan ? plan.reduce((h, l) => h + normaliseLeg(state, l).hours, 0) : 0;
+            const creature = o.creature ? CREATURES[o.creature] : undefined;
             return (
               <Row
                 key={o.id}
@@ -130,13 +156,14 @@ export function RegionScreen({ navigation, route }: Props) {
                 title={name}
                 detail={done ? <Tag label="Delivered" tone="green" /> : (
                   <>
-                    <Tag label={`have ${have}/${o.count}`} tone={have >= o.count ? 'green' : 'red'} accessibilityLabel={`You have ${have} of ${o.count}`} />
+                    <Tag label={`have ${have}/${o.count}`} tone={have >= o.count ? 'green' : plan ? 'gold' : 'red'} accessibilityLabel={`You have ${have} of ${o.count}`} />
+                    {plan && <Tag label={`make ${formatHours(craftHrs)}`} accessibilityLabel={`Your bank can make the rest in ${formatHours(craftHrs)}`} />}
+                    {creature && <Tag label={creature.name} icon={<ItemIcon id={creature.id} name={creature.name} size={20} />} accessibilityLabel={`Dropped by ${creature.name}`} />}
                     {(Object.entries(o.xp) as [string, number][]).map(([skill, n]) => <XpChip key={skill} skill={skill} amount={n} />)}
+                    {/* The button sits under the tags so a long label never squeezes the item name. */}
+                    <KitButton compact label={delivering === o.id ? '…' : plan ? 'Craft & deliver' : 'Deliver'} disabled={(have < o.count && !plan) || !!delivering}
+                      onPress={() => deliver(o, !!plan)} accessibilityLabel={plan ? `Craft and deliver ${o.count} ${name}` : `Deliver ${o.count} ${name}`} />
                   </>
-                )}
-                right={done ? undefined : (
-                  <KitButton compact label={delivering === o.id ? '…' : 'Deliver'} disabled={have < o.count || !!delivering}
-                    onPress={() => deliver(o.id)} accessibilityLabel={`Deliver ${o.count} ${name}`} />
                 )}
               />
             );
@@ -144,7 +171,7 @@ export function RegionScreen({ navigation, route }: Props) {
         </Panel>
       )}
 
-      {!locked && recipes.length > 0 && (
+      {shown === 'make' && recipes.length > 0 && (
         <Panel title="At the anvil">
           {shownRecipes.map((m) => {
             const lvl = levelOf(state, m.skill);
@@ -176,7 +203,7 @@ export function RegionScreen({ navigation, route }: Props) {
         </Panel>
       )}
 
-      {!locked && meltable.length > 0 && (
+      {shown === 'make' && meltable.length > 0 && (
         <Panel title="Melt down">
           {meltQuest
             ? <Body muted>Finish the quest {QUESTS[meltQuest]?.name} to learn melting: spare gear back into half its bars.</Body>
@@ -202,7 +229,7 @@ export function RegionScreen({ navigation, route }: Props) {
         </Panel>
       )}
 
-      {!locked && fights.length > 0 && (
+      {shown === 'fight' && fights.length > 0 && (
         <Panel title="Fights">
           {fights.map((c) => {
             const p = fightPreview(state, c);
@@ -221,14 +248,14 @@ export function RegionScreen({ navigation, route }: Props) {
                     {c.weakness && <Tag label={`Weak: ${c.weakness}`} />}
                   </>
                 )}
-                right={addButton(() => add(fightId(c.id)), full, c.name)}
+                right={addButton(() => addFight(c.id), full, c.name)}
               />
             );
           })}
         </Panel>
       )}
 
-      {quests.length > 0 && (
+      {shown === 'village' && quests.length > 0 && (
         <Panel title="Quest board" icon={TAB_ICONS.activities}>
           {quests.map((q) => {
             const done = !!state.quests[q.id];
