@@ -1,4 +1,4 @@
-import { habitProgress, latestCompletionToday, startOfWeek } from '../utils/habitProgress';
+import { beforeTracking, dayLabel, daysBack, habitProgress, latestCompletionOn, startOfWeek } from '../utils/habitProgress';
 import { ActivityCompletion } from '../types';
 
 // Wednesday 2026-11-18, mid-afternoon local time.
@@ -49,10 +49,44 @@ describe('habitProgress', () => {
   });
 });
 
-describe('latestCompletionToday', () => {
+describe('latestCompletionOn', () => {
   it('returns the newest of today’s ticks for that habit', () => {
     const list = [tick('walk', at(18, 8), 'a'), tick('walk', at(18, 13), 'b'), tick('walk', at(17), 'c')];
-    expect(latestCompletionToday(list, 'walk', NOW)?.id).toBe('b');
-    expect(latestCompletionToday(list, 'run', NOW)).toBeUndefined();
+    expect(latestCompletionOn(list, 'walk', NOW)?.id).toBe('b');
+    expect(latestCompletionOn(list, 'run', NOW)).toBeUndefined();
+  });
+});
+
+describe('past days', () => {
+  it('latestCompletionOn finds a past day’s tick', () => {
+    const list = [tick('walk', at(16), 'old'), tick('walk', at(18), 'today')];
+    expect(latestCompletionOn(list, 'walk', at(16, 0))?.id).toBe('old');
+    expect(latestCompletionOn(list, 'walk', at(17, 0))).toBeUndefined();
+  });
+
+  it('daysBack steps back whole days from the start of today', () => {
+    expect(daysBack(NOW, 0)).toEqual(new Date(2026, 10, 18));
+    expect(daysBack(NOW, 3)).toEqual(new Date(2026, 10, 15));
+    expect(daysBack(NOW, 18)).toEqual(new Date(2026, 9, 31));
+  });
+
+  it('dayLabel says Today and Yesterday, then the date', () => {
+    expect(dayLabel(daysBack(NOW, 0), NOW)).toBe('Today');
+    expect(dayLabel(daysBack(NOW, 1), NOW)).toBe('Yesterday');
+    const label = dayLabel(daysBack(NOW, 2), NOW);
+    expect(label).not.toMatch(/Today|Yesterday/);
+    expect(label).toContain('16');
+  });
+
+  it('progress on a past day counts up to that day only', () => {
+    const list = [tick('w', at(16)), tick('w', at(18))];
+    const p = habitProgress({ id: 'w', cadence: '3x/week' }, list, at(17));
+    expect(p).toMatchObject({ count: 1, doneToday: false, settled: false });
+  });
+
+  it('beforeTracking locks days before the habit was added', () => {
+    expect(beforeTracking(at(17, 9), at(16, 0))).toBe(true);
+    expect(beforeTracking(at(17, 9), at(17, 0))).toBe(false);
+    expect(beforeTracking(undefined, at(1, 0))).toBe(false);
   });
 });

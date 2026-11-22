@@ -25,6 +25,7 @@ import { XPDrop } from '../components/XPDrop';
 import { LevelUpModal } from '../components/LevelUpModal';
 import { HabitDetailModal } from '../components/HabitDetailModal';
 import { calculateLevel } from '../utils/xpCalculations';
+import { MAX_BACKFILL_DAYS } from '../utils/habitProgress';
 
 interface XPDropEntry {
   key: string;
@@ -76,7 +77,6 @@ function dateLabel(d: Date): string {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-const MAX_BACKFILL_DAYS = 14;
 
 export function ActivitiesScreen() {
   const insets = useSafeAreaInsets();
