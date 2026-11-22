@@ -18,6 +18,10 @@ export const MAX_QUEUE_BLOCKS = 40;
 export const MELT_SHARE = 0.5;
 /** PROG-044: orders on each village's board per day. */
 export const ORDERS_PER_BOARD = 3;
+/** PROG-054: each board's weekly order is about this many times a daily one... */
+export const WEEKLY_ORDER_SIZE = 4;
+/** ...and pays this many times the XP it took to make (daily orders pay 1.5). */
+export const WEEKLY_ORDER_XP_BONUS = 2;
 /** PROG-029: each tool tier gathers this much more per hour than the one below. */
 export const TOOL_TIER_STEP = 1.2;
 /** Affinity: XP bonus in the game for a skill your habits trained that day. */

@@ -181,6 +181,8 @@ export interface VillageOrder {
   creature?: string;
   /** A combat request pays this as a combat XP lamp instead of skill XP (PROG-053). */
   combatLamp?: number;
+  /** A weekly order (PROG-054): the week it belongs to; daily orders have none. */
+  weekId?: string;
 }
 
 /** An XP lamp: plain XP for any skill, or a combat lamp for Attack, Strength, Defence or Hitpoints (PROG-053). */

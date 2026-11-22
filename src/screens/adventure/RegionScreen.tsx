@@ -11,7 +11,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
   activitiesIn, canMakeFrom, lowestStyle, CHUNK_HOURS, craftAndDeliverPlan, CREATURES, normaliseLeg, VillageOrder, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, MAX_QUEUE_BLOCKS, Method,
-  orderFilled, ordersFor, QUESTS, REGIONS,
+  orderFilled, ordersFor, QUESTS, REGIONS, weeklyOrderFor,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
@@ -49,7 +49,7 @@ function MethodIcon({ m }: { m: Method }) {
 }
 
 export function RegionScreen({ navigation, route }: Props) {
-  const { state, dayId, fillOrder, craftAndDeliver } = useGame();
+  const { state, dayId, weekId, activeTrip, fillOrder, craftAndDeliver } = useGame();
   const plan = useDraftPlan();
   const region = REGIONS[route.params.regionId];
   const [showAllRecipes, setShowAllRecipes] = useState(false);
@@ -63,7 +63,13 @@ export function RegionScreen({ navigation, route }: Props) {
   const meltable = melts.filter((m) => m.kind === 'process' && (state.bank[Object.keys(m.inputs)[0]] ?? 0) > 0);
   // Melting is taught by a quest (OQ-37); until then the section says which.
   const meltQuest = melts.find((m) => m.quest && !state.quests[m.quest])?.quest;
-  const orders = locked ? [] : ordersFor(state, region.id, dayId);
+  // This week's larger order (PROG-054) and today's three, shown in their own panels.
+  const weekly = locked ? null : weeklyOrderFor(state, region.id, weekId);
+  const daily = locked ? [] : ordersFor(state, region.id, dayId, weekId);
+  const orders = [...(weekly ? [weekly] : []), ...daily];
+  // Orders already on their way through Craft & deliver: no second tap (owner, 2026-11-22).
+  const onTheirWay = new Set((activeTrip && !activeTrip.trip.done ? activeTrip.trip.legs : [])
+    .filter((l) => !l.ended && l.deliver).map((l) => l.deliver!.order.id));
   const gather = methods.filter((m) => m.kind === 'gather');
   const making = methods.filter((m) => m.kind === 'process');
   // Only the sections this region has; the first one shows until the player picks.
@@ -108,6 +114,39 @@ export function RegionScreen({ navigation, route }: Props) {
     } finally {
       setDelivering(null);
     }
+  };
+
+  const renderOrder = (o: VillageOrder) => {
+    const have = state.bank[o.item] ?? 0;
+    const done = orderFilled(state, dayId, o);
+    const coming = !done && onTheirWay.has(o.id);
+    const name = itemName(o.item);
+    // Craft & deliver (PROG-050) when the bank can make what's missing.
+    const plan = !done && !coming && have < o.count ? craftAndDeliverPlan(state, o, dayId) : null;
+    const craftHrs = plan ? plan.reduce((h, l) => h + normaliseLeg(state, l).hours, 0) : 0;
+    const creature = o.creature ? CREATURES[o.creature] : undefined;
+    return (
+      <Row
+        key={o.id}
+        dim={done}
+        left={<ItemSlot id={o.item} name={name} count={o.count} size={SLOT} />}
+        title={name}
+        detail={done ? <Tag label="Delivered" tone="green" /> : (
+          <>
+            <Tag label={`have ${have}/${o.count}`} tone={have >= o.count ? 'green' : plan ? 'gold' : 'red'} accessibilityLabel={`You have ${have} of ${o.count}`} />
+            {plan && <Tag label={`make ${formatHours(craftHrs)}`} accessibilityLabel={`Your bank can make the rest in ${formatHours(craftHrs)}`} />}
+            {creature && <Tag label={creature.name} icon={<ItemIcon id={creature.id} name={creature.name} size={20} />} accessibilityLabel={`Dropped by ${creature.name}`} />}
+            {(Object.entries(o.xp) as [string, number][]).map(([skill, n]) => <XpChip key={skill} skill={skill} amount={n} />)}
+            {o.combatLamp ? <Tag label={`+${o.combatLamp.toLocaleString()} combat lamp`} tone="gold" accessibilityLabel={`Pays a ${o.combatLamp.toLocaleString()} XP combat lamp`} /> : null}
+            {/* The button sits under the tags so a long label never squeezes the item name. */}
+            {coming ? <Tag label="On its way: in your queue" tone="gold" /> : (
+              <KitButton compact label={delivering === o.id ? '…' : plan ? 'Craft & deliver' : 'Deliver'} disabled={(have < o.count && !plan) || !!delivering}
+                onPress={() => deliver(o, !!plan)} accessibilityLabel={plan ? `Craft and deliver ${o.count} ${name}` : `Deliver ${o.count} ${name}`} />
+            )}
+          </>
+        )}
+      />
+    );
   };
 
   return (
@@ -158,38 +197,17 @@ export function RegionScreen({ navigation, route }: Props) {
         </Panel>
       )}
 
-      {shown === 'village' && orders.length > 0 && (
-        <Panel title="Order board">
-          <Body muted>Villagers want these today, for XP in the skills behind them.</Body>
-          {orders.map((o) => {
-            const have = state.bank[o.item] ?? 0;
-            const done = orderFilled(state, dayId, o.id);
-            const name = itemName(o.item);
-            // Craft & deliver (PROG-050) when the bank can make what's missing.
-            const plan = !done && have < o.count ? craftAndDeliverPlan(state, o, dayId) : null;
-            const craftHrs = plan ? plan.reduce((h, l) => h + normaliseLeg(state, l).hours, 0) : 0;
-            const creature = o.creature ? CREATURES[o.creature] : undefined;
-            return (
-              <Row
-                key={o.id}
-                dim={done}
-                left={<ItemSlot id={o.item} name={name} count={o.count} size={SLOT} />}
-                title={name}
-                detail={done ? <Tag label="Delivered" tone="green" /> : (
-                  <>
-                    <Tag label={`have ${have}/${o.count}`} tone={have >= o.count ? 'green' : plan ? 'gold' : 'red'} accessibilityLabel={`You have ${have} of ${o.count}`} />
-                    {plan && <Tag label={`make ${formatHours(craftHrs)}`} accessibilityLabel={`Your bank can make the rest in ${formatHours(craftHrs)}`} />}
-                    {creature && <Tag label={creature.name} icon={<ItemIcon id={creature.id} name={creature.name} size={20} />} accessibilityLabel={`Dropped by ${creature.name}`} />}
-                    {(Object.entries(o.xp) as [string, number][]).map(([skill, n]) => <XpChip key={skill} skill={skill} amount={n} />)}
-                    {o.combatLamp ? <Tag label={`+${o.combatLamp.toLocaleString()} combat lamp`} tone="gold" accessibilityLabel={`Pays a ${o.combatLamp.toLocaleString()} XP combat lamp`} /> : null}
-                    {/* The button sits under the tags so a long label never squeezes the item name. */}
-                    <KitButton compact label={delivering === o.id ? '…' : plan ? 'Craft & deliver' : 'Deliver'} disabled={(have < o.count && !plan) || !!delivering}
-                      onPress={() => deliver(o, !!plan)} accessibilityLabel={plan ? `Craft and deliver ${o.count} ${name}` : `Deliver ${o.count} ${name}`} />
-                  </>
-                )}
-              />
-            );
-          })}
+      {/* Weekly and daily orders apart, so it's clear which is which (owner, 2026-11-22). */}
+      {shown === 'village' && weekly && (
+        <Panel title="This week's order">
+          <Body muted>One big order, new each week, for double the XP.</Body>
+          {renderOrder(weekly)}
+        </Panel>
+      )}
+      {shown === 'village' && daily.length > 0 && (
+        <Panel title="Today's orders">
+          <Body muted>Small orders, new each day, for XP in the skills behind them.</Body>
+          {daily.map(renderOrder)}
         </Panel>
       )}
 

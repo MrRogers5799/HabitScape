@@ -1,5 +1,5 @@
 import { applyLamp, newAdventurer } from '../adventurer';
-import { craftAndDeliverPlan, craftPlan, fillOrder, itemXPBySkill, itemXPValue, orderFilled, ordersFor } from '../orders';
+import { craftAndDeliverPlan, craftPlan, fillOrder, itemXPBySkill, itemXPValue, orderFilled, ordersFor, weeklyOrderFor } from '../orders';
 import { advanceTrip, sendTrip } from '../trips';
 import { XP_TABLE } from '../../constants/xpTable';
 import { fromAdventurerDoc, toAdventurerDoc } from '../persistence';
@@ -146,6 +146,39 @@ describe('combat requests (PROG-050)', () => {
     expect(applyLamp(after, 0, 'Strength').xp.Strength).toBe(120);
     const loaded = fromAdventurerDoc(toAdventurerDoc(after, null, 1), 'W').state;
     expect(loaded.lamps).toEqual([{ xp: 120, kind: 'combat' }]);
+  });
+});
+
+describe('weekly orders (PROG-054)', () => {
+  const week = '2026-11-16';
+
+  it('one bigger order per board, the same all week, never repeated by the dailies', () => {
+    const s = adventurer();
+    const w = weeklyOrderFor(s, 'millbrook', week)!;
+    expect(w.weekId).toBe(week);
+    expect(weeklyOrderFor(s, 'millbrook', week)).toEqual(w);
+    for (const day of ['2026-11-16', '2026-11-18', '2026-11-22']) {
+      expect(ordersFor(s, 'millbrook', day, week).map((o) => o.item)).not.toContain(w.item);
+    }
+    expect(weeklyOrderFor(s, 'stonecrest', week)).toBeNull();
+  });
+
+  it('pays double the XP it takes to make, against 1.5 for a daily order', () => {
+    // A week whose order is made, not fought for, so its XP can be checked against the item's value.
+    const weeks = Array.from({ length: 20 }, (_, i) => `2027-01-${String(i + 1).padStart(2, '0')}`);
+    const w = weeks.map((wk) => weeklyOrderFor(adventurer(), 'millbrook', wk)!).find((o) => !o.creature)!;
+    const total = Object.values(w.xp).reduce((a, n) => a + (n ?? 0), 0);
+    expect(Math.abs(total - w.count * itemXPValue(w.item) * 2)).toBeLessThanOrEqual(2);
+  });
+
+  it('stays filled for the rest of its week, through daily deliveries', () => {
+    const w = weeklyOrderFor(adventurer(), 'millbrook', week)!;
+    let s = fillOrder(adventurer({ [w.item]: w.count }), w, '2026-11-17');
+    expect(orderFilled(s, '2026-11-17', w)).toBe(true);
+    const [daily] = ordersFor(s, 'millbrook', '2026-11-19', week);
+    s = fillOrder({ ...s, bank: { ...s.bank, [daily.item]: daily.count } }, daily, '2026-11-19');
+    expect(orderFilled(s, '2026-11-19', w)).toBe(true);
+    expect(() => fillOrder({ ...s, bank: { ...s.bank, [w.item]: w.count } }, w, '2026-11-20')).toThrow(/already/);
   });
 });
 
