@@ -6,19 +6,19 @@
  * the page stays short (OQ-36).
  */
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activitiesIn, canMakeFrom, lowestStyle, CHUNK_HOURS, craftAndDeliverPlan, CREATURES, normaliseLeg, VillageOrder, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, MAX_QUEUE_BLOCKS, Method,
+  activitiesIn, canMakeFrom, lowestStyle, CHUNK_HOURS, craftAndDeliverPlan, CREATURES, normaliseLeg, VillageOrder, effectiveRate, fightId, fightPreview, formatHours, itemName, levelOf, Method,
   orderFilled, ordersFor, QUESTS, REGIONS, weeklyOrderFor,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
   Body, ButtonRow, ItemIcon, ItemSlot, KitButton, KitScreen, kitColors, NeedsTag, Panel, Row, SkillIcon, SkillSlot,
-  SectionTabs, space, Tag, XpChip,
+  SectionTabs, Tag, XpChip,
 } from '../../game-ui';
-import { useDraftPlan } from './draftPlan';
+import { useAddToQueue } from './AddToQueue';
 
 type Props = NativeStackScreenProps<AdventureStackParamList, 'Region'>;
 type Section = 'gather' | 'make' | 'fight' | 'village';
@@ -50,7 +50,7 @@ function MethodIcon({ m }: { m: Method }) {
 
 export function RegionScreen({ navigation, route }: Props) {
   const { state, dayId, weekId, activeTrip, fillOrder, craftAndDeliver } = useGame();
-  const plan = useDraftPlan();
+  const { openAdd } = useAddToQueue();
   const region = REGIONS[route.params.regionId];
   const [showAllRecipes, setShowAllRecipes] = useState(false);
   const [delivering, setDelivering] = useState<string | null>(null);
@@ -86,21 +86,15 @@ export function RegionScreen({ navigation, route }: Props) {
   const makeable = recipes.filter((m) => levelOf(state, m.skill) >= m.level);
   const nextUp = recipes.filter((m) => levelOf(state, m.skill) < m.level).sort((a, b) => a.level - b.level).slice(0, 3);
   const shownRecipes = showAllRecipes ? recipes : [...makeable, ...nextUp];
-  const full = plan.legs.length >= MAX_QUEUE_BLOCKS;
   const defaultHours = Math.max(CHUNK_HOURS, Math.min(4, Math.floor(state.time.bankHours / CHUNK_HOURS) * CHUNK_HOURS));
 
-  const add = (activityId: string, hours = defaultHours) => {
-    if (plan.addLeg({ activityId, regionId: region.id, hours })) navigation.navigate('Planner');
-  };
+  // Add opens the popup over this screen (owner, 2026-11-22): no trip to a planner page and back.
+  const add = (activityId: string, hours = defaultHours) => openAdd({ activityId, regionId: region.id, hours });
   /** Crafting goes in as a work order (PROG-043): a count, not hours. */
-  const addOrder = (m: Method, count: number) => {
-    if (plan.addLeg({ activityId: m.id, regionId: region.id, hours: 0, count: Math.max(1, count) })) navigation.navigate('Planner');
-  };
+  const addOrder = (m: Method, count: number) => openAdd({ activityId: m.id, regionId: region.id, hours: 0, count: Math.max(1, count) });
   const addMethod = (m: Method) => (m.kind === 'process' ? addOrder(m, canMakeFrom(state.bank, m)) : add(m.id));
-  /** A fight goes in focused on the lowest melee style (PROG-051); the planner can switch it. */
-  const addFight = (creatureId: string) => {
-    if (plan.addLeg({ activityId: fightId(creatureId), regionId: region.id, hours: defaultHours, focus: lowestStyle(state) })) navigation.navigate('Planner');
-  };
+  /** A fight goes in focused on the lowest melee style (PROG-051); the popup can switch it. */
+  const addFight = (creatureId: string) => openAdd({ activityId: fightId(creatureId), regionId: region.id, hours: defaultHours, focus: lowestStyle(state) });
   const addButton = (onPress: () => void, disabled: boolean, what: string) => (
     <KitButton compact label="Add" disabled={disabled} onPress={onPress} accessibilityLabel={`Add ${what} to the queue`} />
   );
@@ -154,14 +148,6 @@ export function RegionScreen({ navigation, route }: Props) {
       {locked && (
         <Panel><Body style={{ color: kitColors.red }}>Locked: finish the quest {QUESTS[region.questGate!]?.name} to travel here.</Body></Panel>
       )}
-      {plan.legs.length > 0 && (
-        <Panel>
-          <View style={styles.planRow}>
-            <Tag label={`Picked: ${plan.legs.length}`} tone="gold" accessibilityLabel={`${plan.legs.length} picked for the queue`} />
-            <KitButton compact kind="secondary" label="Review" onPress={() => navigation.navigate('Planner')} />
-          </View>
-        </Panel>
-      )}
 
       {sections.length > 1 && shown && <SectionTabs options={sections} value={shown} onChange={setSection} />}
 
@@ -190,7 +176,7 @@ export function RegionScreen({ navigation, route }: Props) {
                     />
                   </>
                 )}
-                right={addButton(() => addMethod(m), !ok || full, m.name)}
+                right={addButton(() => addMethod(m), !ok, m.name)}
               />
             );
           })}
@@ -233,7 +219,7 @@ export function RegionScreen({ navigation, route }: Props) {
                     <Tag label={`can make ${have}`} tone="green" />
                   </>
                 )}
-                right={addButton(() => addOrder(m, 1), !ok || full, name)}
+                right={addButton(() => addOrder(m, 1), !ok, name)}
               />
             );
           })}
@@ -262,7 +248,7 @@ export function RegionScreen({ navigation, route }: Props) {
                   <Tag label={`→ ${m.outputEach ?? 1} each`} icon={<ItemIcon id={m.output} name={itemName(m.output)} size={20} />}
                     accessibilityLabel={`Gives ${m.outputEach ?? 1} ${itemName(m.output)} each`} />
                 ) : undefined}
-                right={addButton(() => addOrder(m, owned), full || !!meltQuest, `melting ${name}`)}
+                right={addButton(() => addOrder(m, owned), !!meltQuest, `melting ${name}`)}
               />
             );
           })}
@@ -288,7 +274,7 @@ export function RegionScreen({ navigation, route }: Props) {
                     {c.weakness && <Tag label={`Weak: ${c.weakness}`} />}
                   </>
                 )}
-                right={addButton(() => addFight(c.id), full, c.name)}
+                right={addButton(() => addFight(c.id), false, c.name)}
               />
             );
           })}
@@ -298,7 +284,3 @@ export function RegionScreen({ navigation, route }: Props) {
     </KitScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  planRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-});

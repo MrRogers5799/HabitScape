@@ -8,11 +8,10 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator, NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { KitTabBar, kitColors } from '../game-ui';
-import { DraftPlanProvider } from '../screens/adventure/draftPlan';
+import { AddToQueueProvider } from '../screens/adventure/AddToQueue';
 import { AdventureHomeScreen } from '../screens/adventure/AdventureHomeScreen';
 import { MapScreen } from '../screens/adventure/MapScreen';
 import { RegionScreen } from '../screens/adventure/RegionScreen';
-import { TripPlannerScreen } from '../screens/adventure/TripPlannerScreen';
 import { HeroScreen } from '../screens/adventure/HeroScreen';
 import { KitSettingsScreen } from '../screens/adventure/KitSettingsScreen';
 import { HabitsScreen } from '../screens/adventure/HabitsScreen';
@@ -37,7 +36,6 @@ export type AdventureStackParamList = {
   Skill: { skill: GameSkill };
   Map: undefined;
   Region: { regionId: string; section?: 'gather' | 'make' | 'fight' | 'village' };
-  Planner: undefined;
   Hero: { section?: 'skills' | 'gear' | 'bank' | 'quests' | 'log' } | undefined;
   Settings: undefined;
 };
@@ -75,7 +73,6 @@ function MapTab() {
     <MapStack.Navigator screenOptions={stackOptions}>
       <MapStack.Screen name="Map" component={MapScreen} />
       <MapStack.Screen name="Region" component={RegionScreen} />
-      <MapStack.Screen name="Planner" component={TripPlannerScreen} />
     </MapStack.Navigator>
   );
 }
@@ -92,7 +89,7 @@ function HeroTab() {
 
 export function AdventureNavigator() {
   return (
-    <DraftPlanProvider>
+    <AddToQueueProvider>
       <ItemSheetProvider>
       <Tab.Navigator tabBar={(props) => <KitTabBar {...props} />} screenOptions={{ headerShown: false }}>
         <Tab.Screen name={TABS.habits} component={HabitsTab} options={{ title: 'Habits' }} />
@@ -101,6 +98,6 @@ export function AdventureNavigator() {
         <Tab.Screen name={TABS.hero} component={HeroTab} options={{ title: 'Hero' }} />
       </Tab.Navigator>
       </ItemSheetProvider>
-    </DraftPlanProvider>
+    </AddToQueueProvider>
   );
 }

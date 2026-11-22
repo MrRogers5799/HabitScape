@@ -5,7 +5,8 @@
  * Village section keeps only the order board.
  */
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
+import { useAddToQueue } from './AddToQueue';
 import { useGame } from '../../context/GameContext';
 import {
   checkPlan, CREATURES, formatHours, GameState, itemName, Quest, questId, QuestRequirement, QUESTS, regionName, requirementMet,
@@ -39,6 +40,7 @@ const QuestIcon = () => (
 
 export function QuestJournal() {
   const { state, activeTrip, send } = useGame();
+  const { notify } = useAddToQueue();
   const [busy, setBusy] = useState<string | null>(null);
   if (!state) return null;
   const all = Object.values(QUESTS);
@@ -51,9 +53,9 @@ export function QuestJournal() {
     setBusy(q.id);
     try {
       await send([{ activityId: questId(q.id), regionId: q.region, hours: q.hours }]);
-      Alert.alert('Added to the queue', `${q.name}: about ${formatHours(q.hours)}.`);
+      notify(`Added: ${q.name}, ${formatHours(q.hours)}`);
     } catch (e) {
-      Alert.alert("Couldn't start that", e instanceof Error ? e.message : 'Please try again.');
+      notify(e instanceof Error ? `Couldn't start that: ${e.message}` : "Couldn't start that");
     } finally {
       setBusy(null);
     }
