@@ -1,11 +1,12 @@
 /**
  * The item sheet (owner notes 2026-11-22, #6 and #7): tap any item slot in the game to see
  * what it is, how many you have, what makes it or drops it, and what you can do with it.
- * Uses queue straight from here ("Cook shrimp": all you can, as a work order, PROG-043),
+ * Uses open the add popup from here ("Cook shrimp": all you can, as a work order, PROG-043),
  * so a bank item is one tap from being put to work. Creatures open a short card too.
  */
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useAddToQueue } from './AddToQueue';
 import { useGame } from '../../context/GameContext';
 import {
   canMakeFrom, collectionItems, CREATURES, formatHours, ITEMS, itemName, levelOf, METHODS, normaliseLeg, regionName, REGIONS, SKILL_PETS,
@@ -29,8 +30,8 @@ export function ItemSheetProvider({ children }: { children: React.ReactNode }) {
 }
 
 function ItemSheet({ id, onClose }: { id: string | null; onClose: () => void }) {
-  const { state, send } = useGame();
-  const [busy, setBusy] = useState(false);
+  const { state } = useGame();
+  const { openAdd } = useAddToQueue();
   if (!id || !state) return <KitModal visible={false} title="" onClose={onClose}>{null}</KitModal>;
 
   const creature = CREATURES[id];
@@ -40,17 +41,10 @@ function ItemSheet({ id, onClose }: { id: string | null; onClose: () => void }) 
     return !gate || !!state.quests[gate];
   };
 
-  const queue = async (methodId: string, regionId: string, count: number, label: string) => {
-    setBusy(true);
-    try {
-      await send([{ activityId: methodId, regionId, hours: 0, count }]);
-      onClose();
-      Alert.alert('Added to the queue', label);
-    } catch (e) {
-      Alert.alert("Couldn't add that", e instanceof Error ? e.message : 'Please try again.');
-    } finally {
-      setBusy(false);
-    }
+  // Opens the add popup (adjustable count), after this sheet has closed.
+  const queue = (methodId: string, regionId: string, count: number) => {
+    onClose();
+    setTimeout(() => openAdd({ activityId: methodId, regionId, hours: 0, count }), 250);
   };
 
   if (creature) {
@@ -119,8 +113,7 @@ function ItemSheet({ id, onClose }: { id: string | null; onClose: () => void }) 
                 : n === 0 ? <Tag label="not enough to make one" tone="red" />
                   : <Tag label={`×${n} · ${formatHours(hours)}`} accessibilityLabel={`${n}, taking ${formatHours(hours)}`} />}
             right={lvlOk && questOk && regionId && n > 0 ? (
-              <KitButton compact label="Queue" disabled={busy} accessibilityLabel={`Queue: ${m.name}, all ${n}`}
-                onPress={() => queue(m.id, regionId, n, `${m.name}: ${n}, about ${formatHours(hours)}.`)} />
+              <KitButton compact label="Queue" accessibilityLabel={`Queue: ${m.name}, all ${n}`} onPress={() => queue(m.id, regionId, n)} />
             ) : undefined}
           />
         );
