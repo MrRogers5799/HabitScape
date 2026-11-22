@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.buckorogers.habitscape",
-      "versionCode": 13,
+      "versionCode": 14,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#0d1117",
@@ -29,14 +29,12 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withAndroidSplashFill",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash/splash.png",
-          "resizeMode": "cover",
-          "backgroundColor": "#0f1623",
-          "imageWidth": 360
+          "image": "./assets/splash/splash-logo.png",
+          "imageWidth": 200,
+          "backgroundColor": "#080c18"
         }
       ],
       [
@@ -54,8 +52,8 @@
         "expo-build-properties",
         {
           "android": {
-            "enableMinifyInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true
+            "enableMinifyInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
           }
         }
       ]
