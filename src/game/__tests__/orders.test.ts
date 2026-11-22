@@ -1,4 +1,4 @@
-import { newAdventurer } from '../adventurer';
+import { applyLamp, newAdventurer } from '../adventurer';
 import { craftAndDeliverPlan, craftPlan, fillOrder, itemXPBySkill, itemXPValue, orderFilled, ordersFor } from '../orders';
 import { advanceTrip, sendTrip } from '../trips';
 import { XP_TABLE } from '../../constants/xpTable';
@@ -26,7 +26,7 @@ describe('village orders (PROG-044)', () => {
       for (const o of ordersFor(adventurer(), 'millbrook', day)) {
         expect(['iron_bar', 'steel_bar', 'trout', 'salmon', 'oak_logs']).not.toContain(o.item);
         expect(o.count).toBeGreaterThanOrEqual(1);
-        expect(Object.values(o.xp).some((n) => (n ?? 0) > 0)).toBe(true);
+        expect(Object.values(o.xp).some((n) => (n ?? 0) > 0) || (o.combatLamp ?? 0) > 0).toBe(true);
       }
     }
   });
@@ -132,9 +132,20 @@ describe('combat requests (PROG-050)', () => {
     expect(fights.length).toBeGreaterThan(0);
     for (const o of fights) {
       expect(['bones', 'raw_chicken']).toContain(o.item);
-      expect(o.xp.Hitpoints).toBeGreaterThan(0);
-      expect(o.xp.Attack).toBe(o.xp.Strength);
+      // Paid as a combat XP lamp, not split over the styles (PROG-053).
+      expect(o.xp).toEqual({});
+      expect(o.combatLamp).toBeGreaterThan(0);
     }
+  });
+
+  it('pays a combat request as a combat lamp that only fits combat skills', () => {
+    const order: VillageOrder = { id: 'millbrook-raw_chicken', regionId: 'millbrook', item: 'raw_chicken', count: 5, xp: {}, creature: 'chicken', combatLamp: 120 };
+    const after = fillOrder(adventurer({ raw_chicken: 5 }), order, '2026-11-22');
+    expect(after.lamps).toEqual([{ xp: 120, kind: 'combat' }]);
+    expect(() => applyLamp(after, 0, 'Mining')).toThrow(/combat skill/);
+    expect(applyLamp(after, 0, 'Strength').xp.Strength).toBe(120);
+    const loaded = fromAdventurerDoc(toAdventurerDoc(after, null, 1), 'W').state;
+    expect(loaded.lamps).toEqual([{ xp: 120, kind: 'combat' }]);
   });
 });
 

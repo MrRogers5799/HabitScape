@@ -1,3 +1,4 @@
+import { unlocksBetween } from '../unlocks';
 import { newAdventurer } from '../adventurer';
 import { backfillCollection, collectionItems, collectionLog, collectionProgress } from '../collection';
 import { ITEMS, SKILL_PETS } from '../content/valley';
@@ -42,5 +43,13 @@ describe('collection log (PROG-047)', () => {
     const old = toAdventurerDoc({ ...newAdventurer('W'), bank: { bogling: 1 } }, null, 1) as unknown as Record<string, unknown>;
     delete old.collection;
     expect(fromAdventurerDoc(old, 'W').state.collection).toEqual({ bogling: { atMs: 0 } });
+  });
+});
+
+describe('skill unlocks (level-up notices)', () => {
+  it('lists what a level range unlocks, from the content', () => {
+    const titles = unlocksBetween('Mining', 14, 15).map((u) => u.title);
+    expect(titles).toContain('Mine iron');
+    expect(unlocksBetween('Mining', 15, 15)).toEqual([]);
   });
 });

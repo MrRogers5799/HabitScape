@@ -1,5 +1,5 @@
 /**
- * The new version's Workout tab (PROD-019: a separate logger, no game effect), in the
+ * The new version's workout tracker, opened from the Habits tab (PROD-034; PROG-019: a separate logger, no game effect), in the
  * UI kit. Lists the player's workouts; tap one to start it or see its progress. Share
  * a set of workouts as a code, or import someone else's.
  */
@@ -101,6 +101,8 @@ export function KitWorkoutsScreen({ navigation }: Props) {
   return (
     <KitScreen
       title="Workouts"
+      // Opened from the Habits tab (PROD-034): Back returns there.
+      onBack={() => navigation.getParent()?.goBack()}
       footer={sharing ? (
         <ButtonRow>
           <KitButton kind="secondary" label="Cancel" onPress={endSharing} />

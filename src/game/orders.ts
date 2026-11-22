@@ -132,7 +132,9 @@ export function ordersFor(state: GameState, regionId: string, dayId: string): Vi
     const xp = Object.fromEntries(
       (Object.entries(xpEach) as [GameSkill, number][]).map(([s, v]) => [s, Math.round(count * v * ORDER_XP_BONUS)]),
     ) as SkillXP;
-    return { id: `${regionId}-${item}`, regionId, item, count, xp, ...(creature ? { creature } : {}) };
+    // A combat request pays a combat XP lamp instead (PROG-053); Slayer XP joins it once Slayer exists.
+    if (creature) return { id: `${regionId}-${item}`, regionId, item, count, xp: {}, creature, combatLamp: Math.round(sumXP(xp)) };
+    return { id: `${regionId}-${item}`, regionId, item, count, xp };
   });
 }
 
@@ -157,6 +159,7 @@ export function fillOrder(state: GameState, order: VillageOrder, dayId: string, 
     ordersFilled: { ...today, [filledKey(dayId, order.id)]: true },
   };
   for (const [s, n] of Object.entries(order.xp) as [GameSkill, number][]) addRewardXP(next, report, s, n);
+  if (order.combatLamp) next.lamps = [...next.lamps, { xp: order.combatLamp, kind: 'combat' }];
   return next;
 }
 

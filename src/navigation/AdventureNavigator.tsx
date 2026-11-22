@@ -1,5 +1,5 @@
 /**
- * The new version's tabs (PROD-019, PROD-026): Today, Map, Hero, Workout, under the kit
+ * The new version's tabs (PROD-034): Habits, Planner, Map, Hero, under the kit
  * tab bar. Shown in place of the live app's tabs where the new version is active
  * (development builds and the owner's account until launch, PROD-022). The blocks picked
  * for the queue (PROG-045) are shared across the tabs while the player picks them.
@@ -15,6 +15,11 @@ import { RegionScreen } from '../screens/adventure/RegionScreen';
 import { TripPlannerScreen } from '../screens/adventure/TripPlannerScreen';
 import { HeroScreen } from '../screens/adventure/HeroScreen';
 import { KitSettingsScreen } from '../screens/adventure/KitSettingsScreen';
+import { HabitsScreen } from '../screens/adventure/HabitsScreen';
+import { ItemSheetProvider } from '../screens/adventure/ItemSheet';
+import { KitEditHabitsScreen } from '../screens/adventure/KitEditHabitsScreen';
+import { NavigatorScreenParams } from '@react-navigation/native';
+import { WorkoutStackParamList } from './WorkoutNavigator';
 import { KitHabitScreen } from '../screens/adventure/KitHabitScreen';
 import { SkillGuideScreen } from '../screens/adventure/SkillGuideScreen';
 import { GameSkill } from '../game';
@@ -24,29 +29,44 @@ import { TABS } from './newVersionTabs';
 /** Every screen in the new version's stacks. Each tab's stack holds only the ones it can reach. */
 export type AdventureStackParamList = {
   AdventureHome: undefined;
+  HabitsHome: undefined;
+  EditHabits: undefined;
+  /** The workout tracker's own stack, opened from Habits (PROD-034). */
+  Workouts: NavigatorScreenParams<WorkoutStackParamList> | undefined;
   Habit: { activityId: string };
   Skill: { skill: GameSkill };
   Map: undefined;
   Region: { regionId: string; section?: 'gather' | 'make' | 'fight' | 'village' };
   Planner: undefined;
-  Hero: undefined;
+  Hero: { section?: 'skills' | 'gear' | 'bank' | 'quests' | 'log' } | undefined;
   Settings: undefined;
 };
 
 const Tab = createBottomTabNavigator();
-const TodayStack = createNativeStackNavigator<AdventureStackParamList>();
+const HabitsStack = createNativeStackNavigator<AdventureStackParamList>();
+const PlannerStack = createNativeStackNavigator<AdventureStackParamList>();
 const MapStack = createNativeStackNavigator<AdventureStackParamList>();
 const HeroStack = createNativeStackNavigator<AdventureStackParamList>();
 
 const stackOptions: NativeStackNavigationOptions = {
   headerShown: false, animation: 'fade', contentStyle: { backgroundColor: kitColors.background },
 };
-function TodayTab() {
+function HabitsTab() {
   return (
-    <TodayStack.Navigator screenOptions={stackOptions}>
-      <TodayStack.Screen name="AdventureHome" component={AdventureHomeScreen} />
-      <TodayStack.Screen name="Habit" component={KitHabitScreen} />
-    </TodayStack.Navigator>
+    <HabitsStack.Navigator screenOptions={stackOptions}>
+      <HabitsStack.Screen name="HabitsHome" component={HabitsScreen} />
+      <HabitsStack.Screen name="Habit" component={KitHabitScreen} />
+      <HabitsStack.Screen name="EditHabits" component={KitEditHabitsScreen} />
+      <HabitsStack.Screen name="Workouts" component={KitWorkoutNavigator} />
+    </HabitsStack.Navigator>
+  );
+}
+
+function PlannerTab() {
+  return (
+    <PlannerStack.Navigator screenOptions={stackOptions}>
+      <PlannerStack.Screen name="AdventureHome" component={AdventureHomeScreen} />
+    </PlannerStack.Navigator>
   );
 }
 
@@ -73,12 +93,14 @@ function HeroTab() {
 export function AdventureNavigator() {
   return (
     <DraftPlanProvider>
+      <ItemSheetProvider>
       <Tab.Navigator tabBar={(props) => <KitTabBar {...props} />} screenOptions={{ headerShown: false }}>
-        <Tab.Screen name={TABS.today} component={TodayTab} options={{ title: 'Today' }} />
+        <Tab.Screen name={TABS.habits} component={HabitsTab} options={{ title: 'Habits' }} />
+        <Tab.Screen name={TABS.planner} component={PlannerTab} options={{ title: 'Planner' }} />
         <Tab.Screen name={TABS.map} component={MapTab} options={{ title: 'Map' }} />
         <Tab.Screen name={TABS.hero} component={HeroTab} options={{ title: 'Hero' }} />
-        <Tab.Screen name={TABS.workout} component={KitWorkoutNavigator} options={{ title: 'Workout' }} />
       </Tab.Navigator>
+      </ItemSheetProvider>
     </DraftPlanProvider>
   );
 }

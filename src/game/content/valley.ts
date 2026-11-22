@@ -79,6 +79,21 @@ for (const t of TIERS) {
   }
 }
 
+// ---------- What each skill is for (the skill guide's first line, owner note 2026-11-22) ----------
+
+export const SKILL_INFO: Record<GameSkill, string> = {
+  Attack: 'How accurately you fight. Higher Attack lets you wield better weapons.',
+  Strength: 'How hard you hit. More Strength means faster kills.',
+  Defence: 'How well you take a hit. Higher Defence lets you wear better armour and win more fights.',
+  Hitpoints: 'Your health. It grows with every fight you win, whatever style you train.',
+  Prayer: 'Bury the bones from your fights for blessings that help in combat.',
+  Mining: 'Dig ore from the rocks for Smithing. Better pickaxes mine faster.',
+  Smithing: 'Smelt ore into bars, then forge weapons, armour and tools at the anvil.',
+  Woodcutting: 'Chop trees for logs. Better hatchets chop faster.',
+  Fishing: 'Catch fish to cook. Some spots need a net, others a rod.',
+  Cooking: 'Cook your catch into food that heals you in tough fights. Low levels burn some.',
+};
+
 // ---------- Skilling pets (PROG-046): original creatures, one per skill ----------
 
 const PETS: [GameSkill, ItemId, string][] = [

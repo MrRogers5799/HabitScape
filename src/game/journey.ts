@@ -10,7 +10,7 @@ import { GAME_SKILLS, GameState, ItemId } from './types';
 
 /** Where a step's "Go" button leads: a tab, or a region and one of its sections. */
 export type JourneyTarget =
-  | { tab: 'map' }
+  | { tab: 'map' | 'habits' | 'quests' }
   | { regionId: string; section: 'gather' | 'make' | 'fight' | 'village' };
 
 /** Facts the game state can't hold, passed in by the caller. */
@@ -38,9 +38,9 @@ const trained = (state: GameState) => GAME_SKILLS.some((s) => s !== 'Hitpoints' 
 export const JOURNEY: JourneyStep[] = [
   {
     id: 'first-habit', title: 'Tick a habit',
-    hint: "Tick one of today's habits below: it earns adventure time.",
+    hint: 'Tick a habit on the Habits tab: it earns adventure time.',
     done: (s, c) => s.time.weekEarnedHours > 0 || s.time.bankHours > 0 || c.queued || trained(s),
-    reward: { copper_ore: 10, tin_ore: 10 },
+    reward: { copper_ore: 10, tin_ore: 10 }, go: { tab: 'habits' },
   },
   {
     id: 'first-block', title: 'Pick something on the Map',
@@ -62,9 +62,9 @@ export const JOURNEY: JourneyStep[] = [
   },
   {
     id: 'road-to-stonecrest', title: 'Quest: The Road to Stonecrest',
-    hint: 'Reach Attack 15 and defeat 10 wolves in Greywood (some Defence helps), then do the quest in Millbrook.',
+    hint: 'Reach Attack 15 and defeat 10 wolves in Greywood (some Defence helps), then start the quest from Hero → Quests.',
     done: (s) => !!s.quests['road-to-stonecrest'],
-    reward: { iron_pickaxe: 1 }, go: { regionId: 'millbrook', section: 'village' },
+    reward: { iron_pickaxe: 1 }, go: { tab: 'quests' },
   },
   {
     id: 'iron-armour', title: 'Iron armour',
@@ -76,7 +76,7 @@ export const JOURNEY: JourneyStep[] = [
     id: 'drowned-bell', title: 'Quest: The Drowned Bell',
     hint: 'Reach Fishing 20 and Woodcutting 20 and defeat 10 bandits in Stonecrest. It opens the Bog.',
     done: (s) => !!s.quests['drowned-bell'],
-    reward: { coal: 30 }, go: { regionId: 'millbrook', section: 'village' },
+    reward: { coal: 30 }, go: { tab: 'quests' },
   },
   {
     id: 'steel-and-salmon', title: 'Steel armour and salmon',

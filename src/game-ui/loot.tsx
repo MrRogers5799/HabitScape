@@ -1,8 +1,8 @@
 /**
  * Item icons and loot grids (PROD-025: show the icon, put the number on it).
  */
-import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import React, { createContext, useContext } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { NineSlice } from './NineSlice';
 import { FRAMES } from './frames';
 import { CREATURE_ICONS, GEAR_ICONS, ITEM_ICONS } from './icons';
@@ -22,15 +22,31 @@ export function ItemIcon({ id, name, size = 40 }: { id: string; name: string; si
   );
 }
 
-/** One slot: the icon with its count in the corner. */
+/**
+ * Tapping an item slot opens its info sheet (owner notes 2026-11-22: tap an icon to learn what
+ * it is, and use bank items from there). The game screens provide `open`; elsewhere a slot is
+ * just a picture.
+ */
+export const ItemInfoContext = createContext<{ open?: (id: string) => void }>({});
+
+/** One slot: the icon with its count in the corner. Tappable for its info sheet where one is provided. */
 export function ItemSlot({ id, name, count, size = 64 }: { id: string; name: string; count?: number; size?: number }) {
-  return (
-    <View accessible accessibilityLabel={count !== undefined ? `${count.toLocaleString()} ${name}` : name} style={{ width: size, height: size }}>
+  const { open } = useContext(ItemInfoContext);
+  const label = count !== undefined ? `${count.toLocaleString()} ${name}` : name;
+  const body = (
+    <View accessible={!open} accessibilityLabel={label} style={{ width: size, height: size }}>
       <NineSlice frame={FRAMES.slot} style={[StyleSheet.absoluteFill, styles.center]}>
         <ItemIcon id={id} name={name} size={size * 0.74} />
       </NineSlice>
       {count !== undefined && <Text style={styles.count}>{formatCount(count)}</Text>}
     </View>
+  );
+  if (!open) return body;
+  return (
+    <Pressable onPress={() => open(id)} accessibilityRole="button" accessibilityLabel={`${label}. What is this?`} hitSlop={2}
+      style={({ pressed }) => pressed && styles.pressed}>
+      {body}
+    </Pressable>
   );
 }
 
@@ -52,6 +68,7 @@ export function formatCount(n: number): string {
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
+  pressed: { opacity: 0.7 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   count: {
     position: 'absolute', top: 3, left: 7, fontFamily: kitFonts.text, fontSize: 20, lineHeight: 20, color: '#ffe066',

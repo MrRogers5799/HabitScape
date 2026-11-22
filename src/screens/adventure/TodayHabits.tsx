@@ -3,8 +3,8 @@
  * time. Each row shows the hours it earns (PROD-015: habits feed the adventure, not their
  * own skill levels), its progress for spread-out cadences, and its streak. Tapping a row
  * opens the habit's page (KitHabitScreen); "Edit habits" adds or removes them. The arrows step back up
- * to 14 days to tick a day you forgot (PROG-005); only days in the current week earn
- * adventure time (PROG-005; gameService.earnHoursForCompletion).
+ * to 14 days to tick a day you forgot (PROG-005); only today and yesterday earn
+ * adventure time (PROG-052; gameService.earnHoursForCompletion).
  */
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -12,17 +12,15 @@ import * as Haptics from 'expo-haptics';
 import { useActivities } from '../../context/ActivitiesContext';
 import { useAuth } from '../../context/AuthContext';
 import { ACTIVITY_TEMPLATES } from '../../constants/activities';
-import { Cadence, UserActivity } from '../../types';
-import { formatHours, HOURS_PER_HABIT_XP } from '../../game';
+import { UserActivity } from '../../types';
+import { earnsAdventureTime, formatHours, HOURS_PER_HABIT_XP } from '../../game';
 import { habitAdventureXP } from '../../game/content/habitTiers';
-import { weekIdFor } from '../../game/persistence';
 import {
   beforeTracking, dayLabel, daysBack, habitProgress, latestCompletionOn, MAX_BACKFILL_DAYS,
 } from '../../utils/habitProgress';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
-import { ActivitySelectionWizard } from '../../components/ActivitySelectionWizard';
 import {
   Body, ButtonRow, FRAMES, KitButton, kitColors, kitFonts, NineSlice, Panel, Row, space, Tag,
 } from '../../game-ui';
@@ -52,7 +50,7 @@ function DayStepper({ label, onBack, onForward, canBack, canForward }: {
 
 export function TodayHabits() {
   const {
-    userActivities, completions, completeActivity, completeActivityForDate, undoCompletion, addActivity, removeActivity, loading,
+    userActivities, completions, completeActivity, completeActivityForDate, undoCompletion, loading,
   } = useActivities();
   const { user } = useAuth();
   const weekStartDay: 0 | 1 = user?.weekStartDay ?? 1;
@@ -62,11 +60,9 @@ export function TodayHabits() {
   const now = new Date();
   const day = daysBack(now, back);
   const isToday = back === 0;
-  // Ticks on days before this week don't earn adventure time (gameService.earnHoursForCompletion).
-  const earnsTime = weekIdFor(day.getTime(), weekStartDay) === weekIdFor(now.getTime(), weekStartDay);
+  // Only today's and yesterday's ticks earn adventure time (PROG-052, gameService.earnHoursForCompletion).
+  const earnsTime = earnsAdventureTime(day.getTime() + 12 * 3600000, now.getTime());
   const navigation = useNavigation<NativeStackNavigationProp<AdventureStackParamList>>();
-  const [editing, setEditing] = useState(false);
-  const [editBusy, setEditBusy] = useState(false);
 
   // Still to do first, then the ones settled (or not tracked yet) for that day; names
   // alphabetical within each. A past day's progress counts up to that day, as on the live
@@ -106,17 +102,6 @@ export function TodayHabits() {
     }
   }
 
-  async function edit(fn: () => Promise<unknown>) {
-    try {
-      setEditBusy(true);
-      await fn();
-    } catch {
-      Alert.alert('Something went wrong', 'Please try again.');
-    } finally {
-      setEditBusy(false);
-    }
-  }
-
   return (
     <Panel
       title={isToday ? "Today's habits" : 'Past day'}
@@ -133,8 +118,8 @@ export function TodayHabits() {
       )}
       {!isToday && rows.length > 0 && (
         <Body muted>{earnsTime
-          ? 'Forgot to tick something? Ticks on this day still earn adventure time this week.'
-          : 'Ticks here keep your history and streaks, but days before this week don’t earn adventure time.'}
+          ? 'Forgot to tick something yesterday? It still earns adventure time.'
+          : 'Ticks here keep your history and streaks; only today and yesterday earn adventure time.'}
         </Body>
       )}
       {rows.length === 0 && !loading && <Body muted>Add a habit to start earning adventure time.</Body>}
@@ -176,18 +161,9 @@ export function TodayHabits() {
         );
       })}
       <ButtonRow>
-        <KitButton kind="secondary" label={rows.length ? 'Edit habits' : 'Add habits'} onPress={() => setEditing(true)} />
+        <KitButton kind="secondary" label={rows.length ? 'Edit habits' : 'Add habits'} onPress={() => navigation.navigate('EditHabits')} />
       </ButtonRow>
 
-      <ActivitySelectionWizard
-        visible={editing}
-        onClose={() => setEditing(false)}
-        selectedActivities={userActivities}
-        onActivityAdded={(id: string, cadence: Cadence) => edit(() => addActivity(id, cadence))}
-        onActivityRemoved={(id: string) => edit(() => removeActivity(id))}
-        loading={editBusy}
-        mode="manage"
-      />
     </Panel>
   );
 }

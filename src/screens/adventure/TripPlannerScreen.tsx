@@ -131,8 +131,8 @@ export function TripPlannerScreen({ navigation }: Props) {
       await send(plan.legs);
       plan.clear();
       navigation.popToTop();
-      // Back to Today to watch the trip.
-      navigation.getParent()?.navigate(TABS.today);
+      // To the Planner, to watch the queue.
+      navigation.getParent()?.navigate(TABS.planner);
     } catch {
       // the error shows below
     } finally {

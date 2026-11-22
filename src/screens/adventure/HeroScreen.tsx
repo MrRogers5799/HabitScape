@@ -4,13 +4,14 @@
  * with numbers (new-version kit, PROD-024/025). Each thing has one home: gear and tools live in Gear,
  * so the Bank shows everything else.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import { GAME_SKILLS, GameSkill, ITEMS, itemName, levelOf, ToolType, wornGear } from '../../game';
 import { CollectionLogSections } from './CollectionLog';
+import { QuestJournal } from './QuestJournal';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import {
   Body, ItemSlot, KitScreen, LootGrid, NeedsTag, Panel, FRAMES, NineSlice, Row, SectionTabs, SkillTile, space, TAB_ICONS, Tag,
@@ -19,18 +20,20 @@ import {
 type Props = NativeStackScreenProps<AdventureStackParamList, 'Hero'>;
 
 
-type Section = 'skills' | 'gear' | 'bank' | 'log';
+type Section = 'skills' | 'gear' | 'bank' | 'quests' | 'log';
 const SECTIONS: { label: string; value: Section }[] = [
-  { label: 'Skills', value: 'skills' }, { label: 'Gear', value: 'gear' }, { label: 'Bank', value: 'bank' }, { label: 'Log', value: 'log' },
+  { label: 'Skills', value: 'skills' }, { label: 'Gear', value: 'gear' }, { label: 'Bank', value: 'bank' }, { label: 'Quests', value: 'quests' }, { label: 'Log', value: 'log' },
 ];
 
 /** The skill each tool type is used for, so its level requirement can show that skill's icon. */
 const TOOL_SKILL: Record<ToolType, GameSkill> = { pickaxe: 'Mining', hatchet: 'Woodcutting', small_net: 'Fishing', fishing_rod: 'Fishing' };
 
-export function HeroScreen({ navigation }: Props) {
+export function HeroScreen({ navigation, route }: Props) {
   const { state } = useGame();
   const { user } = useAuth();
-  const [section, setSection] = useState<Section>('skills');
+  // A link can open a section (the road to the Bog Warden's quest steps open Quests).
+  const [section, setSection] = useState<Section>(route.params?.section ?? 'skills');
+  useEffect(() => { if (route.params?.section) setSection(route.params.section); }, [route.params?.section]);
   if (!state) return null;
 
   const owned = (Object.entries(state.bank) as [string, number][]).filter(([, n]) => n > 0).sort(([, x], [, y]) => y - x);
@@ -68,7 +71,7 @@ export function HeroScreen({ navigation }: Props) {
         // No panel title: the selected section button already names it.
         <Panel>
           {state.lamps.length > 0 && (
-            <Body muted>{`You have ${state.lamps.length} XP lamp${state.lamps.length === 1 ? '' : 's'}: open a skill to use one there.`}</Body>
+            <Body muted>{`You have ${state.lamps.length} XP lamp${state.lamps.length === 1 ? '' : 's'}: open a skill to use one there${state.lamps.some((l) => typeof l !== 'number') ? ' (combat lamps go into Attack, Strength, Defence or Hitpoints)' : ''}.`}</Body>
           )}
           <View style={styles.tiles}>
             {GAME_SKILLS.map((s) => <SkillTile key={s} skill={s} level={levelOf(state, s)} onPress={() => navigation.navigate('Skill', { skill: s })} />)}
@@ -109,6 +112,7 @@ export function HeroScreen({ navigation }: Props) {
         </Panel>
       )}
 
+      {section === 'quests' && <QuestJournal />}
       {section === 'log' && <CollectionLogSections state={state} />}
     </KitScreen>
   );
