@@ -24,6 +24,7 @@ export function newAdventurer(weekId: string): GameState {
     lamps: [],
     ordersFilled: {},
     collection: {},
+    journey: { claimed: {}, welcomed: false },
   };
 }
 

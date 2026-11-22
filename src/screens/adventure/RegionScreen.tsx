@@ -5,7 +5,7 @@
  * live here too (PROG-044). One section shows at a time (Gather, Make, Fight, Village) so
  * the page stays short (OQ-36).
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
@@ -37,7 +37,9 @@ export function RegionScreen({ navigation, route }: Props) {
   const region = REGIONS[route.params.regionId];
   const [showAllRecipes, setShowAllRecipes] = useState(false);
   const [delivering, setDelivering] = useState<string | null>(null);
-  const [section, setSection] = useState<Section | null>(null);
+  // A link can open a given section (the road to the Bog Warden's Go button, PROD-032).
+  const [section, setSection] = useState<Section | null>(route.params.section ?? null);
+  useEffect(() => { if (route.params.section) setSection(route.params.section); }, [route.params.section]);
   if (!state || !region) return null;
   const locked = !!region.questGate && !state.quests[region.questGate];
   const { methods, recipes, melts, fights, quests } = activitiesIn(region.id);

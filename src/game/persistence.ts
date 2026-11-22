@@ -31,6 +31,8 @@ export interface AdventurerDoc {
   ordersFilled: Record<string, true>;
   /** Collection log (PROG-047). */
   collection: Record<string, CollectionEntry>;
+  /** The road to the Bog Warden (PROD-032). */
+  journey: { claimed: Record<string, true>; welcomed: boolean };
   activeTripId: string | null;
 }
 
@@ -51,6 +53,15 @@ const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
 const numbers = (v: unknown): Record<string, number> =>
   isRecord(v) ? Object.fromEntries(Object.entries(v).filter(([, n]) => typeof n === 'number' && Number.isFinite(n))) as Record<string, number> : {};
 
+/** The journey from a stored value; older saves have none (a fresh road, welcome not seen). */
+function readJourney(v: unknown): GameState['journey'] {
+  const j = isRecord(v) ? v : {};
+  return {
+    claimed: isRecord(j.claimed) ? (Object.fromEntries(Object.keys(j.claimed).map((k) => [k, true])) as Record<string, true>) : {},
+    welcomed: j.welcomed === true,
+  };
+}
+
 /** Drops zero counts so the bank stays small. */
 const compact = (bank: Record<string, number>) => Object.fromEntries(Object.entries(bank).filter(([, n]) => n !== 0));
 
@@ -67,6 +78,7 @@ export function toAdventurerDoc(state: GameState, activeTripId: string | null, r
     lamps: [...state.lamps],
     ordersFilled: { ...state.ordersFilled },
     collection: { ...state.collection },
+    journey: { claimed: { ...state.journey.claimed }, welcomed: state.journey.welcomed },
     activeTripId,
   };
 }
@@ -106,6 +118,7 @@ export function fromAdventurerDoc(data: unknown, weekId: string): { state: GameS
       ordersFilled: isRecord(d.ordersFilled) ? (Object.fromEntries(Object.keys(d.ordersFilled).map((k) => [k, true])) as Record<string, true>) : {},
       // Uniques owned before the log existed count as found (date unknown).
       collection: backfillCollection(bank, collection),
+      journey: readJourney(d.journey),
     },
     activeTripId: typeof d.activeTripId === 'string' ? d.activeTripId : null,
     rev: typeof d.rev === 'number' ? d.rev : 0,

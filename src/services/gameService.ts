@@ -11,7 +11,7 @@
 import { collection, doc, onSnapshot, runTransaction, serverTimestamp, Unsubscribe, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import {
-  advanceTrip, callBack, clawBackForDebt, craftAndDeliverPlan, earnFromHabit, emptyReport, fillOrder, VillageOrder, GameState, LegPlan, newAdventurer,
+  advanceTrip, callBack, claimJourneyStep, clawBackForDebt, craftAndDeliverPlan, markWelcomed, earnFromHabit, emptyReport, fillOrder, VillageOrder, GameState, LegPlan, newAdventurer,
   queueLegs, queueRunning, removeQueuedLeg, reportHasNews, resizeQueuedLeg, TimeGrant, Trip, TripReport, untickHabit, applyLamp,
 } from '../game';
 import { ADVENTURER_DOC, fromAdventurerDoc, fromTripDoc, mergeReports, toAdventurerDoc, toTripDoc, weekIdFor } from '../game/persistence';
@@ -158,6 +158,16 @@ export function resizeBlock(
     const res = resizeQueuedLeg(cur.state, cur.activeTrip.trip, index, size);
     return { state: res.state, activeTrip: { ...cur.activeTrip, trip: res.trip }, result: undefined };
   });
+}
+
+/** Collects the current step's reward on the road to the Bog Warden (PROD-032). */
+export function claimJourney(uid: string, weekId: string, stepId: string, queued: boolean) {
+  return updateGame(uid, weekId, (g) => ({ state: claimJourneyStep(g.state, stepId, { queued: queued || !!g.activeTrip }), activeTrip: g.activeTrip, result: undefined }));
+}
+
+/** The welcome pages were seen or skipped (PROD-032). */
+export function finishWelcome(uid: string, weekId: string) {
+  return updateGame(uid, weekId, (g) => ({ state: markWelcomed(g.state), activeTrip: g.activeTrip, result: undefined }));
 }
 
 /** Fills a village order from the bank (PROG-044); `dayId` is the player's local date. */

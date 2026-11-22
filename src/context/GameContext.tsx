@@ -14,7 +14,7 @@ import { adventureActive } from '../constants/features';
 import { GameSkill, GameState, LegPlan, VillageOrder } from '../game';
 import { dayIdFor, weekIdFor } from '../game/persistence';
 import {
-  ActiveTrip, applyLampOn, callBackTrip, craftAndDeliver, dismissReturn, fillVillageOrder, joinAdventureBeta, queueBlocks, removeBlock, resizeBlock,
+  ActiveTrip, applyLampOn, callBackTrip, claimJourney, craftAndDeliver, finishWelcome, dismissReturn, fillVillageOrder, joinAdventureBeta, queueBlocks, removeBlock, resizeBlock,
   resolveActiveTrip, subscribeToAdventurer, subscribeToTrip,
 } from '../services/gameService';
 
@@ -39,6 +39,9 @@ interface GameContextType {
   removeBlock: (index: number) => Promise<void>;
   resizeBlock: (index: number, size: { hours?: number; count?: number }) => Promise<void>;
   fillOrder: (order: VillageOrder) => Promise<void>;
+  /** The road to the Bog Warden (PROD-032): collect the current step, or close the welcome. */
+  claimJourney: (stepId: string) => Promise<void>;
+  finishWelcome: () => Promise<void>;
   /** Queues the work orders that make an order's items, then delivers it (PROG-050). */
   craftAndDeliver: (order: VillageOrder) => Promise<void>;
   callBack: () => Promise<void>;
@@ -170,6 +173,14 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (!user) return;
       const now = Date.now();
       await fillVillageOrder(user.uid, weekIdFor(now, weekStart), order, dayIdFor(now));
+    }),
+    claimJourney: (stepId) => run(async () => {
+      if (!user) return;
+      await claimJourney(user.uid, weekIdFor(Date.now(), weekStart), stepId, !!activeTrip);
+    }),
+    finishWelcome: () => run(async () => {
+      if (!user) return;
+      await finishWelcome(user.uid, weekIdFor(Date.now(), weekStart));
     }),
     craftAndDeliver: (order) => run(async () => {
       if (!user) return;
