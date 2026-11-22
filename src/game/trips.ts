@@ -11,9 +11,10 @@
  * deterministic (seeded per queue and step), so resolving in one go or in many small
  * steps gives the same outcome.
  */
-import { bestTool, levelOf, toolMultiplier } from './adventurer';
+import { addRewardXP, bestTool, burnChance, levelOf, toolMultiplier } from './adventurer';
 import { attemptsPerHour, bestFood, defence, offence, pickLoadout, winChance } from './combat';
-import { CREATURES, METHODS, QUESTS, REGIONS, SKILL_PETS } from './content/valley';
+import { CREATURES, ITEMS, METHODS, QUESTS, REGIONS, SKILL_PETS } from './content/valley';
+import { fillOrder } from './orders';
 import { chunkRng, stochasticRound } from './rng';
 import { AFFINITY_BONUS, CHUNK_HOURS, MAX_QUEUE_BLOCKS, PET_XP } from './rules';
 import { Creature, GameSkill, GameState, Leg, LegPlan, MeleeFocus, Method, Quest, QuestRequirement, Trip, TripReport } from './types';
@@ -181,13 +182,6 @@ export const blockHoursLeft = (leg: Leg): number => (leg.ended ? 0 : legRemainin
 /** Hours a block has worked so far. */
 export const blockHoursWorked = (leg: Leg): number => legWorked(leg);
 
-/** Burn chance for a cooking method at a level (PROG-037). */
-export function burnChance(method: Method, level: number): number {
-  if (method.kind !== 'process' || !method.burn) return 0;
-  const { chanceAtUnlock, levelsToZero } = method.burn;
-  return Math.max(0, chanceAtUnlock * (1 - (level - method.level) / levelsToZero));
-}
-
 const travelOf = (regionId: string) => REGIONS[regionId]?.travelFraction ?? 0;
 
 /** Actions per hour for a method right now, with the best tool and travel included. */
@@ -215,17 +209,6 @@ function logFind(state: GameState, report: TripReport, item: string, atMs: numbe
   if (!state.collection[item]) state.collection = { ...state.collection, [item]: { atMs, ...detail } };
 }
 
-/** Reward XP (quests, village orders, PROG-048): added to the skill, with any level-up reported. */
-export function addRewardXP(state: GameState, report: TripReport | null, skill: GameSkill, amount: number) {
-  if (amount <= 0) return;
-  const before = levelOf(state, skill);
-  state.xp[skill] = (state.xp[skill] ?? 0) + amount;
-  if (!report) return;
-  report.xp[skill] = (report.xp[skill] ?? 0) + amount;
-  const after = levelOf(state, skill);
-  if (after > before) report.levelUps.push({ skill, level: after });
-}
-
 function gainXP(state: GameState, report: TripReport, skill: GameSkill, amount: number, affinity: ReadonlySet<string>, roll: Roll) {
   if (amount <= 0) return;
   const before = levelOf(state, skill);
@@ -250,6 +233,17 @@ function endLeg(state: GameState, trip: Trip, legIndex: number, report: TripRepo
   const act = activityOf(leg.activityId);
   if (act?.kind === 'quest' && refund > 0) {
     for (const [item, n] of Object.entries(act.quest.takes ?? {})) state.bank[item] = (state.bank[item] ?? 0) + n;
+  }
+}
+
+/** Craft & deliver (PROG-050): fills the order from the bank now; if it can't, the items stay and the log says why. */
+function deliverOrder(state: GameState, report: TripReport, order: NonNullable<Leg['deliver']>['order'], dayId: string) {
+  const name = ITEMS[order.item]?.name ?? order.item;
+  try {
+    Object.assign(state, fillOrder(state, order, dayId, report));
+    report.notes.push(`Delivered ${order.count} ${name} to the order board.`);
+  } catch (err) {
+    report.notes.push(`Couldn't deliver ${name}: ${err instanceof Error ? err.message.toLowerCase() : 'try again'}. They're in your bank.`);
   }
 }
 
@@ -435,6 +429,7 @@ export function advanceTrip(
       makeItems(state, report, method, made, rand, affinityAt(chunkStart), chunkStart);
       leg.madeHours = hours;
       trip.nextChunk += 1;
+      if (leg.deliver) deliverOrder(state, report, leg.deliver.order, leg.deliver.dayId);
       if (made < leg.count!) endLeg(state, trip, li, report, `${method.name}: ran out of materials after ${made}.`);
       else if (legRemaining(leg) > 0) endLeg(state, trip, li, report, '');
       else leg.ended = true;

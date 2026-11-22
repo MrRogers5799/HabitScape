@@ -1,6 +1,6 @@
 import { XP_TABLE } from '../../constants/xpTable';
 import { newAdventurer, applyLamp } from '../adventurer';
-import { fightPreview, pickLoadout } from '../combat';
+import { fightPreview, lowestStyle, pickLoadout } from '../combat';
 import { CREATURES } from '../content/valley';
 import { CHUNK_MS } from '../rules';
 import { advanceTrip, checkPlan, fightId, questId, sendTrip } from '../trips';
@@ -152,5 +152,13 @@ describe('quests', () => {
     const sent = sendTrip(s, [leg(questId('road-to-stonecrest'), 2)], 'q2', T0);
     const { state } = advanceTrip(sent.state, sent.trip, T0 + 2 * HOUR);
     expect(checkPlan(state, [leg('mine-copper', 1, 'stonecrest')])).toBeNull();
+  });
+});
+
+describe('melee focus (PROG-051)', () => {
+  it('defaults a new fight to the lowest melee style, ties to Attack', () => {
+    const s = adventurer({ Attack: 10, Strength: 5, Defence: 5 }, {});
+    expect(lowestStyle(s)).toBe('Strength');
+    expect(lowestStyle(adventurer({}, {}))).toBe('Attack');
   });
 });

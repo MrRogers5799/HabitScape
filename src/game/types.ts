@@ -144,7 +144,7 @@ export interface Creature {
   };
 }
 
-/** Where melee XP goes (Combat note: you pick a focus). */
+/** Where melee XP goes (PROG-051: the player picks one style; 'shared' only for fights queued before that). */
 export type MeleeFocus = 'Attack' | 'Strength' | 'Defence' | 'shared';
 
 // ---------- Quests ----------
@@ -165,6 +165,20 @@ export interface Quest {
   takes?: Record<ItemId, number>;
   /** XP goes straight to the skills the quest is about (PROG-048); `lampXP` is from older saves' content and unused now. */
   rewards: { items?: Record<ItemId, number>; xp?: Partial<Record<GameSkill, number>>; lampXP?: number };
+}
+
+// ---------- Village orders (PROG-044, PROG-050) ----------
+
+export interface VillageOrder {
+  /** `<region>-<item>`, unique on a board for the day. */
+  id: string;
+  regionId: RegionId;
+  item: ItemId;
+  count: number;
+  /** XP paid on delivery, to the skills that make or win the items: half again what that gave (PROG-048). */
+  xp: Partial<Record<GameSkill, number>>;
+  /** A combat request: the creature that drops it (PROG-050). */
+  creature?: string;
 }
 
 // ---------- State ----------
@@ -222,6 +236,8 @@ export interface LegPlan {
   hours: number;
   /** Crafting work orders (PROG-043): how many to make. Absent on gathering, fights, quests, and older trips. */
   count?: number;
+  /** Craft & deliver (PROG-050): a village order to fill from the bank when this block finishes. */
+  deliver?: { order: VillageOrder; dayId: string };
   /** Fights: where melee XP goes. Defaults to shared. */
   focus?: MeleeFocus;
   /** Fights: slots the player chose by hand (PROG-015). */

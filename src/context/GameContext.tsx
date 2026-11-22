@@ -11,10 +11,10 @@ import { AppState } from 'react-native';
 import { useAuth } from './AuthContext';
 import { useActivities } from './ActivitiesContext';
 import { adventureActive } from '../constants/features';
-import { GameSkill, GameState, LegPlan } from '../game';
+import { GameSkill, GameState, LegPlan, VillageOrder } from '../game';
 import { dayIdFor, weekIdFor } from '../game/persistence';
 import {
-  ActiveTrip, applyLampOn, callBackTrip, dismissReturn, fillVillageOrder, joinAdventureBeta, queueBlocks, removeBlock, resizeBlock,
+  ActiveTrip, applyLampOn, callBackTrip, craftAndDeliver, dismissReturn, fillVillageOrder, joinAdventureBeta, queueBlocks, removeBlock, resizeBlock,
   resolveActiveTrip, subscribeToAdventurer, subscribeToTrip,
 } from '../services/gameService';
 
@@ -38,7 +38,9 @@ interface GameContextType {
   send: (legs: LegPlan[]) => Promise<void>;
   removeBlock: (index: number) => Promise<void>;
   resizeBlock: (index: number, size: { hours?: number; count?: number }) => Promise<void>;
-  fillOrder: (regionId: string, orderId: string) => Promise<void>;
+  fillOrder: (order: VillageOrder) => Promise<void>;
+  /** Queues the work orders that make an order's items, then delivers it (PROG-050). */
+  craftAndDeliver: (order: VillageOrder) => Promise<void>;
   callBack: () => Promise<void>;
   dismissReturn: () => Promise<void>;
   applyLamp: (index: number, skill: GameSkill) => Promise<void>;
@@ -164,10 +166,16 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       const now = Date.now();
       await resizeBlock(user.uid, weekIdFor(now, weekStart), index, size, now, affinityAt);
     }),
-    fillOrder: (regionId, orderId) => run(async () => {
+    fillOrder: (order) => run(async () => {
       if (!user) return;
       const now = Date.now();
-      await fillVillageOrder(user.uid, weekIdFor(now, weekStart), regionId, orderId, dayIdFor(now));
+      await fillVillageOrder(user.uid, weekIdFor(now, weekStart), order, dayIdFor(now));
+    }),
+    craftAndDeliver: (order) => run(async () => {
+      if (!user) return;
+      const now = Date.now();
+      await craftAndDeliver(user.uid, weekIdFor(now, weekStart), order, dayIdFor(now), now, affinityAt);
+      setNowMs(now);
     }),
     callBack: () => run(async () => {
       if (!user) return;

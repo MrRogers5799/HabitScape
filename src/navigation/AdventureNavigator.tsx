@@ -15,19 +15,22 @@ import { RegionScreen } from '../screens/adventure/RegionScreen';
 import { TripPlannerScreen } from '../screens/adventure/TripPlannerScreen';
 import { HeroScreen } from '../screens/adventure/HeroScreen';
 import { KitSettingsScreen } from '../screens/adventure/KitSettingsScreen';
-import { CollectionLogScreen } from '../screens/adventure/CollectionLogScreen';
+import { KitHabitScreen } from '../screens/adventure/KitHabitScreen';
+import { SkillGuideScreen } from '../screens/adventure/SkillGuideScreen';
+import { GameSkill } from '../game';
 import { KitWorkoutNavigator } from './KitWorkoutNavigator';
 import { TABS } from './newVersionTabs';
 
 /** Every screen in the new version's stacks. Each tab's stack holds only the ones it can reach. */
 export type AdventureStackParamList = {
   AdventureHome: undefined;
+  Habit: { activityId: string };
+  Skill: { skill: GameSkill };
   Map: undefined;
   Region: { regionId: string };
   Planner: undefined;
   Hero: undefined;
   Settings: undefined;
-  CollectionLog: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -42,6 +45,7 @@ function TodayTab() {
   return (
     <TodayStack.Navigator screenOptions={stackOptions}>
       <TodayStack.Screen name="AdventureHome" component={AdventureHomeScreen} />
+      <TodayStack.Screen name="Habit" component={KitHabitScreen} />
     </TodayStack.Navigator>
   );
 }
@@ -61,7 +65,7 @@ function HeroTab() {
     <HeroStack.Navigator screenOptions={stackOptions}>
       <HeroStack.Screen name="Hero" component={HeroScreen} />
       <HeroStack.Screen name="Settings" component={KitSettingsScreen} />
-      <HeroStack.Screen name="CollectionLog" component={CollectionLogScreen} />
+      <HeroStack.Screen name="Skill" component={SkillGuideScreen} />
     </HeroStack.Navigator>
   );
 }

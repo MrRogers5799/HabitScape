@@ -5,9 +5,9 @@
  * defence sets the chance of winning each attempt. A lost attempt costs only its time.
  * The model is deliberately simple so the planner can explain it in numbers.
  */
-import { levelOf } from './adventurer';
+import { bestTool, levelOf } from './adventurer';
 import { ITEMS } from './content/valley';
-import { AttackType, Creature, GameState, ItemId, Loadout, LoadoutOverrides, SLOTS, Slot } from './types';
+import { AttackType, Creature, GameSkill, GameState, ItemId, Loadout, LoadoutOverrides, SLOTS, Slot, ToolType } from './types';
 
 /** Damage bonus for hitting a creature's weakness. */
 export const WEAKNESS_BONUS = 1.25;
@@ -93,6 +93,32 @@ export function pickLoadout(state: GameState, creature: Creature, overrides: Loa
 }
 
 /** Everything the trip planner shows for a fight (Combat note: "the player only sees the numbers"). */
+/**
+ * What the adventurer has on by default, for Hero's Gear section: in each slot the best
+ * piece they can wear (most power for a weapon, most defence otherwise), and the best tool
+ * of each type they can use. A fight may still pick differently against a weakness (PROG-015).
+ */
+export function wornGear(state: GameState): Set<ItemId> {
+  const worn = new Set<ItemId>();
+  const owned = Object.keys(state.bank).filter((id) => (state.bank[id] ?? 0) > 0);
+  for (const slot of SLOTS) {
+    const score = (id: ItemId) => (slot === 'mainHand' ? ITEMS[id].equip!.power ?? 0 : ITEMS[id].equip!.defence ?? 0);
+    const best = owned.filter((id) => canWear(state, id) && ITEMS[id].equip!.slot === slot).sort((a, b) => score(b) - score(a))[0];
+    if (best) worn.add(best);
+  }
+  const toolSkill: Record<ToolType, GameSkill> = { pickaxe: 'Mining', hatchet: 'Woodcutting', small_net: 'Fishing', fishing_rod: 'Fishing' };
+  for (const type of Object.keys(toolSkill) as ToolType[]) {
+    const best = bestTool(state, type, levelOf(state, toolSkill[type]));
+    if (best) worn.add(best.id);
+  }
+  return worn;
+}
+
+/** The melee style with the lowest level (ties go to Attack): a new fight's default focus (PROG-051). */
+export function lowestStyle(state: GameState): 'Attack' | 'Strength' | 'Defence' {
+  return (['Attack', 'Strength', 'Defence'] as const).reduce((low, s) => (levelOf(state, s) < levelOf(state, low) ? s : low), 'Attack' as 'Attack' | 'Strength' | 'Defence');
+}
+
 export function fightPreview(state: GameState, creature: Creature, overrides?: LoadoutOverrides) {
   const loadout = pickLoadout(state, creature, overrides);
   const food = bestFood(state, creature);
