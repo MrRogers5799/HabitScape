@@ -62,8 +62,10 @@ for (const t of TIERS) {
       else item.equip.defence = p.stat![t.tier - 1];
     }
     SMITHED_ITEMS.push(item);
+    // Names already plural (boots, gloves, platelegs) keep theirs: no "bootss" (owner, 2026-11-22).
+    const plural = item.name.toLowerCase() + (item.name.endsWith('s') ? '' : 's');
     SMITHING_METHODS.push({
-      kind: 'process', id: `smith-${id}`, name: `Smith ${item.name.toLowerCase()}s`, skill: 'Smithing',
+      kind: 'process', id: `smith-${id}`, name: `Smith ${plural}`, skill: 'Smithing',
       level: t.base + p.offset, regions: ['millbrook'], xpEach: p.bars * t.xpPerBar,
       perHour: 120 / p.bars, inputs: { [t.bar]: p.bars }, output: id,
     });
@@ -72,7 +74,7 @@ for (const t of TIERS) {
     const back = Math.floor(p.bars * MELT_SHARE);
     if (back > 0) {
       MELTING_METHODS.push({
-        kind: 'process', id: `melt-${id}`, name: `Melt ${item.name.toLowerCase()}s`, skill: 'Smithing',
+        kind: 'process', id: `melt-${id}`, name: `Melt ${plural}`, skill: 'Smithing',
         level: 1, regions: ['millbrook'], xpEach: 0, perHour: 240, inputs: { [id]: 1 }, output: t.bar, outputEach: back, quest: 'melting-pot',
       });
     }

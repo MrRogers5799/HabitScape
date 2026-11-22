@@ -233,7 +233,11 @@ export function KitModal({ visible, title, onClose, children }: { visible: boole
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalBack}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Dismiss" accessibilityHint="Closes this panel" />
-        <Panel title={title} style={styles.modalPanel}>{children}</Panel>
+        {/* Capped at the screen and scrolling inside, title fixed (owner, 2026-11-22: a long item sheet ran off the screen). */}
+        <NineSlice frame={FRAMES.panel} padding={space.sm} style={styles.modalPanel}>
+          <PanelHeader title={title} />
+          <ScrollView style={styles.modalScroll} contentContainerStyle={styles.panelBody} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+        </NineSlice>
       </View>
     </Modal>
   );
@@ -300,5 +304,6 @@ const styles = StyleSheet.create({
   field: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 52 },
   fieldInput: { flex: 1, fontFamily: kitFonts.text, fontSize: 22, color: kitColors.text, paddingVertical: 0 },
   modalBack: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: space.gutter },
-  modalPanel: { maxWidth: 460, alignSelf: 'center', width: '100%' },
+  modalPanel: { maxWidth: 460, alignSelf: 'center', width: '100%', maxHeight: '88%' },
+  modalScroll: { flexGrow: 0, flexShrink: 1 },
 });
