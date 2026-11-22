@@ -318,7 +318,9 @@ export function resizeQueuedLeg(
   const delta = round4(resized.hours - old.hours);
   if (delta > stateIn.time.bankHours + 1e-9) throw new Error("Can't resize that block: not-enough-time");
   const state: GameState = { ...stateIn, time: { ...stateIn.time, bankHours: round4(stateIn.time.bankHours - delta) } };
-  const legs = tripIn.legs.map((l, i) => (i === index ? { ...l, hours: resized.hours, count: resized.count } : { ...l }));
+  // Only a work order carries a count: Firestore rejects a field set to undefined (owner, 2026-11-22).
+  const sized = (l: Leg): Leg => (resized.count === undefined ? { ...l, hours: resized.hours } : { ...l, hours: resized.hours, count: resized.count });
+  const legs = tripIn.legs.map((l, i) => (i === index ? sized(l) : { ...l }));
   return { state, trip: { ...tripIn, legs } };
 }
 
