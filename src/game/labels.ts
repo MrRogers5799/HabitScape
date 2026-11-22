@@ -40,9 +40,11 @@ export function clockTime(ms: number): string {
 /** Every activity available in a region, grouped for the region screen. */
 export function activitiesIn(regionId: string) {
   return {
-    methods: Object.values(METHODS).filter((m) => m.regions.includes(regionId) && !m.id.startsWith('smith-')),
+    methods: Object.values(METHODS).filter((m) => m.regions.includes(regionId) && !m.id.startsWith('smith-') && !m.id.startsWith('melt-')),
     /** Anvil recipes (smithing gear and tools), listed separately so the region stays readable. */
     recipes: Object.values(METHODS).filter((m) => m.regions.includes(regionId) && m.id.startsWith('smith-')),
+    /** Melting smithed gear back into bars (PROG-044). */
+    melts: Object.values(METHODS).filter((m) => m.regions.includes(regionId) && m.id.startsWith('melt-')),
     fights: Object.values(CREATURES).filter((c) => c.region === regionId),
     quests: Object.values(QUESTS).filter((q) => q.region === regionId),
   };

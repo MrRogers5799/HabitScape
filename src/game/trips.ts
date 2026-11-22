@@ -1,21 +1,27 @@
 /**
- * Trips (PROG-011, PROG-023, PROG-026): the adventurer works through up to three
- * legs in real time, half an hour at a time. A leg is a method (gathering,
+ * The adventurer's queue (PROG-011, PROG-023, PROG-045): blocks worked one after
+ * another in real time. A block (a "leg" in the code) is a method (gathering,
  * processing, burying), a fight (`fight-<creature>`) or a quest (`quest-<quest>`).
+ * Gathering and fights run in half hours; crafting blocks are work orders that take
+ * the minutes their items need (PROG-043). Blocks can be added to the end while the
+ * queue runs, and unstarted blocks removed or resized.
  *
- * Trips resolve lazily: call advanceTrip with the current time whenever the app
- * opens, and it works out the half-hour chunks that have finished since last time.
- * Results are deterministic (seeded per trip and chunk), so resolving in one go or
- * in many small steps gives the same outcome.
+ * Queues resolve lazily: call advanceTrip with the current time whenever the app
+ * opens, and it works out the steps that have finished since last time. Results are
+ * deterministic (seeded per queue and step), so resolving in one go or in many small
+ * steps gives the same outcome.
  */
 import { bestTool, levelOf, toolMultiplier } from './adventurer';
 import { attemptsPerHour, bestFood, defence, offence, pickLoadout, winChance } from './combat';
 import { CREATURES, METHODS, QUESTS, REGIONS } from './content/valley';
 import { chunkRng, stochasticRound } from './rng';
-import { AFFINITY_BONUS, CHUNK_HOURS, CHUNK_MS, MAX_LEGS } from './rules';
+import { AFFINITY_BONUS, CHUNK_HOURS, MAX_QUEUE_BLOCKS } from './rules';
 import { Creature, GameSkill, GameState, Leg, LegPlan, MeleeFocus, Method, Quest, QuestRequirement, Trip, TripReport } from './types';
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
+/** Hours are kept to four places: crafting blocks come in whole minutes (1/60 h). */
+const round4 = (n: number) => Math.round(n * 10000) / 10000;
+/** Every block is a whole number of minutes, so time converts to ms through minutes (no rounding drift). */
+const hoursToMs = (h: number) => Math.round(h * 60) * 60 * 1000;
 
 // ---------- Activities ----------
 
@@ -37,7 +43,7 @@ export function activityOf(id: string): Activity | null {
 // ---------- Planning ----------
 
 export type PlanProblem =
-  | 'no-legs' | 'too-many-legs' | 'bad-length' | 'unknown-activity' | 'wrong-region'
+  | 'no-legs' | 'queue-full' | 'bad-length' | 'unknown-activity' | 'wrong-region'
   | 'region-locked' | 'level-too-low' | 'no-tool' | 'not-enough-time' | 'in-debt'
   | 'quest-done' | 'quest-requirements' | 'quest-length';
 
@@ -50,7 +56,30 @@ export function requirementMet(state: GameState, r: QuestRequirement): boolean {
   }
 }
 
-/** Checks one leg against the adventurer as they are now. */
+/** Actions a crafting method can make from the bank right now. */
+export function canMakeFrom(bank: Record<string, number>, method: Method): number {
+  if (method.kind !== 'process') return 0;
+  return Math.min(...Object.entries(method.inputs).map(([id, n]) => Math.floor((bank[id] ?? 0) / n)));
+}
+
+/** A work order's length (PROG-043): the whole minutes `count` items take at `perHour`. At least a minute. */
+export function craftHours(perHour: number, count: number): number {
+  if (count <= 0 || perHour <= 0) return 0;
+  return round4(Math.max(1, Math.ceil((count / perHour) * 60)) / 60);
+}
+
+/** A crafting work order: a processing method planned by count (PROG-043). */
+export const isWorkOrder = (leg: LegPlan): boolean => leg.count !== undefined;
+
+/** Fills in a work order's hours from its count; other blocks are returned as they are. */
+export function normaliseLeg(state: GameState, leg: LegPlan): LegPlan {
+  if (!isWorkOrder(leg)) return leg;
+  const act = activityOf(leg.activityId);
+  if (act?.kind !== 'method' || act.method.kind !== 'process') return leg;
+  return { ...leg, hours: craftHours(effectiveRate(state, act.method, leg.regionId), leg.count!) };
+}
+
+/** Checks one block against the adventurer as they are now. */
 export function checkLeg(state: GameState, leg: LegPlan): PlanProblem | null {
   const act = activityOf(leg.activityId);
   if (!act) return 'unknown-activity';
@@ -58,7 +87,9 @@ export function checkLeg(state: GameState, leg: LegPlan): PlanProblem | null {
   if (!regions.includes(leg.regionId)) return 'wrong-region';
   const gate = REGIONS[leg.regionId]?.questGate;
   if (gate && !state.quests[gate]) return 'region-locked';
-  if (!Number.isInteger(leg.hours * 2) || leg.hours <= 0) return 'bad-length';
+  if (isWorkOrder(leg)) {
+    if (act.kind !== 'method' || act.method.kind !== 'process' || !Number.isInteger(leg.count) || leg.count! <= 0) return 'bad-length';
+  } else if (!Number.isInteger(leg.hours * 2) || leg.hours <= 0) return 'bad-length';
   if (act.kind === 'method') {
     const level = levelOf(state, act.method.skill);
     if (level < act.method.level) return 'level-too-low';
@@ -72,40 +103,56 @@ export function checkLeg(state: GameState, leg: LegPlan): PlanProblem | null {
   return null;
 }
 
-/** Checks a whole plan. Later legs can rely on what earlier legs produce. */
-export function checkPlan(state: GameState, legs: LegPlan[]): PlanProblem | null {
-  if (legs.length === 0) return 'no-legs';
-  if (legs.length > MAX_LEGS) return 'too-many-legs';
+/**
+ * Checks blocks about to be added. Later blocks can rely on what earlier ones produce.
+ * `alreadyQueued` is how many blocks the running queue already holds.
+ */
+export function checkPlan(state: GameState, legsIn: LegPlan[], alreadyQueued = 0): PlanProblem | null {
+  if (legsIn.length === 0) return 'no-legs';
+  if (alreadyQueued + legsIn.length > MAX_QUEUE_BLOCKS) return 'queue-full';
   if (state.time.bankHours < 0) return 'in-debt';
-  for (const leg of legs) {
+  for (const leg of legsIn) {
     const problem = checkLeg(state, leg);
     if (problem) return problem;
   }
-  const total = legs.reduce((sum, l) => sum + l.hours, 0);
+  const total = legsIn.reduce((sum, l) => sum + normaliseLeg(state, l).hours, 0);
   if (total > state.time.bankHours + 1e-9) return 'not-enough-time';
   return null;
 }
 
-/** Sends the adventurer off: spends the hours up front and hands over quest items. */
-export function sendTrip(state: GameState, legs: LegPlan[], id: string, nowMs: number): { state: GameState; trip: Trip } {
-  const problem = checkPlan(state, legs);
-  if (problem) throw new Error(`Can't send trip: ${problem}`);
+/** The queue is still working (or waiting to be brought up to date). */
+export const queueRunning = (trip: Trip | null | undefined): trip is Trip => !!trip && !trip.done;
+
+/**
+ * Adds blocks to the queue (PROG-045): to the end of a running queue, or as a new queue
+ * starting now. Spends the hours up front and hands over quest items. Bring a running
+ * queue up to date with advanceTrip first, so a queue that has really finished starts afresh.
+ */
+export function queueLegs(
+  state: GameState, current: Trip | null, legsIn: LegPlan[], newId: string, nowMs: number,
+): { state: GameState; trip: Trip; appended: boolean } {
+  const running = queueRunning(current);
+  const problem = checkPlan(state, legsIn, running ? current.legs.length : 0);
+  if (problem) throw new Error(`Can't queue that: ${problem}`);
+  const legs = legsIn.map((l) => normaliseLeg(state, l));
   const total = legs.reduce((sum, l) => sum + l.hours, 0);
   const bank = { ...state.bank };
   for (const l of legs) {
     const act = activityOf(l.activityId);
     if (act?.kind === 'quest') for (const [item, n] of Object.entries(act.quest.takes ?? {})) bank[item] -= n;
   }
-  return {
-    state: { ...state, bank, time: { ...state.time, bankHours: round2(state.time.bankHours - total) } },
-    trip: {
-      id,
-      startMs: nowMs,
-      legs: legs.map((l) => ({ ...l, chunksDone: 0, refundedHours: 0, ended: false })),
-      nextChunk: 0,
-      done: false,
-    },
-  };
+  const fresh = legs.map((l) => ({ ...l, chunksDone: 0, refundedHours: 0, ended: false }));
+  const nextState = { ...state, bank, time: { ...state.time, bankHours: round4(state.time.bankHours - total) } };
+  if (running) {
+    return { state: nextState, trip: { ...current, legs: [...current.legs.map((l) => ({ ...l })), ...fresh] }, appended: true };
+  }
+  return { state: nextState, trip: { id: newId, startMs: nowMs, legs: fresh, nextChunk: 0, done: false }, appended: false };
+}
+
+/** Sends the adventurer off on a new queue (kept for callers and tests that start from nothing). */
+export function sendTrip(state: GameState, legs: LegPlan[], id: string, nowMs: number): { state: GameState; trip: Trip } {
+  const res = queueLegs(state, null, legs, id, nowMs);
+  return { state: res.state, trip: res.trip };
 }
 
 // ---------- Resolving ----------
@@ -114,12 +161,24 @@ export function emptyReport(): TripReport {
   return { xp: {}, gained: {}, used: {}, burnt: {}, kills: {}, attempts: {}, found: [], questsCompleted: [], refundedHours: 0, levelUps: [], notes: [] };
 }
 
+/** The log has something to show: items, XP, kills, quests, refunds or notes. */
+export function reportHasNews(r: TripReport): boolean {
+  return Object.keys(r.gained).length > 0 || Object.values(r.xp).some((n) => (n ?? 0) > 0) || Object.keys(r.kills).length > 0
+    || r.questsCompleted.length > 0 || r.refundedHours > 0 || r.notes.length > 0 || r.found.length > 0;
+}
+
 const add = (bag: Record<string, number>, key: string, n: number) => {
   if (n) bag[key] = (bag[key] ?? 0) + n;
 };
 
-/** Hours of a leg not yet worked (and not yet refunded). */
-const legRemaining = (leg: Leg) => round2(leg.hours - leg.chunksDone * CHUNK_HOURS - leg.refundedHours);
+/** Hours a block has worked so far. */
+const legWorked = (leg: Leg) => leg.chunksDone * CHUNK_HOURS + (leg.madeHours ?? 0);
+/** Hours of a block not yet worked (and not yet refunded). */
+const legRemaining = (leg: Leg) => round4(leg.hours - legWorked(leg) - leg.refundedHours);
+/** Hours a block still has to go (for the queue on Today). */
+export const blockHoursLeft = (leg: Leg): number => (leg.ended ? 0 : legRemaining(leg));
+/** Hours a block has worked so far. */
+export const blockHoursWorked = (leg: Leg): number => legWorked(leg);
 
 /** Burn chance for a cooking method at a level (PROG-037). */
 export function burnChance(method: Method, level: number): number {
@@ -155,19 +214,91 @@ function gainXP(state: GameState, report: TripReport, skill: GameSkill, amount: 
 function endLeg(state: GameState, trip: Trip, legIndex: number, report: TripReport, note: string) {
   const leg = trip.legs[legIndex];
   const refund = legRemaining(leg);
-  leg.refundedHours = round2(leg.refundedHours + refund);
+  leg.refundedHours = round4(leg.refundedHours + refund);
   leg.ended = true;
-  state.time.bankHours = round2(state.time.bankHours + refund);
-  report.refundedHours = round2(report.refundedHours + refund);
-  if (refund > 0) report.notes.push(note);
+  state.time.bankHours = round4(state.time.bankHours + refund);
+  report.refundedHours = round4(report.refundedHours + refund);
+  if (refund > 0 && note) report.notes.push(note);
   const act = activityOf(leg.activityId);
   if (act?.kind === 'quest' && refund > 0) {
     for (const [item, n] of Object.entries(act.quest.takes ?? {})) state.bank[item] = (state.bank[item] ?? 0) + n;
   }
 }
 
+/** Uses the inputs for `made` actions and adds what they make, burns and the XP. */
+function makeItems(state: GameState, report: TripReport, method: Method, made: number, rand: () => number, affinity: ReadonlySet<string>) {
+  if (method.kind !== 'process') return;
+  for (const [id, n] of Object.entries(method.inputs)) {
+    state.bank[id] -= made * n;
+    add(report.used, id, made * n);
+  }
+  const burnt = stochasticRound(made * burnChance(method, levelOf(state, method.skill)), rand);
+  const ok = made - burnt;
+  if (method.output) {
+    const n = ok * (method.outputEach ?? 1);
+    add(state.bank, method.output, n);
+    add(report.gained, method.output, n);
+  }
+  if (burnt && method.burn && method.output) {
+    add(state.bank, method.burn.burntItem, burnt);
+    add(report.burnt, method.output, burnt);
+  }
+  gainXP(state, report, method.skill, ok * method.xpEach, affinity);
+}
+
 const currentLeg = (trip: Trip) => trip.legs.findIndex((l) => !l.ended);
-const workedChunks = (trip: Trip) => trip.legs.reduce((n, l) => n + l.chunksDone, 0);
+/** When the queue's next step starts: its start plus everything worked so far. */
+const nextStepMs = (trip: Trip) => trip.startMs + hoursToMs(trip.legs.reduce((h, l) => h + legWorked(l), 0));
+
+/** Index of the block being worked now, or -1 when the queue is done. */
+export const currentBlock = (trip: Trip) => currentLeg(trip);
+
+/** The blocks still to do, as plans for what's left of each (for previewing the bank after the queue). */
+export function remainingPlan(trip: Trip): LegPlan[] {
+  return trip.legs.filter((l) => !l.ended).map((l) => {
+    const { chunksDone: _c, refundedHours: _r, ended: _e, madeHours: _m, ...plan } = l;
+    return isWorkOrder(l) ? plan : { ...plan, hours: legRemaining(l) };
+  });
+}
+
+/** When the queue should finish if nothing runs short: now's step plus everything left. */
+export function queueEndsMs(trip: Trip): number {
+  return nextStepMs(trip) + hoursToMs(trip.legs.reduce((h, l) => h + (l.ended ? 0 : legRemaining(l)), 0));
+}
+
+/**
+ * Removes a block that hasn't started (PROG-045): its hours go back to the bank, and a
+ * quest's items come back. The block being worked now can't be removed; call back instead.
+ */
+export function removeQueuedLeg(stateIn: GameState, tripIn: Trip, index: number): { state: GameState; trip: Trip } {
+  if (index <= currentLeg(tripIn) || index >= tripIn.legs.length) throw new Error("That block has already started");
+  const state: GameState = { ...stateIn, bank: { ...stateIn.bank }, time: { ...stateIn.time } };
+  const leg = tripIn.legs[index];
+  state.time.bankHours = round4(state.time.bankHours + legRemaining(leg));
+  const act = activityOf(leg.activityId);
+  if (act?.kind === 'quest') for (const [item, n] of Object.entries(act.quest.takes ?? {})) state.bank[item] = (state.bank[item] ?? 0) + n;
+  return { state, trip: { ...tripIn, legs: tripIn.legs.filter((_, i) => i !== index).map((l) => ({ ...l })) } };
+}
+
+/**
+ * Resizes a block that hasn't started (PROG-045): new hours for gathering and fights,
+ * a new count for a work order. The difference comes from, or goes back to, the bank.
+ */
+export function resizeQueuedLeg(
+  stateIn: GameState, tripIn: Trip, index: number, size: { hours?: number; count?: number },
+): { state: GameState; trip: Trip } {
+  if (index <= currentLeg(tripIn) || index >= tripIn.legs.length) throw new Error("That block has already started");
+  const old = tripIn.legs[index];
+  if (activityOf(old.activityId)?.kind === 'quest') throw new Error('Quests take their own length');
+  const resized = normaliseLeg(stateIn, { ...old, ...size });
+  const problem = checkLeg(stateIn, resized);
+  if (problem) throw new Error(`Can't resize that block: ${problem}`);
+  const delta = round4(resized.hours - old.hours);
+  if (delta > stateIn.time.bankHours + 1e-9) throw new Error("Can't resize that block: not-enough-time");
+  const state: GameState = { ...stateIn, time: { ...stateIn.time, bankHours: round4(stateIn.time.bankHours - delta) } };
+  const legs = tripIn.legs.map((l, i) => (i === index ? { ...l, hours: resized.hours, count: resized.count } : { ...l }));
+  return { state, trip: { ...tripIn, legs } };
+}
 
 function meleeXP(state: GameState, report: TripReport, focus: MeleeFocus, amount: number, affinity: ReadonlySet<string>) {
   if (focus === 'shared') {
@@ -254,15 +385,35 @@ export function advanceTrip(
     const li = currentLeg(trip);
     if (li < 0) {
       trip.done = true;
-      trip.finishedMs = trip.startMs + workedChunks(trip) * CHUNK_MS;
+      trip.finishedMs = nextStepMs(trip);
       break;
     }
     const leg = trip.legs[li];
     if (legRemaining(leg) <= 0) { leg.ended = true; continue; }
-    const chunkStart = trip.startMs + workedChunks(trip) * CHUNK_MS;
-    if (chunkStart + CHUNK_MS > nowMs) break; // this chunk hasn't finished yet
-
+    const chunkStart = nextStepMs(trip);
     const act = activityOf(leg.activityId)!;
+
+    // A work order (PROG-043) finishes in one step, after the minutes its items take.
+    if (isWorkOrder(leg) && act.kind === 'method' && act.method.kind === 'process') {
+      const method = act.method;
+      const made = Math.min(leg.count!, canMakeFrom(state.bank, method));
+      if (made <= 0) {
+        endLeg(state, trip, li, report, `${method.name}: nothing to use, so it was skipped.`);
+        continue;
+      }
+      const hours = Math.min(craftHours(effectiveRate(state, method, leg.regionId), made), legRemaining(leg));
+      if (chunkStart + hoursToMs(hours) > nowMs) break; // still working on it
+      const rand = chunkRng(trip.id, trip.nextChunk);
+      makeItems(state, report, method, made, rand, affinityAt(chunkStart));
+      leg.madeHours = hours;
+      trip.nextChunk += 1;
+      if (made < leg.count!) endLeg(state, trip, li, report, `${method.name}: ran out of materials after ${made}.`);
+      else if (legRemaining(leg) > 0) endLeg(state, trip, li, report, '');
+      else leg.ended = true;
+      continue;
+    }
+
+    if (chunkStart + hoursToMs(CHUNK_HOURS) > nowMs) break; // this half hour hasn't finished yet
     const rand = chunkRng(trip.id, trip.nextChunk);
     const affinity = affinityAt(chunkStart);
 
@@ -279,29 +430,14 @@ export function advanceTrip(
         add(report.gained, method.output, count);
         gainXP(state, report, method.skill, count * method.xpEach, affinity);
       } else {
-        // Processing is limited by materials in the bank (PROG-026).
-        const canMake = Math.min(...Object.entries(method.inputs).map(([id, n]) => Math.floor((state.bank[id] ?? 0) / n)));
+        // Older, time-planned processing (before work orders) is limited by materials in the bank (PROG-026).
         const wanted = stochasticRound(expected, rand);
-        const made = Math.min(wanted, canMake);
+        const made = Math.min(wanted, canMakeFrom(state.bank, method));
         if (made <= 0) {
           endLeg(state, trip, li, report, `${method.name}: ran out of materials.`);
           continue; // the next leg starts in this same half hour
         }
-        for (const [id, n] of Object.entries(method.inputs)) {
-          state.bank[id] -= made * n;
-          add(report.used, id, made * n);
-        }
-        const burnt = stochasticRound(made * burnChance(method, levelOf(state, method.skill)), rand);
-        const ok = made - burnt;
-        if (method.output) {
-          add(state.bank, method.output, ok);
-          add(report.gained, method.output, ok);
-        }
-        if (burnt && method.burn && method.output) {
-          add(state.bank, method.burn.burntItem, burnt);
-          add(report.burnt, method.output, burnt);
-        }
-        gainXP(state, report, method.skill, ok * method.xpEach, affinity);
+        makeItems(state, report, method, made, rand, affinity);
         if (made < wanted) {
           leg.chunksDone += 1;
           trip.nextChunk += 1;
@@ -345,15 +481,25 @@ export function clawBackForDebt(stateIn: GameState, tripIn: Trip): { state: Game
   for (let i = trip.legs.length - 1; i >= 0 && state.time.bankHours < 0; i--) {
     const leg = trip.legs[i];
     if (leg.ended || activityOf(leg.activityId)?.kind === 'quest') continue;
+    if (isWorkOrder(leg)) {
+      // A work order can't be cut in half hours: an unstarted one is cancelled whole.
+      if (i <= currentLeg(trip)) continue;
+      const back = legRemaining(leg);
+      leg.refundedHours = round4(leg.refundedHours + back);
+      leg.ended = true;
+      state.time.bankHours = round4(state.time.bankHours + back);
+      clawed = round4(clawed + back);
+      continue;
+    }
     // keep the half hour that may be in progress on the current leg
     const inProgress = i === currentLeg(trip) ? CHUNK_HOURS : 0;
     const available = Math.max(0, legRemaining(leg) - inProgress);
     const needed = Math.ceil(-state.time.bankHours / CHUNK_HOURS) * CHUNK_HOURS;
     const cut = Math.min(available, needed);
     if (cut <= 0) continue;
-    leg.hours = round2(leg.hours - cut);
-    state.time.bankHours = round2(state.time.bankHours + cut);
-    clawed = round2(clawed + cut);
+    leg.hours = round4(leg.hours - cut);
+    state.time.bankHours = round4(state.time.bankHours + cut);
+    clawed = round4(clawed + cut);
     if (legRemaining(leg) <= 0) leg.ended = true;
   }
   if (currentLeg(trip) < 0) trip.done = true;

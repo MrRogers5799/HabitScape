@@ -49,4 +49,14 @@ describe('previewPlan', () => {
     expect(q.requirements.map((r) => r.met)).toEqual([false, false]);
     expect(p.legs[0].problem).toBe('quest-requirements');
   });
+
+  it('previews a work order by count and says how many it will be short', () => {
+    const p = previewPlan(adventurer({ copper_ore: 5, tin_ore: 5 }), [{ activityId: 'smelt-bronze', regionId: 'millbrook', hours: 0, count: 8 }]);
+    const w = p.legs[0].preview!;
+    if (w.kind !== 'method') throw new Error('expected method');
+    expect(w.count).toBe(5);
+    expect(w.short).toBe(3);
+    expect(p.totalHours).toBeCloseTo(4 / 60, 4);
+    expect(p.bankAfter.bronze_bar).toBe(5);
+  });
 });

@@ -1,15 +1,16 @@
 /**
- * Trip planner (PROG-011, PROG-026): up to three legs, each in half-hour steps, with a
- * preview of what it should bring back, as icons (new-version kit, PROD-024/025).
- * Sending spends the hours up front.
+ * Adding to the queue (PROG-045): the blocks picked on the map, each previewed as icons
+ * (new-version kit, PROD-024/025). Gathering and fights are set in half hours; crafting
+ * is a work order set by count and takes only its minutes (PROG-043). Blocks join the end
+ * of the queue, even while the adventurer is out, and the hours are spent up front.
  */
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useGame } from '../../context/GameContext';
 import {
-  activityName, activityOf, checkPlan, CHUNK_HOURS, CREATURES, formatHours, itemName, LegPreview, MAX_LEGS, PlanProblem, previewPlan,
-  QuestRequirement, regionName,
+  activityName, activityOf, canMakeFrom, checkPlan, CHUNK_HOURS, clockTime, CREATURES, formatHours, isWorkOrder, itemName, LegPreview,
+  MAX_QUEUE_BLOCKS, PlanProblem, previewPlan, QuestRequirement, queueEndsMs, queueRunning, regionName, remainingPlan,
 } from '../../game';
 import { AdventureStackParamList } from '../../navigation/AdventureNavigator';
 import { TABS } from '../../navigation/newVersionTabs';
@@ -22,14 +23,14 @@ type Props = NativeStackScreenProps<AdventureStackParamList, 'Planner'>;
 
 const PROBLEMS: Record<PlanProblem, string> = {
   'no-legs': 'Add something to do from the map.',
-  'too-many-legs': 'A trip can have up to three legs.',
-  'bad-length': 'Each leg needs at least half an hour.',
+  'queue-full': `The queue holds up to ${MAX_QUEUE_BLOCKS} blocks. Let some finish first.`,
+  'bad-length': 'Each block needs at least half an hour, and a work order at least one item.',
   'unknown-activity': "That activity doesn't exist any more.",
   'wrong-region': "That can't be done there.",
   'region-locked': 'That region is still locked.',
   'level-too-low': 'Your level is too low for that.',
   'no-tool': "You don't have the tool for that.",
-  'not-enough-time': "You don't have enough adventure time banked for the whole trip.",
+  'not-enough-time': "You don't have enough adventure time banked for all of that.",
   'in-debt': 'Your adventure time is in debt. Do a habit to pay it back first.',
   'quest-done': "You've already finished that quest.",
   'quest-requirements': "You don't meet that quest's requirements yet.",
@@ -66,6 +67,9 @@ function Preview({ p }: { p: LegPreview }) {
         {p.runsOutAfterHours !== undefined && (
           <Body muted style={{ color: kitColors.red }}>Runs out after {formatHours(p.runsOutAfterHours)}; the rest of the time comes back to you.</Body>
         )}
+        {p.short !== undefined && (
+          <Body muted style={{ color: kitColors.red }}>Only enough for {p.count} of these; the rest of the time comes back to you.</Body>
+        )}
       </>
     );
   }
@@ -93,15 +97,27 @@ function Preview({ p }: { p: LegPreview }) {
 }
 
 export function TripPlannerScreen({ navigation }: Props) {
-  const { state, activeTrip, send, error } = useGame();
+  const { state, activeTrip, nowMs, send, error } = useGame();
   const plan = useDraftPlan();
   const [sending, setSending] = useState(false);
   if (!state) return null;
 
-  const preview = previewPlan(state, plan.legs);
-  const problem = checkPlan(state, plan.legs);
-  const busy = !!activeTrip && (!activeTrip.trip.done || activeTrip.seenMs === null);
+  const queue = queueRunning(activeTrip?.trip) ? activeTrip!.trip : null;
+  // New blocks start after the queue, so preview them from the bank it should leave.
+  const bankAfterQueue = queue ? previewPlan(state, remainingPlan(queue)).bankAfter : undefined;
+  const preview = previewPlan(state, plan.legs, bankAfterQueue);
+  const problem = checkPlan(state, plan.legs, queue?.legs.length ?? 0);
   const banked = Math.max(0, state.time.bankHours);
+  const startsMs = queue ? Math.max(nowMs, queueEndsMs(queue)) : nowMs;
+  const endsMs = startsMs + Math.round(preview.totalHours * 60) * 60 * 1000;
+
+  /** The block's region and its remove button, in the panel header so the stepper row has room. */
+  const header = (i: number, regionId: string, activityId: string) => (
+    <View style={styles.header}>
+      <Tag label={regionName(regionId)} />
+      <KitButton compact kind="secondary" label="✕" accessibilityLabel={`Remove ${activityName(activityId)}`} onPress={() => plan.removeLeg(i)} />
+    </View>
+  );
 
   const onSend = async () => {
     setSending(true);
@@ -119,23 +135,42 @@ export function TripPlannerScreen({ navigation }: Props) {
   };
 
   return (
-    <KitScreen title="Plan a trip" onBack={() => navigation.goBack()}>
+    <KitScreen title="Add to queue" onBack={() => navigation.goBack()}>
       {preview.legs.map(({ plan: leg, problem: legProblem, preview: p }, i) => {
-        const isQuest = activityOf(leg.activityId)?.kind === 'quest';
+        const act = activityOf(leg.activityId);
+        const isQuest = act?.kind === 'quest';
+        const draft = plan.legs[i];
+        if (isWorkOrder(draft) && act?.kind === 'method') {
+          const most = Math.max(1, canMakeFrom(bankAfterQueue ?? state.bank, act.method));
+          return (
+            <Panel key={i} title={activityName(leg.activityId)} right={header(i, leg.regionId, leg.activityId)}>
+              <View style={styles.stepper}>
+                <KitButton compact kind="secondary" label="−" accessibilityLabel="One fewer" disabled={draft.count! <= 1}
+                  onPress={() => plan.updateLeg(i, { ...draft, count: draft.count! - 1 })} />
+                <Text style={[type.readout, styles.hours]} accessibilityLabel={`Make ${draft.count}`}>×{draft.count}</Text>
+                <KitButton compact kind="secondary" label="+" accessibilityLabel="One more"
+                  onPress={() => plan.updateLeg(i, { ...draft, count: draft.count! + 1 })} />
+                <KitButton compact kind="secondary" label="All" accessibilityLabel={`As many as you can: ${most}`} disabled={draft.count === most}
+                  onPress={() => plan.updateLeg(i, { ...draft, count: most })} />
+              </View>
+              <Tag label={formatHours(leg.hours)} accessibilityLabel={`Takes ${formatHours(leg.hours)}`} />
+              {p && <Preview p={p} />}
+              {legProblem && legProblem !== 'not-enough-time' && <Body style={{ color: kitColors.red }}>{PROBLEMS[legProblem]}</Body>}
+            </Panel>
+          );
+        }
         return (
-          <Panel key={i} title={activityName(leg.activityId)} right={<Tag label={regionName(leg.regionId)} />}>
+          <Panel key={i} title={activityName(leg.activityId)} right={header(i, leg.regionId, leg.activityId)}>
             <View style={styles.stepper}>
               {!isQuest && (
                 <KitButton compact kind="secondary" label="−" accessibilityLabel="30 minutes less" disabled={leg.hours <= CHUNK_HOURS}
                   onPress={() => plan.updateLeg(i, { ...leg, hours: leg.hours - CHUNK_HOURS })} />
               )}
-              <Text style={[type.readout, styles.hours]} accessibilityLabel={`Leg ${i + 1}: ${formatHours(leg.hours)}`}>{formatHours(leg.hours)}</Text>
+              <Text style={[type.readout, styles.hours]} accessibilityLabel={`${activityName(leg.activityId)}: ${formatHours(leg.hours)}`}>{formatHours(leg.hours)}</Text>
               {!isQuest && (
                 <KitButton compact kind="secondary" label="+" accessibilityLabel="30 minutes more"
                   onPress={() => plan.updateLeg(i, { ...leg, hours: leg.hours + CHUNK_HOURS })} />
               )}
-              <View style={styles.flex} />
-              <KitButton compact kind="secondary" label="✕" accessibilityLabel={`Remove leg ${i + 1}`} onPress={() => plan.removeLeg(i)} />
             </View>
             {p && <Preview p={p} />}
             {legProblem && legProblem !== 'not-enough-time' && <Body style={{ color: kitColors.red }}>{PROBLEMS[legProblem]}</Body>}
@@ -143,14 +178,18 @@ export function TripPlannerScreen({ navigation }: Props) {
         );
       })}
 
-      <Panel title="Trip">
+      <Panel title={queue ? 'Joins the queue' : 'Start the queue'}>
         <StatReadout label="Time" value={formatHours(preview.totalHours)} max={formatHours(banked)} tone={preview.totalHours > banked ? 'red' : 'green'} />
+        {plan.legs.length > 0 && (
+          <Body muted>
+            {queue ? `After what's queued now. All done around ${clockTime(endsMs)}.` : `All done around ${clockTime(endsMs)}.`}
+          </Body>
+        )}
         {problem && <Body style={{ color: kitColors.red }}>{PROBLEMS[problem]}</Body>}
-        {busy && <Body style={{ color: kitColors.red }}>{"Your adventurer is still out, or their loot hasn't been collected yet."}</Body>}
         {error && <Body style={{ color: kitColors.red }}>{error}</Body>}
         <ButtonRow>
-          <KitButton label={sending ? 'Sending…' : 'Send'} disabled={!!problem || busy || sending} onPress={onSend} />
-          <KitButton label="Add more" kind="secondary" disabled={plan.legs.length >= MAX_LEGS} onPress={() => navigation.navigate('Map')} />
+          <KitButton label={sending ? 'Adding…' : queue ? 'Add to queue' : 'Start'} disabled={!!problem || sending} onPress={onSend} />
+          <KitButton label="Pick more" kind="secondary" disabled={plan.legs.length >= MAX_QUEUE_BLOCKS} onPress={() => navigation.navigate('Map')} />
         </ButtonRow>
       </Panel>
     </KitScreen>
@@ -161,5 +200,5 @@ const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.xs },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   hours: { minWidth: 92, textAlign: 'center', color: kitColors.text },
-  flex: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
 });

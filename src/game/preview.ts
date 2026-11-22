@@ -6,7 +6,7 @@
 import { levelOf } from './adventurer';
 import { fightPreview } from './combat';
 import { CHUNK_HOURS } from './rules';
-import { activityOf, burnChance, checkLeg, effectiveRate, PlanProblem, requirementMet } from './trips';
+import { activityOf, burnChance, canMakeFrom, checkLeg, effectiveRate, isWorkOrder, normaliseLeg, PlanProblem, requirementMet } from './trips';
 import { GameState, LegPlan, QuestRequirement } from './types';
 
 export type LegPreview =
@@ -15,6 +15,8 @@ export type LegPreview =
       uses: Record<string, number>; burnChance: number;
       /** Set when materials run out before the leg ends (it will stop and refund, PROG-026). */
       runsOutAfterHours?: number;
+      /** Work orders (PROG-043): how many of the order can't be made from what will be in the bank. */
+      short?: number;
     }
   | {
       kind: 'fight'; winChance: number; killsPerHour: number; kills: number; styleXP: number; hitpointsXP: number;
@@ -25,12 +27,19 @@ export type LegPreview =
 export interface PlanPreview {
   legs: { plan: LegPlan; problem: PlanProblem | null; preview: LegPreview | null }[];
   totalHours: number;
+  /** What the bank should hold once these blocks finish (expected values). */
+  bankAfter: GameState['bank'];
 }
 
-export function previewPlan(stateIn: GameState, legs: LegPlan[]): PlanPreview {
-  const state: GameState = { ...stateIn, bank: { ...stateIn.bank } };
-  const out: PlanPreview = { legs: [], totalHours: 0 };
-  for (const plan of legs) {
+/**
+ * `bankAfterQueue`, when given, is what the bank should hold once the blocks already
+ * queued finish, so new blocks are previewed from there.
+ */
+export function previewPlan(stateIn: GameState, legs: LegPlan[], bankAfterQueue?: GameState['bank']): PlanPreview {
+  const state: GameState = { ...stateIn, bank: { ...(bankAfterQueue ?? stateIn.bank) } };
+  const out: PlanPreview = { legs: [], totalHours: 0, bankAfter: state.bank };
+  for (const raw of legs) {
+    const plan = normaliseLeg(stateIn, raw);
     out.totalHours += plan.hours;
     const act = activityOf(plan.activityId);
     // Later legs may use earlier legs' output, so only flag hard problems here.
@@ -42,9 +51,18 @@ export function previewPlan(stateIn: GameState, legs: LegPlan[]): PlanPreview {
       const perHour = effectiveRate(state, m, plan.regionId);
       let count = perHour * plan.hours;
       let runsOutAfterHours: number | undefined;
+      let short: number | undefined;
       const uses: Record<string, number> = {};
-      if (m.kind === 'process') {
-        const canMake = Math.min(...Object.entries(m.inputs).map(([id, n]) => Math.floor((state.bank[id] ?? 0) / n)));
+      if (m.kind === 'process' && isWorkOrder(plan)) {
+        const canMake = canMakeFrom(state.bank, m);
+        count = Math.min(plan.count!, canMake);
+        if (canMake < plan.count!) short = plan.count! - canMake;
+        for (const [id, n] of Object.entries(m.inputs)) {
+          uses[id] = count * n;
+          state.bank[id] = (state.bank[id] ?? 0) - uses[id];
+        }
+      } else if (m.kind === 'process') {
+        const canMake = canMakeFrom(state.bank, m);
         if (canMake < count) {
           count = canMake;
           runsOutAfterHours = Math.ceil((canMake / perHour) / CHUNK_HOURS) * CHUNK_HOURS;
@@ -56,11 +74,15 @@ export function previewPlan(stateIn: GameState, legs: LegPlan[]): PlanPreview {
       }
       const burn = burnChance(m, levelOf(state, m.skill));
       const made = Math.floor(count * (1 - burn));
-      const output = m.kind === 'gather' ? m.output : m.output;
-      if (output) state.bank[output] = (state.bank[output] ?? 0) + made;
+      const each = m.kind === 'process' ? m.outputEach ?? 1 : 1;
+      const output = m.output;
+      if (output) state.bank[output] = (state.bank[output] ?? 0) + made * each;
       out.legs.push({
         plan, problem,
-        preview: { kind: 'method', skill: m.skill, perHour, count: Math.floor(count), xp: Math.round(made * m.xpEach), output, uses, burnChance: burn, runsOutAfterHours },
+        preview: {
+          kind: 'method', skill: m.skill, perHour, count: Math.floor(count) * each, xp: Math.round(made * m.xpEach), output, uses,
+          burnChance: burn, runsOutAfterHours, short,
+        },
       });
     } else if (act.kind === 'fight') {
       const c = act.creature;

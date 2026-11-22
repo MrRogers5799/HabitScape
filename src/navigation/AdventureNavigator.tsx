@@ -1,8 +1,8 @@
 /**
  * The new version's tabs (PROD-019, PROD-026): Today, Map, Hero, Workout, under the kit
  * tab bar. Shown in place of the live app's tabs where the new version is active
- * (development builds and the owner's account until launch, PROD-022). One draft trip
- * plan is shared across the tabs while the player builds it.
+ * (development builds and the owner's account until launch, PROD-022). The blocks picked
+ * for the queue (PROG-045) are shared across the tabs while the player picks them.
  */
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';

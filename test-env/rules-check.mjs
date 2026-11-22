@@ -72,16 +72,20 @@ await expect('A saves a stale rev (same number)', false, () => setDoc(advRef(A, 
 await expect('A skips a rev', false, () => setDoc(advRef(A, A.uid), adv(3)));
 await expect('A adds an unknown field', false, () => setDoc(advRef(A, A.uid), adv(2, { cheat: true })));
 await expect('A saves a bank that is not a map', false, () => setDoc(advRef(A, A.uid), adv(2, { bank: 'lots' })));
+await expect('A saves filled village orders (PROG-044)', true, () => setDoc(advRef(A, A.uid), adv(2, { ordersFilled: { '2026-11-21:millbrook-logs': true } })));
+await expect('A saves filled orders that are not a map', false, () => setDoc(advRef(A, A.uid), adv(3, { ordersFilled: 'all' })));
 await expect('A creates a second game document', false, () => setDoc(doc(A.db, 'users', A.uid, 'game', 'other'), adv(0)));
 await expect('B reads A adventurer', false, () => getDoc(advRef(B, A.uid)));
-await expect('B writes A adventurer', false, () => setDoc(advRef(B, A.uid), adv(2)));
+await expect('B writes A adventurer', false, () => setDoc(advRef(B, A.uid), adv(3)));
 await expect('A writes own trip', true, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't1'), trip(3)));
 await expect('A updates own trip progress', true, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't1'), trip(3, { nextChunk: 2 })));
-await expect('A writes a trip with 4 legs', false, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't2'), trip(4)));
+await expect('A writes a queue of 40 blocks (PROG-045)', true, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't2'), trip(40)));
+await expect('A writes a queue of 41 blocks', false, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't4'), trip(41)));
 await expect('A writes a trip with no legs', false, () => setDoc(doc(A.db, 'users', A.uid, 'trips', 't3'), trip(0)));
 await expect('B reads A trips', false, () => getDocs(collection(B.db, 'users', A.uid, 'trips')));
 await expect('A deletes own trip and adventurer (account deletion)', true, async () => {
   await deleteDoc(doc(A.db, 'users', A.uid, 'trips', 't1'));
+  await deleteDoc(doc(A.db, 'users', A.uid, 'trips', 't2'));
   await deleteDoc(advRef(A, A.uid));
 });
 

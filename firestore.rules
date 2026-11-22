@@ -41,10 +41,11 @@ service cloud.firestore {
       function validAdventurer() {
         let d = request.resource.data;
         return d.keys().hasOnly(['schemaVersion', 'rev', 'xp', 'bank', 'time', 'quests', 'kills',
-                                 'dryKills', 'lamps', 'activeTripId', 'updatedAt'])
+                                 'dryKills', 'lamps', 'ordersFilled', 'activeTripId', 'updatedAt'])
           && d.schemaVersion is int && d.rev is int
           && d.xp is map && d.bank is map && d.time is map && d.quests is map
           && d.kills is map && d.dryKills is map && d.lamps is list
+          && (!('ordersFilled' in d) || d.ordersFilled is map)
           && (d.activeTripId == null || d.activeTripId is string);
       }
       match /game/{docId} {
@@ -55,13 +56,13 @@ service cloud.firestore {
           && request.resource.data.rev == resource.data.rev + 1;
       }
 
-      // trips/{tripId}: one trip's legs, progress and running report (1 to 3 legs, PROG-026).
+      // trips/{tripId}: the adventurer's queue, its blocks, progress and running log (1 to 40 blocks, PROG-045).
       function validTrip() {
         let d = request.resource.data;
         return d.keys().hasOnly(['schemaVersion', 'startMs', 'legs', 'nextChunk', 'done',
                                  'finishedMs', 'report', 'seenMs', 'updatedAt'])
           && d.schemaVersion is int && d.startMs is number
-          && d.legs is list && d.legs.size() >= 1 && d.legs.size() <= 3
+          && d.legs is list && d.legs.size() >= 1 && d.legs.size() <= 40
           && d.nextChunk is int && d.done is bool && d.report is map;
       }
       match /trips/{tripId} {
